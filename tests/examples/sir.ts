@@ -16,7 +16,8 @@ export class DiscreteSIR implements DiscreteSystemGenerator {
         stateNext[4] = 0;
     }
 
-    update(time: number, dt: number, state: number[], shared: Shared, internal: null, stateNext: number[]) {
+    update(time: number, dt: number, state: number[], shared: Shared,
+           internal: null, stateNext: number[]) {
         const S = state[0];
         const I = state[1];
         const R = state[2];
