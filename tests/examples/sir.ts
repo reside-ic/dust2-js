@@ -1,13 +1,13 @@
 import { DiscreteSystemGenerator } from "../../src/generator.ts";
 
-export interface Shared { // we might make this private later
+interface Shared {
     N: number;
     I0: number;
     beta: number;
     gamma: number;
 }
 
-export class DiscreteSIR implements DiscreteSystemGenerator {
+export class DiscreteSIR implements DiscreteSystemGenerator<Shared, null> {
     initial(time: number, shared: Shared, internal: null, stateNext: number[]) {
         stateNext[0] = shared.N - shared.I0;
         stateNext[1] = shared.I0;
