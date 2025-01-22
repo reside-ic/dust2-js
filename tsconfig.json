@@ -18,10 +18,9 @@
         /* Linting */
         "strict": true,
         "noUnusedLocals": true,
-        "noUnusedParameters": true,
+        "noUnusedParameters": false,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true
     },
-    "files": ["src/index.ts"],
-    "include": ["src"]
+    "include": ["src", "tests"]
 }
