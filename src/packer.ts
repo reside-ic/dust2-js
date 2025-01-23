@@ -18,14 +18,14 @@ const preparePackArrayForShape = (name: string, shape: number | number[] | null)
             ` value is ${JSON.stringify(shape)}`);
     }
 
-    // index contains string representing R-style index accessors for all values in an array described by shape
+    // names contains string representing R-style index accessors for all values in an array described by shape
     //- calculate these recursively
     const getIndexStrings = (prevDimIndexString: string, dimension: number) => {
         const result = [];
         const isLastDim = dimension == arrayShape.length - 1;
         for (let i = 1; i <= arrayShape[dimension]; i++) {
             const sep = prevDimIndexString.length ? "," : "";
-            const thisDimPart = `${prevDimIndexString}${sep}${dimension + 1}`;
+            const thisDimPart = `${prevDimIndexString}${sep}${i}`;
             if (isLastDim) {
                 result.push(thisDimPart);
             } else {
@@ -63,8 +63,8 @@ export class Packer {
     private options: Partial<PackerOptions>;
     private len: number;
     private nms: Array<string>;
-    private idx: object;
-    private shape: object;
+    private idx: object; // TODO: fix up type
+    private shape: object; // TODO: fix up type
 
     constructor(options: Partial<PackerOptions>) {
         this.options = options;
@@ -84,7 +84,7 @@ export class Packer {
         }
 
         if (scalar) {
-            scalar.forEach((name, i) => {
+            Array.from(scalar).forEach((name, i) => {
                 // for each scalar, shape gets an array with a single integer in it, set to 0 (indicating no dimensions)
                 this.shape[name] = [0];
                 // .. and index gets the index where they can be found
