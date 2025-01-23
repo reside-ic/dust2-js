@@ -1,3 +1,46 @@
+const preparePackArrayForShape = (name: string, shape: number | number[] | null) => {
+    // For a given shape and base name, return packed names, shape and n (number of values after expansion
+    const scalar = shape === null || shape === [];
+    if (scalar) {
+        return { names: [name], shape: 0, n: 1 };
+    }
+    const arrayShape: Array<number> = typeof shape === "number" ? [shape] : shape;
+    const nonInteger = arrayShape.find((v) => !Number.isInteger(v))
+    if (nonInteger) {
+        throw Error(`All dimension values in 'array' values must be integers, but this is not the case for ${name}, whose` +
+            ` value is ${JSON.stringify(shape)}`);
+    }
+    const lessThanZero = arrayShape.find((v) => v <= 0);
+    if (lessThanZero) {
+        throw Error(`All dimension values in 'array' values must be at least 1, but this is not the case for ${name}, whose ` +
+            ` value is ${JSON.stringify(shape)}`);
+    }
+
+    // index contains string representing R-style index accessors for all values in an array described by shape
+    //- calculate these recursively
+    const getIndexStrings = (prevDimIndexString: string, dimension: number) => {
+        const result = [];
+        const isLastDim = dimension == arrayShape.length - 1;
+        for (let i = 1; i <= arrayShape[dimension]; i++) {
+            const sep = prevDimIndexString.length ? "," : "";
+            const thisDimPart = `${prevDimIndexString}${sep}${dimension + 1}`;
+            if (isLastDim) {
+                result.push(thisDimPart);
+            } else {
+                result.push(...getIndexStrings(thisDimPart, dimension + 1));
+            }
+        }
+        return result;
+    };
+    const indexStrings = getIndexStrings("", 0);
+
+    return {
+        names: indexStrings.map(s =>  `${name}[${s}]`),
+        shape: arrayShape,
+        n: indexStrings.length
+    }
+}
+
 export interface PackerOptions {
     // names of scalar values
     scalar: Set<string>,
@@ -24,10 +67,18 @@ export class Packer {
         this.options = options;
 
         this.nms = [];
-        this.idx = {}; // For each value name, the index where their values are to be found in the packed array
+        this.idx = {}; // For each value name, the index where their values are to be found in the packed array. 0 indexed!
         this.shape = {}; // For each value name, their shape - size of each dimension
 
-        const { scalar, array } = options;
+        const { scalar, array, fixed } = options;
+
+        const allNames = [...(scalar || []), ...(array?.keys() || []), ...(fixed?.keys() || [])];
+        // Check for duplicate names
+        const dup = allNames.find((name, i) => allNames.lastIndexOf(name) !== i)
+        if (dup) {
+            // TODO: make a throw error util
+            throw Error(`Names must be distinct between 'scalar', 'array' and 'fixed'. ${dup} appears in more than one place.`);
+        }
 
         if (scalar) {
             scalar.forEach((name, i) => {
@@ -42,27 +93,21 @@ export class Packer {
         let len = scalar?.size || 0;
         if (array) {
             for (let [name, value] of array) {
-                const tmp = preparePackArrayForShape(name, value)
+                // TODO: test for duplicates with scalar
+                const tmp = preparePackArrayForShape(name, value);
+                this.nms.push(...tmp.names);
+                this.shape[name] = tmp.shape;
+                // array of 0-based indexes where each of the named values can be found
+                this.idx[name] = [...Array(tmp.n).keys()].map(i => len + i);
+                len = len + tmp.n;
             }
+        }
+
+        if (!this.idx.keys().length) {
+            throw Error("Trying to generate an empty packet. You have not provided any entries in 'scalar' or 'array', " +
+                        "which implies generating from a zero-length parameter vector.");
         }
     }
 
-    private static preparePackArrayForShape(name: string, shape: number | number[] | null) {
-        // For a given shape and base name, return packed names, shape and n (number of values after expansion
-        const scalar = shape === null || shape === [];
-        if (scalar) {
-            return { names: [name], shape: 0, n: 1 };
-        }
-        const arrayShape = typeof shape === "number" ? [shape] : shape;
-        const nonInteger = arrayShape.find((v) => !Number.isInteger(v))
-        if (nonInteger) {
-            throw Error(`All dimension values in 'array" elements must be integers, but this is not the case for ${name}, whose` +
-                        ` value is ${JSON.stringify(shape)}`);
-        }
-        const lessThanZero = arrayShape.find((v) => v <= 0);
-        if (lessThanZero) {
-            throw Error(`All dimension values in 'array' must be at least 1, but this is not the case for ${name}, whose ` +
-                        ` value is ${JSON.stringify(shape)}`);
-        }
-    }
+    // Implement unpack first, pack can be throw TODO
 }
