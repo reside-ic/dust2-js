@@ -1,10 +1,12 @@
-import * as ndarray from "ndarray";
+import ndarray, {NdArray} from "ndarray";
+import ndarray_unpack from "ndarray-unpack";
 
+// For a given shape and base name, return packed names, shape and n (number of values after expansion
 const preparePackArrayForShape = (name: string, shape: number | number[] | null) => {
-    // For a given shape and base name, return packed names, shape and n (number of values after expansion
-    const scalar = shape === null || shape === [];
+    // Scalars can be defined within the array option, if that allows user's preferred ordering
+    const scalar = shape === null || (Array.isArray(shape) && shape.length === 0);
     if (scalar) {
-        return { names: [name], shape: 0, n: 1 };
+        return { names: [name], shape: [0], n: 1 };
     }
     const arrayShape: Array<number> = typeof shape === "number" ? [shape] : shape;
     const nonInteger = arrayShape.find((v) => !Number.isInteger(v))
@@ -112,7 +114,7 @@ export class Packer {
     }
 
     // Unpack a one-dimensional array
-    public unpack(x: Array<number>) {
+    public unpack_array(x: Array<number>) {
         if (x.length !== this.len) {
             throw Error(`Incorrect length input; expected ${this.len} but given ${x.length}.`);
         }
@@ -120,7 +122,8 @@ export class Packer {
         // Return a map of names to values in the format described by shape
         let result = new Map<string, any>();
         for (let name in this.shape) {
-            if (this.shape[name] === [0]) {
+            const currentShape = this.shape[name];
+            if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
                 // scalar
                 const i = this.idx[name] as number;
                 result.set(name, x[i])
@@ -128,7 +131,7 @@ export class Packer {
                 // array
                 const startIdx = this.idx[name][0];
                 const length = this.idx[name].length;
-                const values = x.slice(startIdx, startIdx + length -1);
+                const values = x.slice(startIdx, startIdx + length);
                 if (this.shape[name].length == 1) {
                     // one-dimensional array
                     result.set(name, values);
@@ -149,6 +152,40 @@ export class Packer {
 
         if (process) {
             result = process(result);
+        }
+
+        return result;
+    }
+
+    public unpack_ndarray(x: NdArray) {
+        if (x.shape[0] !== this.len) {
+            throw Error(`Incorrect length input; expected ${this.len} but given ${x.shape[0]}.`);
+        }
+
+        const residualNullDimensions = new Array(x.shape.length -1).fill(null);
+        const residualZeroDimensions = new Array(x.shape.length-1).fill(0);
+        const residualDimensions = x.shape.slice(1); // all dimensions except the first one
+
+        // Return a map of names to values in the format described by shape
+        let result = new Map<string, any>();
+        for (let name in this.shape) {
+            const currentShape = this.shape[name];
+            if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
+                // scalar
+                const i = this.idx[name] as number;
+                result.set(name, x.pick(i, ...residualNullDimensions));
+            } else {
+                // array
+                const startIdx = this.idx[name][0];
+                const length = this.idx[name].length;
+                const values = x.lo(startIdx, ...residualZeroDimensions).hi(this.len - startIdx - length, ...residualDimensions);
+                //if (this.shape[name].length == 1) {
+                    // one-dimensional array
+                //    result.set(name, values.data);
+                //} else {
+                    result.set(name, ndarray(values.data, [...this.shape[name], ...residualDimensions]));
+                //}
+            }
         }
 
         return result;
