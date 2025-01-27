@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
-import ndarray, {NdArray} from "ndarray";
-import ndarray_unpack from "ndarray-unpack";
+import array from "@stdlib/ndarray/array";
+import ndarray2array from "@stdlib/ndarray/to-array";
 import {Packer} from "../src/packer.ts";
 
 describe("Packer class", () => {
-    const scalar = new Set<string>(["b", "c", "a"])
+    const testScalar = new Set<string>(["b", "c", "a"])
 
-    const array = new Map([
+    const testArray = new Map([
         [ "X", 3 ],
         [ "Y", [ 2, 4 ] ]
     ]);
@@ -14,7 +14,7 @@ describe("Packer class", () => {
     describe("constructor", () => {
 
         test("builds expected fields for scalar-only packer", () => {
-            const sut = new Packer({ scalar });
+            const sut = new Packer({ scalar: testScalar });
             expect(sut["len"]).toBe(3);
             expect(sut["nms"]).toStrictEqual(["b", "c", "a"]);
             expect(sut["idx"]).toStrictEqual({ b: 0, c: 1, a: 2});
@@ -23,7 +23,7 @@ describe("Packer class", () => {
 
         test("builds expected properties for array-only packer", () => {
             // Param A is 1D array of length 3, param B is 2D array of size 2x4
-            const sut = new Packer({ array });
+            const sut = new Packer({ array: testArray });
             expect(sut["len"]).toBe(11);
             expect(sut["nms"]).toStrictEqual([
                 "X[1]", "X[2]", "X[3]",
@@ -41,7 +41,7 @@ describe("Packer class", () => {
         });
 
         test("builds expected properties for packer with both scalar and array", () => {
-            const sut = new Packer({ scalar, array });
+            const sut = new Packer({ scalar: testScalar, array: testArray });
             expect(sut["len"]).toBe(14);
             expect(sut["nms"]).toStrictEqual([
                 "b", "c", "a",
@@ -112,7 +112,7 @@ describe("Packer class", () => {
 
     describe("unpacks one-dimensional array", () => {
         test("as expected for scalar only values", () => {
-            const sut = new Packer({ scalar });
+            const sut = new Packer({ scalar: testScalar });
             const result = sut.unpack_array([100, 200, 300]);
             expect(result).toStrictEqual(new Map([
                 ["b", 100],
@@ -138,14 +138,14 @@ describe("Packer class", () => {
         test("as expected for array only values", () => {
             // We expect unpacked 1D arrays to be unpacked as plain Arrays,
             // and higher dimensions to be unpacked as ndarrays
-            const sut = new Packer({ array });
+            const sut = new Packer({ array: testArray });
             const result = sut.unpack_array([10, 20, 30, 100, 200, 300, 400, 500, 600, 700, 800]);
             expect(result.size).toBe(2);
             expectArrayValuesInUnpackResult(result);
         });
 
         test("as expected for both array and scalar values", () => {
-            const sut = new Packer({ array, scalar });
+            const sut = new Packer({ array: testArray, scalar: testScalar });
             const result = sut.unpack_array([1, 2, 3, 10, 20, 30, 100, 200, 300, 400, 500, 600, 700, 800]);
             expect(Array.from(result.keys())).toStrictEqual(["b", "c", "a", "X", "Y"]);
             expect(result.get("b")).toBe(1);
@@ -210,7 +210,7 @@ describe("Packer class", () => {
     });
 
     describe("unpacks multi-dimensional array", () => {
-        test("as expected for both array and scalar values", () => {
+        test("as expected for 2D array, for both array and scalar values", () => {
             const sut = new Packer({
                 scalar: new Set<string>(["a", "b"]),
                 array: new Map([
@@ -218,59 +218,77 @@ describe("Packer class", () => {
                 ])
             });
 
-
-            /*const x = ndarray_pack([
-                [1, 2], // a
-                [30, 40], // b
-                [500, 600], // c11
-                [700, 800], // c12
-                [900, 1000], // c21
-                [1100, 1200] // c22
-            ]);*/
-
-            const x = ndarray(new Int32Array(12), [6, 2]);
-            // a
-            x.set(0, 0, 1);
-            x.set(0, 1, 2);
-
-            // b
-            x.set(1, 0, 30);
-            x.set(1, 1, 40);
-
-            // Y11
-            x.set(2, 0, 500);
-            x.set(2, 1, 600);
-
-            // Y12
-            x.set(3, 0, 700);
-            x.set(3, 1, 800);
-
-            // Y21
-            x.set(4, 0, 900);
-            x.set(4, 1, 1000);
-
-            // Y22
-            x.set(5, 0, 1100);
-            x.set(5, 1, 1200);
+            const x = array(new Int32Array([
+                1, 2,  // a
+                30, 40, // b
+                500, 600, // Y11
+                700, 800, // Y12
+                900, 1000, // Y21
+                1100, 1200 // Y22
+            ]), { shape: [6, 2] });
 
             const result = sut.unpack_ndarray(x);
 
             // Expect all results from unpack_ndarray to be ndarrays
             const a = result.get("a");
-            expect(a.shape).toStrictEqual([2]);
-            expect(a.get(0)).toBe(1);
-            expect(a.get(1)).toBe(2);
+            expect(ndarray2array(a)).toStrictEqual([1, 2]);
 
             const b = result.get("b");
             expect(b.shape).toStrictEqual([2]);
             expect(b.get(0)).toBe(30);
             expect(b.get(1)).toBe(40);
+            expect(ndarray2array(b)).toStrictEqual([30, 40]);
 
             const y = result.get("Y");
             expect(y.shape).toStrictEqual([2, 2, 2]);
-            // Y11
-            expect(y.get(0, 0, 0)).toBe(500);
-            expect(y.get(0, 0, 1)).toBe(600);
+            expect(ndarray2array(y)).toStrictEqual([
+                [[500, 600], [700, 800]],
+                [[900, 1000], [1100, 1200]]
+            ]);
+        });
+
+        test("as expected for 3D array, for both array and scalar values", () => {
+            const sut = new Packer({
+                scalar: new Set<string>(["a"]),
+                array: new Map([
+                    [ "Y", [ 2, 2 ] ]
+                ])
+            });
+
+            const x = array(new Int32Array([
+                // a
+                1, 2,
+                3, 4,
+                5, 6,
+
+                500, 600, // Y11
+                501, 601,
+                502, 602,
+
+                700, 800, // Y12
+                701, 801,
+                702, 802,
+
+                900, 1000, // Y21
+                901, 1001,
+                902, 1002,
+
+                1100, 1200, // Y22
+                1101, 1201,
+                1102, 1202
+            ]), { shape: [5, 3, 2] });
+
+            const result = sut.unpack_ndarray(x);
+
+            const a = result.get("a");
+            expect(ndarray2array(a)).toStrictEqual([[1, 2], [3, 4], [5, 6]]);
+
+            const y = result.get("Y");
+            expect(y.shape).toStrictEqual([2, 2, 3, 2]);
+            expect(ndarray2array(y)).toStrictEqual([
+                [[[500, 600], [501, 601], [502, 602]], [[700, 800], [701, 801], [702, 802]]],
+                [[[900, 1000], [901, 1001], [902, 1002]], [[1100, 1200], [1101, 1201], [1102, 1202]]]
+            ]);
         });
     });
 });

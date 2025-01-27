@@ -1,5 +1,11 @@
-import ndarray, {NdArray} from "ndarray";
-import ndarray_unpack from "ndarray-unpack";
+import array from "@stdlib/ndarray/array";
+import ndarray2array from "@stdlib/ndarray/to-array";
+import MultiSlice from "@stdlib/slice/multi";
+import Slice from "@stdlib/slice/ctor";
+import slice from "@stdlib/ndarray/slice"; // TODO: tidy these imports up!
+
+// TODO: comment on types - could be more friendly with this
+// TODO: tidy up implementation
 
 // For a given shape and base name, return packed names, shape and n (number of values after expansion
 const preparePackArrayForShape = (name: string, shape: number | number[] | null) => {
@@ -137,7 +143,7 @@ export class Packer {
                     result.set(name, values);
                 } else {
                     // multi-dimensional array
-                    result.set(name, ndarray(values, this.shape[name]))
+                    result.set(name, array(values, { shape: this.shape[name] }))
                 }
             }
         }
@@ -173,18 +179,30 @@ export class Packer {
             if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
                 // scalar
                 const i = this.idx[name] as number;
-                result.set(name, x.pick(i, ...residualNullDimensions));
+                const multiSlice = new MultiSlice(new Slice(i, i+1), ...residualNullDimensions);
+                // TODO combine this with the other conditional arm
+                const values = slice(x, multiSlice);
+                //result.set(name, x.pick(i, ...residualNullDimensions));
+                const flatVals = ndarray2array(values);
+                console.log(`SETTING SCALAR "${name}" to ${JSON.stringify(flatVals)} for shape ${JSON.stringify(residualDimensions)}`)
+                result.set(name, array(flatVals, {shape: residualDimensions}))
             } else {
                 // array
                 const startIdx = this.idx[name][0];
                 const length = this.idx[name].length;
-                const values = x.lo(startIdx, ...residualZeroDimensions).hi(this.len - startIdx - length, ...residualDimensions);
+
+                // TODO: could just provide a single slice?
+                const multiSlice = new MultiSlice(new Slice(startIdx, startIdx + length), ...residualNullDimensions);
+                //const values = x.lo(startIdx, ...residualZeroDimensions).hi(this.len - startIdx - length, ...residualDimensions);
+                const values =slice(x, multiSlice);
                 //if (this.shape[name].length == 1) {
                     // one-dimensional array
                 //    result.set(name, values.data);
                 //} else {
-                    result.set(name, ndarray(values.data, [...this.shape[name], ...residualDimensions]));
+                    //result.set(name, ndarray(values.data, [...this.shape[name], ...residualDimensions]));
                 //}
+                // TODO: might not need to do ndarray2array ..?
+                result.set(name, array(ndarray2array(values), {shape: [...this.shape[name], ...residualDimensions]}))
             }
         }
 
