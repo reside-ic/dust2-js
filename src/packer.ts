@@ -15,13 +15,17 @@ export interface PackerOptions {
     array: Map<string, number | number[] | null>,
 
     // mapping of fixed data names to values
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fixed: Map<string, any>,
 
     // custom function to do additional unpacking logic on the unpacked map
+    // TODO: sort out types..
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     process: (unpacked: Map<string, any>) => Map<string, any>
 }
 
-// For a given shape and base name, return packed shape and n (number of values after expansion
+// For a given name and associated shape, do some validation, make shape type consistent and return number of values
+// after expansion
 const preparePackArrayForShape = (name: string, shape: number | Int32Array| null) => {
     // Scalars can be defined within the array option, if that allows user's preferred ordering
     const scalar = shape === null || (Array.isArray(shape) && shape.length === 0);
@@ -31,13 +35,13 @@ const preparePackArrayForShape = (name: string, shape: number | Int32Array| null
     const arrayShape: Array<number> = typeof shape === "number" ? [shape] : shape;
     const nonInteger = arrayShape.find((v) => !Number.isInteger(v))
     if (nonInteger) {
-        throw Error(`All dimension values in 'array' values must be integers, but this is not the case for ${name}, whose` +
-            ` value is ${JSON.stringify(shape)}`);
+        throw Error("All dimension values in 'array' values must be integers, but this is not the case for " +
+                    `${name}, whose value is ${JSON.stringify(shape)}`);
     }
     const lessThanZero = arrayShape.find((v) => v <= 0);
     if (lessThanZero) {
-        throw Error(`All dimension values in 'array' values must be at least 1, but this is not the case for ${name}, whose ` +
-            ` value is ${JSON.stringify(shape)}`);
+        throw Error("All dimension values in 'array' values must be at least 1, but this is not the case for " +
+                    `${name}, whose value is ${JSON.stringify(shape)}`);
     }
 
     // total number of values in shape
@@ -67,14 +71,16 @@ export class Packer {
         this.idx = {};
         this.shape = {};
 
-        const { scalar, array, fixed } = options;
+        const { scalar, fixed } = options;
+        const arrayOptions = options.array;
 
-        const allNames = [...(scalar || []), ...(array?.keys() || []), ...(fixed?.keys() || [])];
+        const allNames = [...(scalar || []), ...(arrayOptions?.keys() || []), ...(fixed?.keys() || [])];
         // Check for duplicate names
         const dup = allNames.find((name, i) => allNames.lastIndexOf(name) !== i)
         if (dup) {
             // TODO: make a throw error util
-            throw Error(`Names must be distinct between 'scalar', 'array' and 'fixed'. ${dup} appears in more than one place.`);
+            throw Error(`Names must be distinct between 'scalar', 'array' and 'fixed'. ${dup} appears in more ` +
+                        "than one place.");
         }
 
         if (scalar) {
@@ -87,8 +93,8 @@ export class Packer {
         }
 
         this.len = scalar?.size || 0;
-        if (array) {
-            for (let [name, value] of array) {
+        if (arrayOptions) {
+            for (const [name, value] of arrayOptions) {
                 const tmp = preparePackArrayForShape(name, value);
                 this.shape[name] = tmp.shape;
                 // array of 0-based indexes where each of the named values can be found
@@ -98,8 +104,8 @@ export class Packer {
         }
 
         if (!this.len) {
-            throw Error("Trying to generate an empty packet. You have not provided any entries in 'scalar' or 'array', " +
-                        "which implies generating from a zero-length parameter vector.");
+            throw Error("Trying to generate an empty packet. You have not provided any entries in 'scalar' or" +
+                        " 'array', which implies generating from a zero-length parameter vector.");
         }
     }
 
@@ -116,8 +122,8 @@ export class Packer {
         }
 
         // Return a map of names to values in the format described by shape
-        let result = new Map<string, any>();
-        for (let name in this.shape) {
+        let result = new Map<string, number | number[] | ndarray>();
+        for (const name in this.shape) {
             const currentShape = this.shape[name];
             if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
                 // scalar
@@ -162,8 +168,8 @@ export class Packer {
         const residualDimensions = x.shape.slice(1); // all dimensions except the first one
 
         // Return a map of names to values in the format described by shape
-        let result = new Map<string, any>();
-        for (let name in this.shape) {
+        const result = new Map<string, ndarray>();
+        for (const name in this.shape) {
             const currentShape = this.shape[name];
             const { start, length } = this.idx[name];
             if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {

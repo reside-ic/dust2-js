@@ -15,7 +15,7 @@ export default [
     {
         rules: {
             quotes: ["error", "double", { avoidEscape: true }],
-            "max-len": [2, 80, 4],
+            "max-len": [2, 120, 4],
             "arrow-body-style": "off",
             "import/prefer-default-export": "off",
             "@typescript-eslint/no-non-null-assertion": "off",

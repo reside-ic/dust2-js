@@ -12,7 +12,7 @@ describe("Packer class", () => {
     ]);
 
     describe("constructor", () => {
-
+        // TODO: these tests of private members being constructed correctly may be removed later.
         test("builds expected fields for scalar-only packer", () => {
             const sut = new Packer({ scalar: testScalar });
             expect(sut["len"]).toBe(3);
@@ -25,7 +25,6 @@ describe("Packer class", () => {
         });
 
         test("builds expected properties for array-only packer", () => {
-            // Param A is 1D array of length 3, param B is 2D array of size 2x4
             const sut = new Packer({ array: testArray });
             expect(sut["len"]).toBe(11);
             expect(sut["idx"]).toStrictEqual({
@@ -135,7 +134,6 @@ describe("Packer class", () => {
             expect(result.get("b")).toBe(1);
             expect(result.get("c")).toBe(2);
             expect(result.get("a")).toBe(3);expect(result.get("X")).toStrictEqual([10, 20, 30]);
-            const y = result.get("Y");
             expectArrayValuesInUnpackResult(result);
 
         });
