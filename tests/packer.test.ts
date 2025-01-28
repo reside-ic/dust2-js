@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import array from "@stdlib/ndarray/array";
 import ndarray2array from "@stdlib/ndarray/to-array";
 import {ndarray} from "@stdlib/types/ndarray";
-import {Packer} from "../src/packer.ts";
+import {Packer, UnpackResult} from "../src/packer.ts";
 
 describe("Packer class", () => {
     const scalarShape = new Map([
@@ -69,7 +69,7 @@ describe("Packer class", () => {
     describe("unpacks one-dimensional array", () => {
         test("as expected for scalar only values", () => {
             const sut = new Packer({ shape: scalarShape });
-            const result = sut.unpack_array([100, 200, 300]);
+            const result = sut.unpackArray([100, 200, 300]);
             expect(result).toStrictEqual(new Map([
                 ["b", 100],
                 ["c", 200],
@@ -77,13 +77,12 @@ describe("Packer class", () => {
             ]));
         });
 
-        test("as expected for array only values", () => {
-            const sut = new Packer({ shape: arrayShape });
-            const result = sut.unpack_array([10, 20, 30, 100, 200, 300, 400, 500, 600, 700, 800]);
-            expect(result.size).toBe(2);
-            // We expect unpacked 1D arrays to be unpacked as plain Arrays,
-            // and higher dimensions to be unpacked as ndarrays
-            expect(result.get("X")).toStrictEqual([10, 20, 30]);
+        const expectUnpackedArrayValues = (result: UnpackResult) => {
+            const x = result.get("X") as ndarray;
+            expect(x.shape).toStrictEqual([3]);
+            expect(x.get(0)).toBe(10);
+            expect(x.get(1)).toBe(20);
+            expect(x.get(2)).toBe(30);
             const y = result.get("Y") as ndarray;
             expect(y.shape).toStrictEqual([2, 4]);
             expect(y.get(0, 0)).toBe(100)
@@ -94,12 +93,19 @@ describe("Packer class", () => {
             expect(y.get(1, 1)).toBe(600);
             expect(y.get(1, 2)).toBe(700)
             expect(y.get(1, 3)).toBe(800);
+        };
+
+        test("as expected for array only values", () => {
+            const sut = new Packer({ shape: arrayShape });
+            const result = sut.unpackArray([10, 20, 30, 100, 200, 300, 400, 500, 600, 700, 800]);
+            expect(result.size).toBe(2);
+            expectUnpackedArrayValues(result);
         });
 
         test("as expected with both scalar and array values", () => {
             const sut = new Packer({ shape: mixedShape });
 
-            const result = sut.unpack_array([
+            const result = sut.unpackArray([
                 1, //a
                 10, 20, 30, // X
                 2, // b
@@ -107,19 +113,7 @@ describe("Packer class", () => {
                 3, // c
             ]);
             expect(Array.from(result.keys())).toStrictEqual(["a", "X", "b", "Y", "c"]);
-            expect(result.get("a")).toBe(1);
-            expect(result.get("X")).toStrictEqual([10, 20, 30]);
-            expect(result.get("b")).toBe(2);
-            const y = result.get("Y") as ndarray;
-            expect(y.shape).toStrictEqual([2, 4]);
-            expect(y.get(0, 0)).toBe(100);
-            expect(y.get(0, 1)).toBe(200);
-            expect(y.get(0, 2)).toBe(300);
-            expect(y.get(0, 3)).toBe(400);
-            expect(y.get(1, 0)).toBe(500);
-            expect(y.get(1, 1)).toBe(600);
-            expect(y.get(1, 2)).toBe(700);
-            expect(y.get(1, 3)).toBe(800);
+            expectUnpackedArrayValues(result);
         });
 
         // TODO !
@@ -146,7 +140,7 @@ describe("Packer class", () => {
                 1100, 1200 // Y22
             ]), { shape: [6, 2] });
 
-            const result = sut.unpack_ndarray(x);
+            const result = sut.unpackNdarray(x);
 
             // Expect all results from unpack_ndarray to be ndarrays
             const a = result.get("a") as ndarray;
@@ -197,7 +191,7 @@ describe("Packer class", () => {
                 1102, 1202
             ]), { shape: [5, 3, 2] });
 
-            const result = sut.unpack_ndarray(x);
+            const result = sut.unpackNdarray(x);
 
             const a = result.get("a") as ndarray;
             expect(ndarray2array(a)).toStrictEqual([[1, 2], [3, 4], [5, 6]]);
@@ -209,5 +203,10 @@ describe("Packer class", () => {
                 [[[900, 1000], [901, 1001], [902, 1002]], [[1100, 1200], [1101, 1201], [1102, 1202]]]
             ]);
         });
+
+        // TODO: Test unpack 1D ndarray - should get numbers for scalars
+        // TODO !
+        /*test("throws error if input has wrong length");
+        */
     });
 });

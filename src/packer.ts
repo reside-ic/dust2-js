@@ -8,6 +8,9 @@ import { prod } from "./utils";
 
 type PackerShape = Map<string, number[]>;
 
+// Unpack results return numbers for scalar values and ndarray for everything else, including 1D arrays
+export type UnpackResult = Map<string, number | ndarray>;
+
 // This option type currently only defines the shapes of the unpacked values, but we expect to add other options later
 export interface PackerOptions {
     // Mapping of packed value names to their unpacked shape. Scalars are represented by empty array.
@@ -66,20 +69,13 @@ export class Packer {
         return this.shape.get(name)?.length === 0;
     }
 
-    // TODO: unpack_array and unpack_ndarray are currently separate methods, but could be combined as in the R
-    // implementation.
-    // TODO: The return types for these methods are a bit of a mess - handing back a combination of scalars, ordinary
-    // array and ndarrays for the unpack_array method, ndarrays only for unpack_ndarray. We should probably EITHER
-    // only return ndarrays for any array results OR always return oridinary arrays for 1D results.
-
-    // Unpack a one-dimensional array
-    public unpack_array(x: Array<number>) {
+    public unpackArray(x: Array<number>): UnpackResult {
         if (x.length !== this.len) {
             throw Error(`Incorrect length input; expected ${this.len} but given ${x.length}.`);
         }
 
         // Return a map of names to values in the format described by shape
-        const result = new Map<string, number | number[] | ndarray>();
+        const result = new Map<string, number | ndarray>();
         for (const [name, currentShape] of this.shape) {
             if (this.isScalar(name)) {
                 const i = this.idx[name].start;
@@ -87,23 +83,21 @@ export class Packer {
             } else {
                 const {start, length} = this.idx[name];
                 const values = x.slice(start, start + length);
-                if (currentShape.length == 1) {
-                    // one-dimensional array
-                    result.set(name, values);
-                } else {
-                    // multi-dimensional array
-                    result.set(name, array(values, { shape: currentShape }))
-                }
+                result.set(name, array(values, { shape: currentShape }))
             }
         }
-
         return result;
     }
 
-    public unpack_ndarray(x: ndarray) {
+    public unpackNdarray(x: ndarray): UnpackResult {
         const xShape = x.shape as number[];
         if (xShape[0] !== this.len) {
             throw Error(`Incorrect length input; expected ${this.len} but given ${xShape[0]}.`);
+        }
+
+        // If this ndarray is one dimensional, call unpackArray, so we return numbers for the scalar values
+        if (x.shape.length === 1) {
+            return this.unpackArray(ndarray2array(x));
         }
 
         // all dimensions except the first one as nulls - get all value for those dims
