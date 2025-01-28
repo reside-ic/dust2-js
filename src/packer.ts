@@ -4,6 +4,7 @@ import MultiSlice from "@stdlib/slice/multi";
 import Slice from "@stdlib/slice/ctor";
 import slice from "@stdlib/ndarray/slice";
 import {ndarray} from "@stdlib/types/ndarray";
+import { prod } from "./utils";
 
 type PackerShape = Map<string, number[]>;
 
@@ -50,7 +51,7 @@ export class Packer {
         this.len = 0;
         for (const [name, value] of this.shape) {
             validateShape(name, value);
-            const n = value.reduce((prev, current) => prev * current, 1); // total number of values in this shape
+            const n = prod(value); // total number of values in this shape
             this.idx[name] = { start: this.len, length: n }
             this.len = this.len + n;
         }
