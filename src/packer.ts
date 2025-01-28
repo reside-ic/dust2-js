@@ -108,20 +108,14 @@ export class Packer {
         const result = new Map<string, ndarray>();
         for (const [name, currentShape] of this.shape) {
             const { start, length } = this.idx[name];
-            if (this.isScalar(name)) {
-                // scalar
-                const multiSlice = new MultiSlice(new Slice(start, start+1), ...residualNullDimensions);
-                const values = slice(x, multiSlice);
-                const flatVals = ndarray2array(values);
-                result.set(name, array(flatVals, {shape: residualDimensions}))
-            } else {
-                // array
-                // Take the correct slice of the input ndarray, and reshape
-                const multiSlice = new MultiSlice(new Slice(start, start + length), ...residualNullDimensions);
-                // TODO: sort out types
-                const values = slice(x, multiSlice) as unknown as ArrayLike<number>;
-                result.set(name, array(values, {shape: [...currentShape, ...residualDimensions]}))
-            }
+
+            // Take the correct slice of the input ndarray, and reshape
+            const scalar = this.isScalar(name);
+            const inputSlice = scalar ? new Slice(start, start + 1) : new Slice(start, start + length);
+            const resultShape = scalar ? residualDimensions : [...currentShape, ...residualDimensions];
+            const values = slice(x, new MultiSlice(inputSlice, ...residualNullDimensions));
+            const flatVals = ndarray2array(values);
+            result.set(name, array(flatVals, {shape: resultShape}))
         }
 
         return result;
