@@ -13,15 +13,6 @@ export interface PackerOptions {
     // array containing lengths of each dimension. 0 or null values are counted as scalars, which allows you to put
     // scalars at positions other than the front of the packing vector.
     array: Map<string, number | number[] | null>,
-
-    // mapping of fixed data names to values
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fixed: Map<string, any>,
-
-    // custom function to do additional unpacking logic on the unpacked map
-    // TODO: sort out types..
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    process: (unpacked: Map<string, any>) => Map<string, any>
 }
 
 // For a given name and associated shape, do some validation, make shape type consistent and return number of values
@@ -60,26 +51,23 @@ interface IndexValues {
 }
 
 export class Packer {
-    private options: Partial<PackerOptions>;
     private len: number; // Total number of values
     private idx: Record<string, IndexValues>;
     private shape: Record<string, number[]>; // shape of each named value group i.e. size of each dimension
 
     constructor(options: Partial<PackerOptions>) {
-        this.options = options;
-
         this.idx = {};
         this.shape = {};
 
-        const { scalar, fixed } = options;
+        const { scalar } = options;
         const arrayOptions = options.array;
 
-        const allNames = [...(scalar || []), ...(arrayOptions?.keys() || []), ...(fixed?.keys() || [])];
+        const allNames = [...(scalar || []), ...(arrayOptions?.keys() || []) ];
         // Check for duplicate names
         const dup = allNames.find((name, i) => allNames.lastIndexOf(name) !== i)
         if (dup) {
             // TODO: make a throw error util
-            throw Error(`Names must be distinct between 'scalar', 'array' and 'fixed'. ${dup} appears in more ` +
+            throw Error(`Names must be distinct between 'scalar' and 'array'. ${dup} appears in more ` +
                         "than one place.");
         }
 
@@ -123,7 +111,7 @@ export class Packer {
 
         // Return a map of names to values in the format described by shape
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let result = new Map<string, any>();
+        const result = new Map<string, any>();
         for (const name in this.shape) {
             const currentShape = this.shape[name];
             if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
@@ -142,18 +130,6 @@ export class Packer {
                     result.set(name, array(values, { shape: this.shape[name] }))
                 }
             }
-        }
-
-        const { fixed, process } = this.options;
-
-        if (fixed) {
-            fixed.forEach((value, key) => {
-                result.set(key, value);
-            });
-        }
-
-        if (process) {
-            result = process(result);
         }
 
         return result;

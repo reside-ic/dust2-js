@@ -171,9 +171,7 @@ describe("Packer class", () => {
         });
 
         // TODO !
-        /*test("as expected with fixed data");
-        test("as expected with process option");
-        test("throws error if input has wrong length");
+        /*test("throws error if input has wrong length");
         */
     });
 
