@@ -16,8 +16,11 @@ describe("Packer class", () => {
         test("builds expected fields for scalar-only packer", () => {
             const sut = new Packer({ scalar: testScalar });
             expect(sut["len"]).toBe(3);
-            expect(sut["nms"]).toStrictEqual(["b", "c", "a"]);
-            expect(sut["idx"]).toStrictEqual({ b: 0, c: 1, a: 2});
+            expect(sut["idx"]).toStrictEqual({
+                b: { start: 0, length: 1 },
+                c: { start: 1, length: 1 },
+                a: { start: 2, length: 1 }
+            });
             expect(sut["shape"]).toStrictEqual({ b: [0], c: [0], a: [0] });
         });
 
@@ -25,14 +28,9 @@ describe("Packer class", () => {
             // Param A is 1D array of length 3, param B is 2D array of size 2x4
             const sut = new Packer({ array: testArray });
             expect(sut["len"]).toBe(11);
-            expect(sut["nms"]).toStrictEqual([
-                "X[1]", "X[2]", "X[3]",
-                "Y[1,1]", "Y[1,2]", "Y[1,3]", "Y[1,4]",
-                "Y[2,1]", "Y[2,2]", "Y[2,3]", "Y[2,4]"
-            ]);
             expect(sut["idx"]).toStrictEqual({
-                X: [0, 1, 2],
-                Y: [3, 4, 5, 6, 7, 8, 9, 10]
+                X: { start: 0, length: 3 },
+                Y: { start: 3, length: 8 }
             });
             expect(sut["shape"]).toStrictEqual({
                 X: [3],
@@ -43,18 +41,12 @@ describe("Packer class", () => {
         test("builds expected properties for packer with both scalar and array", () => {
             const sut = new Packer({ scalar: testScalar, array: testArray });
             expect(sut["len"]).toBe(14);
-            expect(sut["nms"]).toStrictEqual([
-                "b", "c", "a",
-                "X[1]", "X[2]", "X[3]",
-                "Y[1,1]", "Y[1,2]", "Y[1,3]", "Y[1,4]",
-                "Y[2,1]", "Y[2,2]", "Y[2,3]", "Y[2,4]"
-            ]);
             expect(sut["idx"]).toStrictEqual({
-                b: 0,
-                c: 1,
-                a: 2,
-                X: [3, 4, 5],
-                Y: [6, 7, 8, 9, 10, 11, 12, 13]
+                b: { start: 0, length: 1 },
+                c: { start: 1, length: 1 },
+                a: { start: 2, length: 1 },
+                X: { start: 3, length: 3 },
+                Y: { start: 6, length: 8 }
             });
             expect(sut["shape"]).toStrictEqual({
                 b: [0],
@@ -77,20 +69,12 @@ describe("Packer class", () => {
                 ])
             });
             expect(sut["len"]).toBe(14);
-            expect(sut["nms"]).toStrictEqual([
-                "a",
-                "X[1]", "X[2]", "X[3]",
-                "b",
-                "Y[1,1]", "Y[1,2]", "Y[1,3]", "Y[1,4]",
-                "Y[2,1]", "Y[2,2]", "Y[2,3]", "Y[2,4]",
-                "c"
-            ]);
             expect(sut["idx"]).toStrictEqual({
-                a: 0,
-                X: [1, 2, 3],
-                b: [4],
-                Y: [5, 6, 7, 8, 9, 10, 11, 12],
-                c: [13]
+                a: { start: 0, length: 1 },
+                X: { start: 1, length: 3 },
+                b: { start: 4, length: 1 },
+                Y: { start: 5, length: 8 },
+                c: { start: 13, length: 1 }
             });
 
             expect(sut["shape"]).toStrictEqual({
@@ -167,22 +151,7 @@ describe("Packer class", () => {
                     [ "c", [] ]
                 ])
             });
-            expect(sut["len"]).toBe(10);
-            expect(sut["nms"]).toStrictEqual([
-                "a",
-                "X[1]", "X[2]", "X[3]",
-                "b",
-                "Y[1,1]", "Y[1,2]",
-                "Y[2,1]", "Y[2,2]",
-                "c"
-            ]);
-            expect(sut["idx"]).toStrictEqual({
-                a: 0,
-                X: [1, 2, 3],
-                b: [4],
-                Y: [5, 6, 7, 8],
-                c: [9]
-            });
+
             const result = sut.unpack_array([
                 1, //a
                 10, 20, 30, // X

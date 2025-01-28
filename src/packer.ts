@@ -2,54 +2,8 @@ import array from "@stdlib/ndarray/array";
 import ndarray2array from "@stdlib/ndarray/to-array";
 import MultiSlice from "@stdlib/slice/multi";
 import Slice from "@stdlib/slice/ctor";
-import slice from "@stdlib/ndarray/slice"; // TODO: tidy these imports up!
-
-// TODO: comment on types - could be more friendly with this
-// TODO: tidy up implementation
-
-// For a given shape and base name, return packed names, shape and n (number of values after expansion
-const preparePackArrayForShape = (name: string, shape: number | number[] | null) => {
-    // Scalars can be defined within the array option, if that allows user's preferred ordering
-    const scalar = shape === null || (Array.isArray(shape) && shape.length === 0);
-    if (scalar) {
-        return { names: [name], shape: [0], n: 1 };
-    }
-    const arrayShape: Array<number> = typeof shape === "number" ? [shape] : shape;
-    const nonInteger = arrayShape.find((v) => !Number.isInteger(v))
-    if (nonInteger) {
-        throw Error(`All dimension values in 'array' values must be integers, but this is not the case for ${name}, whose` +
-            ` value is ${JSON.stringify(shape)}`);
-    }
-    const lessThanZero = arrayShape.find((v) => v <= 0);
-    if (lessThanZero) {
-        throw Error(`All dimension values in 'array' values must be at least 1, but this is not the case for ${name}, whose ` +
-            ` value is ${JSON.stringify(shape)}`);
-    }
-
-    // names contains string representing R-style index accessors for all values in an array described by shape
-    //- calculate these recursively
-    const getIndexStrings = (prevDimIndexString: string, dimension: number) => {
-        const result = [];
-        const isLastDim = dimension == arrayShape.length - 1;
-        for (let i = 1; i <= arrayShape[dimension]; i++) {
-            const sep = prevDimIndexString.length ? "," : "";
-            const thisDimPart = `${prevDimIndexString}${sep}${i}`;
-            if (isLastDim) {
-                result.push(thisDimPart);
-            } else {
-                result.push(...getIndexStrings(thisDimPart, dimension + 1));
-            }
-        }
-        return result;
-    };
-    const indexStrings = getIndexStrings("", 0);
-
-    return {
-        names: indexStrings.map(s =>  `${name}[${s}]`),
-        shape: arrayShape,
-        n: indexStrings.length
-    }
-}
+import slice from "@stdlib/ndarray/slice";
+import {ndarray} from "@stdlib/types/ndarray";
 
 export interface PackerOptions {
     // names of scalar values
@@ -67,19 +21,51 @@ export interface PackerOptions {
     process: (unpacked: Map<string, any>) => Map<string, any>
 }
 
+// For a given shape and base name, return packed shape and n (number of values after expansion
+const preparePackArrayForShape = (name: string, shape: number | Int32Array| null) => {
+    // Scalars can be defined within the array option, if that allows user's preferred ordering
+    const scalar = shape === null || (Array.isArray(shape) && shape.length === 0);
+    if (scalar) {
+        return { names: [name], shape: [0], n: 1 };
+    }
+    const arrayShape: Array<number> = typeof shape === "number" ? [shape] : shape;
+    const nonInteger = arrayShape.find((v) => !Number.isInteger(v))
+    if (nonInteger) {
+        throw Error(`All dimension values in 'array' values must be integers, but this is not the case for ${name}, whose` +
+            ` value is ${JSON.stringify(shape)}`);
+    }
+    const lessThanZero = arrayShape.find((v) => v <= 0);
+    if (lessThanZero) {
+        throw Error(`All dimension values in 'array' values must be at least 1, but this is not the case for ${name}, whose ` +
+            ` value is ${JSON.stringify(shape)}`);
+    }
+
+    // total number of values in shape
+    const n = arrayShape.reduce((prev, current) => prev * current, 1);
+
+    return {
+        shape: arrayShape,
+        n
+    }
+}
+
+// interface describing the range of indexes for a named value group in the underlying array
+interface IndexValues {
+    start: number,
+    length: number
+}
+
 export class Packer {
     private options: Partial<PackerOptions>;
-    private len: number;
-    private nms: Array<string>;
-    private idx: object; // TODO: fix up type
-    private shape: object; // TODO: fix up type
+    private len: number; // Total number of values
+    private idx: Record<string, IndexValues>;
+    private shape: Record<string, Int32Array>; // shape of each named value group i.e. size of each dimension
 
     constructor(options: Partial<PackerOptions>) {
         this.options = options;
 
-        this.nms = [];
-        this.idx = {}; // For each value name, the index where their values are to be found in the packed array. 0 indexed!
-        this.shape = {}; // For each value name, their shape - size of each dimension
+        this.idx = {};
+        this.shape = {};
 
         const { scalar, array, fixed } = options;
 
@@ -96,19 +82,17 @@ export class Packer {
                 // for each scalar, shape gets an array with a single integer in it, set to 0 (indicating no dimensions)
                 this.shape[name] = [0];
                 // .. and index gets the index where they can be found
-                this.idx[name] = i;
+                this.idx[name] = { start: i, length: 1};
             });
-            this.nms.push(...scalar);
         }
 
         this.len = scalar?.size || 0;
         if (array) {
             for (let [name, value] of array) {
                 const tmp = preparePackArrayForShape(name, value);
-                this.nms.push(...tmp.names);
                 this.shape[name] = tmp.shape;
                 // array of 0-based indexes where each of the named values can be found
-                this.idx[name] = [...Array(tmp.n).keys()].map(i => this.len + i);
+                this.idx[name] = { start: this.len, length: tmp.n }
                 this.len = this.len + tmp.n;
             }
         }
@@ -118,6 +102,12 @@ export class Packer {
                         "which implies generating from a zero-length parameter vector.");
         }
     }
+
+    // TODO: unpack_array and unpack_ndarray are currently separate methods, but could be combined as in the R
+    // implementation.
+    // TODO: The return types for these methods are a bit of a mess - handing back a combination of scalars, ordinary
+    // array and ndarrays for the unpack_array method, ndarrays only for unpack_ndarray. We should probably EITHER
+    // only return ndarrays for any array results OR always return oridinary arrays for 1D results.
 
     // Unpack a one-dimensional array
     public unpack_array(x: Array<number>) {
@@ -131,13 +121,12 @@ export class Packer {
             const currentShape = this.shape[name];
             if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
                 // scalar
-                const i = this.idx[name] as number;
+                const i = this.idx[name].start;
                 result.set(name, x[i])
             } else {
                 // array
-                const startIdx = this.idx[name][0];
-                const length = this.idx[name].length;
-                const values = x.slice(startIdx, startIdx + length);
+                const {start, length} = this.idx[name];
+                const values = x.slice(start, start + length);
                 if (this.shape[name].length == 1) {
                     // one-dimensional array
                     result.set(name, values);
@@ -163,46 +152,32 @@ export class Packer {
         return result;
     }
 
-    public unpack_ndarray(x: NdArray) {
+    public unpack_ndarray(x: ndarray) {
         if (x.shape[0] !== this.len) {
             throw Error(`Incorrect length input; expected ${this.len} but given ${x.shape[0]}.`);
         }
 
+        // all dimensions except the first one as nulls - get all value for those dims
         const residualNullDimensions = new Array(x.shape.length -1).fill(null);
-        const residualZeroDimensions = new Array(x.shape.length-1).fill(0);
         const residualDimensions = x.shape.slice(1); // all dimensions except the first one
 
         // Return a map of names to values in the format described by shape
         let result = new Map<string, any>();
         for (let name in this.shape) {
             const currentShape = this.shape[name];
+            const { start, length } = this.idx[name];
             if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
                 // scalar
-                const i = this.idx[name] as number;
-                const multiSlice = new MultiSlice(new Slice(i, i+1), ...residualNullDimensions);
-                // TODO combine this with the other conditional arm
+                const multiSlice = new MultiSlice(new Slice(start, start+1), ...residualNullDimensions);
                 const values = slice(x, multiSlice);
-                //result.set(name, x.pick(i, ...residualNullDimensions));
                 const flatVals = ndarray2array(values);
-                console.log(`SETTING SCALAR "${name}" to ${JSON.stringify(flatVals)} for shape ${JSON.stringify(residualDimensions)}`)
                 result.set(name, array(flatVals, {shape: residualDimensions}))
             } else {
                 // array
-                const startIdx = this.idx[name][0];
-                const length = this.idx[name].length;
-
-                // TODO: could just provide a single slice?
-                const multiSlice = new MultiSlice(new Slice(startIdx, startIdx + length), ...residualNullDimensions);
-                //const values = x.lo(startIdx, ...residualZeroDimensions).hi(this.len - startIdx - length, ...residualDimensions);
-                const values =slice(x, multiSlice);
-                //if (this.shape[name].length == 1) {
-                    // one-dimensional array
-                //    result.set(name, values.data);
-                //} else {
-                    //result.set(name, ndarray(values.data, [...this.shape[name], ...residualDimensions]));
-                //}
-                // TODO: might not need to do ndarray2array ..?
-                result.set(name, array(ndarray2array(values), {shape: [...this.shape[name], ...residualDimensions]}))
+                // Take the correct slice of the input ndarray, and reshape
+                const multiSlice = new MultiSlice(new Slice(start, start + length), ...residualNullDimensions);
+                const values = slice(x, multiSlice);
+                result.set(name, array(values, {shape: [...this.shape[name], ...residualDimensions]}))
             }
         }
 
