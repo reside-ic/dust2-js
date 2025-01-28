@@ -5,23 +5,19 @@ import Slice from "@stdlib/slice/ctor";
 import slice from "@stdlib/ndarray/slice";
 import {ndarray} from "@stdlib/types/ndarray";
 
-export interface PackerOptions {
-    // names of scalar values
-    scalar: Set<string>,
+type PackerShape = Map<string, number[]>;
 
-    // mapping of array value names to their length. Arrays may be multi-dimensional so the value of the map may be an
-    // array containing lengths of each dimension. 0 or null values are counted as scalars, which allows you to put
-    // scalars at positions other than the front of the packing vector.
-    array: Map<string, number | number[] | null>,
+// This option type currently only defines the shapes of the unpacked values, but we expect to add other options later
+export interface PackerOptions {
+    // Mapping of packed value names to their unpacked shape. Scalars are represented by empty array.
+    shape: PackerShape
 }
 
-// For a given name and associated shape, do some validation, make shape type consistent and return number of values
-// after expansion
-const preparePackArrayForShape = (name: string, shape: number |  number[] | null) => {
+const validateShape = (name: string, shape: number |  number[] | null) => {
     // Scalars can be defined within the array option, if that allows user's preferred ordering
     const scalar = shape === null || (Array.isArray(shape) && shape.length === 0);
     if (scalar) {
-        return { names: [name], shape: [0], n: 1 };
+        return { shape: [0], n: 1 };
     }
     const arrayShape: Array<number> = typeof shape === "number" ? [shape] : shape;
     const nonInteger = arrayShape.find((v) => !Number.isInteger(v))
@@ -34,14 +30,6 @@ const preparePackArrayForShape = (name: string, shape: number |  number[] | null
         throw Error("All dimension values in 'array' values must be at least 1, but this is not the case for " +
                     `${name}, whose value is ${JSON.stringify(shape)}`);
     }
-
-    // total number of values in shape
-    const n = arrayShape.reduce((prev, current) => prev * current, 1);
-
-    return {
-        shape: arrayShape,
-        n
-    }
 }
 
 // interface describing the range of indexes for a named value group in the underlying array
@@ -52,49 +40,29 @@ interface IndexValues {
 
 export class Packer {
     private len: number; // Total number of values
-    private idx: Record<string, IndexValues>;
-    private shape: Record<string, number[]>; // shape of each named value group i.e. size of each dimension
+    private idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
+    private shape: PackerShape
 
-    constructor(options: Partial<PackerOptions>) {
+    constructor(options: PackerOptions) {
         this.idx = {};
-        this.shape = {};
+        this.shape = options.shape;
 
-        const { scalar } = options;
-        const arrayOptions = options.array;
-
-        const allNames = [...(scalar || []), ...(arrayOptions?.keys() || []) ];
-        // Check for duplicate names
-        const dup = allNames.find((name, i) => allNames.lastIndexOf(name) !== i)
-        if (dup) {
-            // TODO: make a throw error util
-            throw Error(`Names must be distinct between 'scalar' and 'array'. ${dup} appears in more ` +
-                        "than one place.");
-        }
-
-        if (scalar) {
-            Array.from(scalar).forEach((name, i) => {
-                // for each scalar, shape gets an array with a single integer in it, set to 0 (indicating no dimensions)
-                this.shape[name] = [0];
-                // .. and index gets the index where they can be found
-                this.idx[name] = { start: i, length: 1};
-            });
-        }
-
-        this.len = scalar?.size || 0;
-        if (arrayOptions) {
-            for (const [name, value] of arrayOptions) {
-                const tmp = preparePackArrayForShape(name, value);
-                this.shape[name] = tmp.shape;
-                // array of 0-based indexes where each of the named values can be found
-                this.idx[name] = { start: this.len, length: tmp.n }
-                this.len = this.len + tmp.n;
-            }
+        this.len = 0;
+        for (const [name, value] of this.shape) {
+            validateShape(name, value);
+            const n = value.reduce((prev, current) => prev * current, 1); // total number of values in this shape
+            this.idx[name] = { start: this.len, length: n }
+            this.len = this.len + n;
         }
 
         if (!this.len) {
-            throw Error("Trying to generate an empty packet. You have not provided any entries in 'scalar' or" +
-                        " 'array', which implies generating from a zero-length parameter vector.");
+            throw Error("Trying to generate an empty packer. You have not provided any entries in 'shape', " +
+                        "which implies generating from a zero-length parameter vector.");
         }
+    }
+
+    private isScalar(name: string) {
+        return this.shape.get(name)?.length === 0;
     }
 
     // TODO: unpack_array and unpack_ndarray are currently separate methods, but could be combined as in the R
@@ -110,24 +78,20 @@ export class Packer {
         }
 
         // Return a map of names to values in the format described by shape
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result = new Map<string, any>();
-        for (const name in this.shape) {
-            const currentShape = this.shape[name];
-            if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
-                // scalar
+        const result = new Map<string, number | number[] | ndarray>();
+        for (const [name, currentShape] of this.shape) {
+            if (this.isScalar(name)) {
                 const i = this.idx[name].start;
                 result.set(name, x[i])
             } else {
-                // array
                 const {start, length} = this.idx[name];
                 const values = x.slice(start, start + length);
-                if (this.shape[name].length == 1) {
+                if (currentShape.length == 1) {
                     // one-dimensional array
                     result.set(name, values);
                 } else {
                     // multi-dimensional array
-                    result.set(name, array(values, { shape: this.shape[name] }))
+                    result.set(name, array(values, { shape: currentShape }))
                 }
             }
         }
@@ -142,15 +106,14 @@ export class Packer {
         }
 
         // all dimensions except the first one as nulls - get all value for those dims
-        const residualNullDimensions = new Array(x.shape.length -1).fill(null);
+        const residualNullDimensions = new Array(xShape.length -1).fill(null);
         const residualDimensions = xShape.slice(1); // all dimensions except the first one
 
         // Return a map of names to values in the format described by shape
         const result = new Map<string, ndarray>();
-        for (const name in this.shape) {
-            const currentShape = this.shape[name];
+        for (const [name, currentShape] of this.shape) {
             const { start, length } = this.idx[name];
-            if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
+            if (this.isScalar(name)) {
                 // scalar
                 const multiSlice = new MultiSlice(new Slice(start, start+1), ...residualNullDimensions);
                 const values = slice(x, multiSlice);
@@ -162,7 +125,7 @@ export class Packer {
                 const multiSlice = new MultiSlice(new Slice(start, start + length), ...residualNullDimensions);
                 // TODO: sort out types
                 const values = slice(x, multiSlice) as unknown as ArrayLike<number>;
-                result.set(name, array(values, {shape: [...this.shape[name], ...residualDimensions]}))
+                result.set(name, array(values, {shape: [...currentShape, ...residualDimensions]}))
             }
         }
 
