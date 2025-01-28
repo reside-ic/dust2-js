@@ -17,19 +17,13 @@ export interface PackerOptions {
     shape: PackerShape
 }
 
-const validateShape = (name: string, shape: number |  number[] | null) => {
-    // Scalars can be defined within the array option, if that allows user's preferred ordering
-    const scalar = shape === null || (Array.isArray(shape) && shape.length === 0);
-    if (scalar) {
-        return { shape: [0], n: 1 };
-    }
-    const arrayShape: Array<number> = typeof shape === "number" ? [shape] : shape;
-    const nonInteger = arrayShape.find((v) => !Number.isInteger(v))
+const validateShape = (name: string, shape: number[]) => {
+    const nonInteger = shape.find((v) => !Number.isInteger(v))
     if (nonInteger) {
         throw Error("All dimension values in 'array' values must be integers, but this is not the case for " +
                     `${name}, whose value is ${JSON.stringify(shape)}`);
     }
-    const lessThanZero = arrayShape.find((v) => v <= 0);
+    const lessThanZero = shape.find((v) => v <= 0);
     if (lessThanZero) {
         throw Error("All dimension values in 'array' values must be at least 1, but this is not the case for " +
                     `${name}, whose value is ${JSON.stringify(shape)}`);
@@ -43,9 +37,9 @@ interface IndexValues {
 }
 
 export class Packer {
-    private len: number; // Total number of values
-    private idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
-    private shape: PackerShape
+    private readonly len: number; // Total number of values
+    private readonly  idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
+    private readonly shape: PackerShape
 
     constructor(options: PackerOptions) {
         this.idx = {};
