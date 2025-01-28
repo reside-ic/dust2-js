@@ -26,7 +26,7 @@ export interface PackerOptions {
 
 // For a given name and associated shape, do some validation, make shape type consistent and return number of values
 // after expansion
-const preparePackArrayForShape = (name: string, shape: number | Int32Array| null) => {
+const preparePackArrayForShape = (name: string, shape: number |  number[] | null) => {
     // Scalars can be defined within the array option, if that allows user's preferred ordering
     const scalar = shape === null || (Array.isArray(shape) && shape.length === 0);
     if (scalar) {
@@ -63,7 +63,7 @@ export class Packer {
     private options: Partial<PackerOptions>;
     private len: number; // Total number of values
     private idx: Record<string, IndexValues>;
-    private shape: Record<string, Int32Array>; // shape of each named value group i.e. size of each dimension
+    private shape: Record<string, number[]>; // shape of each named value group i.e. size of each dimension
 
     constructor(options: Partial<PackerOptions>) {
         this.options = options;
@@ -122,7 +122,8 @@ export class Packer {
         }
 
         // Return a map of names to values in the format described by shape
-        let result = new Map<string, number | number[] | ndarray>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let result = new Map<string, any>();
         for (const name in this.shape) {
             const currentShape = this.shape[name];
             if (Array.isArray(currentShape) && currentShape.length === 1 && currentShape[0] === 0) {
@@ -146,8 +147,8 @@ export class Packer {
         const { fixed, process } = this.options;
 
         if (fixed) {
-            Array(fixed.entries()).forEach((key, value) => {
-                result[key] = value;
+            fixed.forEach((value, key) => {
+                result.set(key, value);
             });
         }
 
@@ -159,13 +160,14 @@ export class Packer {
     }
 
     public unpack_ndarray(x: ndarray) {
-        if (x.shape[0] !== this.len) {
-            throw Error(`Incorrect length input; expected ${this.len} but given ${x.shape[0]}.`);
+        const xShape = x.shape as number[];
+        if (xShape[0] !== this.len) {
+            throw Error(`Incorrect length input; expected ${this.len} but given ${xShape[0]}.`);
         }
 
         // all dimensions except the first one as nulls - get all value for those dims
         const residualNullDimensions = new Array(x.shape.length -1).fill(null);
-        const residualDimensions = x.shape.slice(1); // all dimensions except the first one
+        const residualDimensions = xShape.slice(1); // all dimensions except the first one
 
         // Return a map of names to values in the format described by shape
         const result = new Map<string, ndarray>();
@@ -182,7 +184,8 @@ export class Packer {
                 // array
                 // Take the correct slice of the input ndarray, and reshape
                 const multiSlice = new MultiSlice(new Slice(start, start + length), ...residualNullDimensions);
-                const values = slice(x, multiSlice);
+                // TODO: sort out types
+                const values = slice(x, multiSlice) as unknown as ArrayLike<number>;
                 result.set(name, array(values, {shape: [...this.shape[name], ...residualDimensions]}))
             }
         }

@@ -1,12 +1,13 @@
 import { describe, expect, test } from "vitest";
 import array from "@stdlib/ndarray/array";
 import ndarray2array from "@stdlib/ndarray/to-array";
+import {ndarray} from "@stdlib/types/ndarray";
 import {Packer} from "../src/packer.ts";
 
 describe("Packer class", () => {
     const testScalar = new Set<string>(["b", "c", "a"])
 
-    const testArray = new Map([
+    const testArray = new Map<string, number | null | number[]>([
         [ "X", 3 ],
         [ "Y", [ 2, 4 ] ]
     ]);
@@ -60,7 +61,7 @@ describe("Packer class", () => {
             const sut = new Packer({
                 scalar: new Set<string>(["a"]),
                 // null or empty array can both be used to indicate scalar within 'array'
-                array: new Map([
+                array: new Map<string, number | null | number[]>([
                     [ "X", 3 ],
                     [ "b", null ],
                     [ "Y", [ 2, 4 ] ],
@@ -104,9 +105,9 @@ describe("Packer class", () => {
             ]));
         });
 
-        const expectArrayValuesInUnpackResult = (result) => {
+        const expectArrayValuesInUnpackResult = (result: Map<string, number |number[] | ndarray>) => {
             expect(result.get("X")).toStrictEqual([10, 20, 30]);
-            const y = result.get("Y");
+            const y = result.get("Y") as ndarray;
             expect(y.shape).toStrictEqual([2, 4]);
             expect(y.get(0, 0)).toBe(100)
             expect(y.get(0, 1)).toBe(200);
@@ -142,7 +143,7 @@ describe("Packer class", () => {
             const sut = new Packer({
                 scalar: new Set<string>(["a"]),
                 // null or empty array can both be used to indicate scalar within 'array'
-                array: new Map([
+                array: new Map<string, number | null | number[]>([
                     [ "X", 3 ],
                     [ "b", null ],
                     [ "Y", [ 2, 2 ] ],
@@ -161,7 +162,7 @@ describe("Packer class", () => {
             expect(result.get("a")).toBe(1);
             expect(result.get("X")).toStrictEqual([10, 20, 30]);
             expect(result.get("b")).toBe(2);
-            const y = result.get("Y");
+            const y = result.get("Y") as ndarray;
             expect(y.shape).toStrictEqual([2, 2]);
             expect(y.get(0, 0)).toBe(1000);
             expect(y.get(0, 1)).toBe(2000);
@@ -197,16 +198,16 @@ describe("Packer class", () => {
             const result = sut.unpack_ndarray(x);
 
             // Expect all results from unpack_ndarray to be ndarrays
-            const a = result.get("a");
+            const a = result.get("a") as ndarray;
             expect(ndarray2array(a)).toStrictEqual([1, 2]);
 
-            const b = result.get("b");
+            const b = result.get("b") as ndarray;
             expect(b.shape).toStrictEqual([2]);
             expect(b.get(0)).toBe(30);
             expect(b.get(1)).toBe(40);
             expect(ndarray2array(b)).toStrictEqual([30, 40]);
 
-            const y = result.get("Y");
+            const y = result.get("Y") as ndarray;
             expect(y.shape).toStrictEqual([2, 2, 2]);
             expect(ndarray2array(y)).toStrictEqual([
                 [[500, 600], [700, 800]],
@@ -247,10 +248,10 @@ describe("Packer class", () => {
 
             const result = sut.unpack_ndarray(x);
 
-            const a = result.get("a");
+            const a = result.get("a") as ndarray;
             expect(ndarray2array(a)).toStrictEqual([[1, 2], [3, 4], [5, 6]]);
 
-            const y = result.get("Y");
+            const y = result.get("Y") as ndarray;
             expect(y.shape).toStrictEqual([2, 2, 3, 2]);
             expect(ndarray2array(y)).toStrictEqual([
                 [[[500, 600], [501, 601], [502, 602]], [[700, 800], [701, 801], [702, 802]]],
