@@ -92,6 +92,24 @@ describe("Packer class", () => {
         });
     });
 
+    const expectUnpackedArrayValues = (result: UnpackResult) => {
+        const x = result.get("X") as ndarray;
+        expect(x.shape).toStrictEqual([3]);
+        expect(x.get(0)).toBe(10);
+        expect(x.get(1)).toBe(20);
+        expect(x.get(2)).toBe(30);
+        const y = result.get("Y") as ndarray;
+        expect(y.shape).toStrictEqual([2, 4]);
+        expect(y.get(0, 0)).toBe(100)
+        expect(y.get(0, 1)).toBe(200);
+        expect(y.get(0, 2)).toBe(300)
+        expect(y.get(0, 3)).toBe(400);
+        expect(y.get(1, 0)).toBe(500)
+        expect(y.get(1, 1)).toBe(600);
+        expect(y.get(1, 2)).toBe(700)
+        expect(y.get(1, 3)).toBe(800);
+    };
+
     describe("unpacks one-dimensional array", () => {
         test("as expected for scalar only values", () => {
             const sut = new Packer({ shape: scalarShape });
@@ -103,24 +121,6 @@ describe("Packer class", () => {
             ]));
         });
 
-        const expectUnpackedArrayValues = (result: UnpackResult) => {
-            const x = result.get("X") as ndarray;
-            expect(x.shape).toStrictEqual([3]);
-            expect(x.get(0)).toBe(10);
-            expect(x.get(1)).toBe(20);
-            expect(x.get(2)).toBe(30);
-            const y = result.get("Y") as ndarray;
-            expect(y.shape).toStrictEqual([2, 4]);
-            expect(y.get(0, 0)).toBe(100)
-            expect(y.get(0, 1)).toBe(200);
-            expect(y.get(0, 2)).toBe(300)
-            expect(y.get(0, 3)).toBe(400);
-            expect(y.get(1, 0)).toBe(500)
-            expect(y.get(1, 1)).toBe(600);
-            expect(y.get(1, 2)).toBe(700)
-            expect(y.get(1, 3)).toBe(800);
-        };
-
         test("as expected for array only values", () => {
             const sut = new Packer({ shape: arrayShape });
             const result = sut.unpackArray([10, 20, 30, 100, 200, 300, 400, 500, 600, 700, 800]);
@@ -130,7 +130,6 @@ describe("Packer class", () => {
 
         test("as expected with both scalar and array values", () => {
             const sut = new Packer({ shape: mixedShape });
-
             const result = sut.unpackArray([
                 1, //a
                 10, 20, 30, // X
@@ -139,12 +138,18 @@ describe("Packer class", () => {
                 3, // c
             ]);
             expect(Array.from(result.keys())).toStrictEqual(["a", "X", "b", "Y", "c"]);
+            expect(result.get("a")).toBe(1);
+            expect(result.get("b")).toBe(2);
+            expect(result.get("c")).toBe(3);
             expectUnpackedArrayValues(result);
         });
 
-        // TODO !
-        /*test("throws error if input has wrong length");
-        */
+        test("throws error if input has wrong length", () => {
+            const sut = new Packer({ shape: mixedShape });
+            expect(() => { const result = sut.unpackArray([0, 1, 2, 3]); }).toThrowError(
+                "Incorrect length input; expected 14 but given 4."
+            );
+        });
     });
 
     describe("unpacks multi-dimensional array", () => {
@@ -230,9 +235,43 @@ describe("Packer class", () => {
             ]);
         });
 
-        // TODO: Test unpack 1D ndarray - should get numbers for scalars
-        // TODO !
-        /*test("throws error if input has wrong length");
-        */
+        test("unpacking one-dimensional ndarray is equivalent to unpacking number Array", () => {
+            const sut = new Packer({ shape: mixedShape });
+            const x = array(new Int32Array([
+                1, //a
+                10, 20, 30, // X
+                2, // b
+                100, 200, 300, 400, 500, 600, 700, 800, //Y
+                3, // c
+            ]), { shape: [14] });
+            const result = sut.unpackNdarray(x);
+            expect(Array.from(result.keys())).toStrictEqual(["a", "X", "b", "Y", "c"]);
+            expect(result.get("a")).toBe(1);
+            expect(result.get("b")).toBe(2);
+            expect(result.get("c")).toBe(3);
+            expectUnpackedArrayValues(result);
+        });
+
+        test("throws error if input has wrong length",  () => {
+            const sut = new Packer({
+                shape: new Map([
+                    [ "a", [] ],
+                    [ "b", [] ],
+                    [ "Y", [ 2, 2 ] ]
+                ])
+            });
+
+            const x = array(new Int32Array([
+                1, 2,  // a
+                30, 40, // b
+                500, 600, // Y11
+                700, 800, // Y12
+                900, 1000 // Y21
+            ]), { shape: [5, 2] });
+
+            expect(() => { const result = sut.unpackNdarray(x) }).toThrowError(
+                "Incorrect length input; expected 6 but given 5."
+            );
+        });
     });
 });
