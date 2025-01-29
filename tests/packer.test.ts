@@ -23,7 +23,6 @@ describe("Packer class", () => {
     ]);
 
    describe("constructor", () => {
-        // TODO: these tests of private members being constructed correctly may be removed later.
         test("builds expected fields for scalar-only packer", () => {
             const sut = new Packer({ shape: scalarShape });
             expect(sut["len"]).toBe(3);
@@ -58,12 +57,39 @@ describe("Packer class", () => {
             expect(sut["shape"]).toBe(mixedShape);
         });
 
-        // TODO !
-        /*test("throws error if empty shape");
+        test("throws error if empty shape", () => {
+            expect(() =>  { new Packer({ shape: new Map([]) }); }).toThrowError(
+                /Trying to generate an empty packer/
+            );
+        });
 
-        test("throws error if non-integer dimension values"); // TODO: or use type system for this
+        test("throws error if non-integer dimension values", () => {
+            expect(() =>  { new Packer({ shape: new Map([
+                ["fine", [2, 2]],
+                ["not_fine", [3, 2.5]]
+            ]) }); }).toThrowError(
+                "All dimension values must be integers, but this is not the case for not_fine, " +
+                "whose value is [3,2.5]."
+            );
+        });
 
-        test("throws error if dimension values of zero or less"); */
+        test("throws error if dimension values of zero or less", () => {
+            expect(() =>  { new Packer({ shape: new Map([
+                    ["fine", [2, 2]],
+                    ["not_fine", [0, 2]]
+            ]) }); }).toThrowError(
+                "All dimension values must be at least 1, but this is not the case for not_fine, " +
+                "whose value is [0,2]."
+            );
+
+            expect(() =>  { new Packer({ shape: new Map([
+                    ["fine", [2, 2]],
+                    ["not_fine", [2, -1]]
+            ]) }); }).toThrowError(
+                "All dimension values must be at least 1, but this is not the case for not_fine, " +
+                "whose value is [2,-1]."
+            );
+        });
     });
 
     describe("unpacks one-dimensional array", () => {

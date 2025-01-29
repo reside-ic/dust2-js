@@ -18,15 +18,15 @@ export interface PackerOptions {
 }
 
 const validateShape = (name: string, shape: number[]) => {
-    const nonInteger = shape.find((v) => !Number.isInteger(v))
-    if (nonInteger) {
-        throw Error("All dimension values in 'array' values must be integers, but this is not the case for " +
-                    `${name}, whose value is ${JSON.stringify(shape)}`);
+    const nonInteger = shape.find((v) => !Number.isInteger(v));
+    if (nonInteger !== undefined) {
+        throw Error("All dimension values must be integers, but this is not the case for " +
+                    `${name}, whose value is ${JSON.stringify(shape)}.`);
     }
     const lessThanZero = shape.find((v) => v <= 0);
-    if (lessThanZero) {
-        throw Error("All dimension values in 'array' values must be at least 1, but this is not the case for " +
-                    `${name}, whose value is ${JSON.stringify(shape)}`);
+    if (lessThanZero !== undefined) {
+        throw Error("All dimension values must be at least 1, but this is not the case for " +
+                    `${name}, whose value is ${JSON.stringify(shape)}.`);
     }
 }
 
