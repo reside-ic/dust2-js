@@ -146,7 +146,7 @@ describe("Packer class", () => {
 
         test("throws error if input has wrong length", () => {
             const sut = new Packer({ shape: mixedShape });
-            expect(() => { const result = sut.unpackArray([0, 1, 2, 3]); }).toThrowError(
+            expect(() => { sut.unpackArray([0, 1, 2, 3]); }).toThrowError(
                 "Incorrect length input; expected 14 but given 4."
             );
         });
@@ -269,7 +269,7 @@ describe("Packer class", () => {
                 900, 1000 // Y21
             ]), { shape: [5, 2] });
 
-            expect(() => { const result = sut.unpackNdarray(x) }).toThrowError(
+            expect(() => { sut.unpackNdarray(x) }).toThrowError(
                 "Incorrect length input; expected 6 but given 5."
             );
         });
