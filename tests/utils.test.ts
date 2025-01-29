@@ -10,3 +10,5 @@ describe("prod", () => {
         expect(prod([])).toBe(1);
     });
 });
+
+// TODO: test shape slice

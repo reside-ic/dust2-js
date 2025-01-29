@@ -4,14 +4,14 @@ import MultiSlice from "@stdlib/slice/multi";
 import Slice from "@stdlib/slice/ctor";
 import slice from "@stdlib/ndarray/slice";
 import {ndarray} from "@stdlib/types/ndarray";
-import { prod } from "./utils";
+import {prod, shapeSlice} from "./utils";
 
 type PackerShape = Map<string, number[]>;
 
 // Unpack results return numbers for scalar values and ndarray for everything else, including 1D arrays
 export type UnpackResult = Map<string, number | ndarray>;
 
-// This option type currently only defines the shapes of the unpacked values, but we expect to add other options later
+// This options type currently only defines the shapes of the unpacked values, but we expect to add other options later
 export interface PackerOptions {
     // Mapping of packed value names to their unpacked shape. Scalars are represented by empty array.
     shape: PackerShape
@@ -44,13 +44,12 @@ export class Packer {
     constructor(options: PackerOptions) {
         this.idx = {};
         this.shape = options.shape;
-
         this.len = 0;
         for (const [name, value] of this.shape) {
             validateShape(name, value);
             const n = prod(value); // total number of values in this shape
             this.idx[name] = { start: this.len, length: n }
-            this.len = this.len + n;
+            this.len += n;
         }
 
         if (!this.len) {
@@ -71,11 +70,10 @@ export class Packer {
         // Return a map of names to values in the format described by shape
         const result = new Map<string, number | ndarray>();
         for (const [name, currentShape] of this.shape) {
+            const {start, length} = this.idx[name];
             if (this.isScalar(name)) {
-                const i = this.idx[name].start;
-                result.set(name, x[i])
+                result.set(name, x[start])
             } else {
-                const {start, length} = this.idx[name];
                 const values = x.slice(start, start + length);
                 result.set(name, array(values, { shape: currentShape }))
             }
@@ -84,7 +82,7 @@ export class Packer {
     }
 
     public unpackNdarray(x: ndarray): UnpackResult {
-        const xShape = x.shape as number[];
+        const xShape = x.shape;
         if (xShape[0] !== this.len) {
             throw Error(`Incorrect length input; expected ${this.len} but given ${xShape[0]}.`);
         }
@@ -96,7 +94,7 @@ export class Packer {
 
         // all dimensions except the first one as nulls - get all value for those dims
         const residualNullDimensions = new Array(xShape.length -1).fill(null);
-        const residualDimensions = xShape.slice(1); // all dimensions except the first one
+        const residualDimensions = shapeSlice(xShape, 1); // all dimensions except the first one
 
         // Return a map of names to values in the format described by shape
         const result = new Map<string, ndarray>();
