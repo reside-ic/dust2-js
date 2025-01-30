@@ -5,8 +5,8 @@
     "scripts": {
         "build": "tsc && vite build",
         "lint": "eslint",
-        "format:check": "npx prettier . --check",
-        "format:write": "npx prettier . --write",
+        "format-check": "npx prettier . --check",
+        "format-write": "npx prettier . --write",
         "test": "vitest"
     },
     "dependencies": {
