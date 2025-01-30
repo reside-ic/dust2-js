@@ -9,7 +9,7 @@ import { prod, shapeSlice } from "./utils";
 type PackerShape = Map<string, number[]>;
 
 // Unpack results return numbers for scalar values and ndarray for everything else, including 1D arrays
-export type UnpackResult = Map<string, number | ndarray>;
+export type UnpackResult = Map<string, number | ndarray>
 
 // This options type currently only defines the shapes of the unpacked values, but we expect to add other options later
 export interface PackerOptions {
