@@ -1,27 +1,28 @@
 # This workflow is based on the npm template: https://github.com/actions/starter-workflows/blob/main/ci/node.js.yml
 name: build-and-test
 on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
-    branches:
-      - main
-      - master
+    push:
+        branches:
+            - main
+            - master
+    pull_request:
+        branches:
+            - main
+            - master
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 22.x
-      - run: npm install
-      - run: npm run build
-      - run: npm install codecov -g
-      - run: npm run test
-      - run: npm run lint
-      - uses: codecov/codecov-action@v1
-        with:
-          files: coverage/*.json
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: 22.x
+            - run: npm install
+            - run: npm run build
+            - run: npm install codecov -g
+            - run: npm run test
+            - run: npm run lint
+            - run: npm run format
+            - uses: codecov/codecov-action@v1
+              with:
+                  files: coverage/*.json
