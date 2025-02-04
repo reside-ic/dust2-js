@@ -19,31 +19,30 @@ export class DiscreteSIR implements DiscreteSystemGenerator<Shared, null> {
         stateNext[4] = 0;
     }
 
-    update(time: number, dt: number, state: number[], shared: Shared,
-           internal: null, stateNext: number[]) {
+    update(time: number, dt: number, state: number[], shared: Shared, internal: null, stateNext: number[]) {
         const S = state[0];
         const I = state[1];
         const R = state[2];
-        const casesCumul = state[3];
-        const casesInc = state[4];
-        const pSI = 1 - Math.exp(-shared.beta * I / shared.N * dt);
-        const pIR = 1 - Math.exp(-shared.gamma * dt);
-        // const nSI = monty::random::binomial<realtype>(rngstate, S, pSI);
-        // const nIR = monty::random::binomial<realtype>(rngstate, I, pIR);
-        const nSI = S * pSI;
-        const nIR = I * pIR;
-        stateNext[0] = S - nSI;
-        stateNext[1] = I + nSI - nIR;
-        stateNext[2] = R + nIR;
-        stateNext[3] = casesCumul + nSI;
-        stateNext[4] = casesInc + nSI;
+        const cases_cumul = state[3];
+        const cases_inc = state[4];
+        const p_SI = 1 - Math.exp(((-shared.beta * I) / shared.N) * dt);
+        const p_IR = 1 - Math.exp(-shared.gamma * dt);
+        // const n_SI = monty::random::binomial<real_type>(rng_state, S, p_SI);
+        // const n_IR = monty::random::binomial<real_type>(rng_state, I, p_IR);
+        const n_SI = S * p_SI;
+        const n_IR = I * p_IR;
+        stateNext[0] = S - n_SI;
+        stateNext[1] = I + n_SI - n_IR;
+        stateNext[2] = R + n_IR;
+        stateNext[3] = cases_cumul + n_SI;
+        stateNext[4] = cases_inc + n_SI;
     }
 
-    internal(shared: TShared): TInternal {
+    internal(shared: Shared): null{
         return null;
     }
 
-    packingState(shared: TShared): Packer {
+    packingState(shared: Shared): Packer {
         return Packer({shape: {S: [], I: [], R: [], casesCumul: [], casesInc: []}});
     }
 }

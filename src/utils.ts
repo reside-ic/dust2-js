@@ -1,4 +1,4 @@
-import {Shape} from "@stdlib/types/ndarray";
+import { Shape } from "@stdlib/types/ndarray";
 
 // Product of all values in a number array
 export const prod = (array: number[]) => array.reduce((prev, current) => prev * current, 1);

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import {prod, shapeSlice} from "../src/utils";
-import {Shape} from "@stdlib/types/ndarray";
+import { prod, shapeSlice } from "../src/utils";
+import { Shape } from "@stdlib/types/ndarray";
 
 describe("prod", () => {
     test("returns product of all elements in array", () => {
@@ -24,8 +24,8 @@ describe("shapeSlice", () => {
     });
 
     test("throws error if requested start exceeds length", () => {
-        expect(() => { shapeSlice(shape, 3) }).toThrowError(
-            "Cannot start shape slice at index 3 - shape has only 3 elements"
-        );
+        expect(() => {
+            shapeSlice(shape, 3);
+        }).toThrowError("Cannot start shape slice at index 3 - shape has only 3 elements");
     });
 });
