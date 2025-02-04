@@ -379,20 +379,29 @@ describe("Packer class", () => {
         test("dimension of magnitude 1 is handled as expected", () => {
             const sut = new Packer({
                 shape: new Map([
-                    [ "a", [] ],
-                    [ "b", [] ],
-                    [ "Y", [ 2, 2 ] ]
+                    ["a", []],
+                    ["b", []],
+                    ["Y", [2, 2]]
                 ])
             });
 
-            const x = array(new Int32Array([
-                1, 2,  // a
-                30, 40, // b
-                500, 600, // Y11
-                700, 800, // Y12
-                900, 1000, // Y21
-                1100, 1200 // Y22
-            ]), { shape: [6, 2, 1] });
+            const x = array(
+                new Int32Array([
+                    1,
+                    2, // a
+                    30,
+                    40, // b
+                    500,
+                    600, // Y11
+                    700,
+                    800, // Y12
+                    900,
+                    1000, // Y21
+                    1100,
+                    1200 // Y22
+                ]),
+                { shape: [6, 2, 1] }
+            );
 
             const result = sut.unpackNdarray(x);
 
@@ -408,8 +417,14 @@ describe("Packer class", () => {
             const y = result.get("Y") as ndarray;
             expect(y.shape).toStrictEqual([2, 2, 2, 1]);
             expect(ndarray2array(y)).toStrictEqual([
-                [[[500], [600]], [[700], [800]]],
-                [[[900], [1000]], [[1100], [1200]]]
+                [
+                    [[500], [600]],
+                    [[700], [800]]
+                ],
+                [
+                    [[900], [1000]],
+                    [[1100], [1200]]
+                ]
             ]);
         });
     });
