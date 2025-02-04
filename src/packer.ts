@@ -37,7 +37,7 @@ interface IndexValues {
 }
 
 export class Packer {
-    private readonly len: number; // Total number of values
+    public readonly len: number; // Total number of values
     private readonly  idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
     private readonly shape: PackerShape
 
