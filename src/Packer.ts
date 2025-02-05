@@ -41,22 +41,22 @@ interface IndexValues {
 }
 
 export class Packer {
-    private readonly len: number; // Total number of values
+    public readonly length: number; // Total number of values
     private readonly idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
     private readonly shape: PackerShape;
 
     constructor(options: PackerOptions) {
         this.idx = {};
         this.shape = options.shape;
-        this.len = 0;
+        this.length = 0;
         for (const [name, value] of this.shape) {
             validateShape(name, value);
             const n = prod(value); // total number of values in this shape
-            this.idx[name] = { start: this.len, length: n };
-            this.len += n;
+            this.idx[name] = { start: this.length, length: n };
+            this.length += n;
         }
 
-        if (!this.len) {
+        if (!this.length) {
             throw Error(
                 "Trying to generate an empty packer. You have not provided any entries in 'shape', " +
                     "which implies generating from a zero-length parameter vector."
@@ -69,8 +69,8 @@ export class Packer {
     }
 
     public unpackArray(x: Array<number>): UnpackResult {
-        if (x.length !== this.len) {
-            throw Error(`Incorrect length input; expected ${this.len} but given ${x.length}.`);
+        if (x.length !== this.length) {
+            throw Error(`Incorrect length input; expected ${this.length} but given ${x.length}.`);
         }
 
         // Return a map of names to values in the format described by shape
@@ -89,8 +89,8 @@ export class Packer {
 
     public unpackNdarray(x: ndarray): UnpackResult {
         const xShape = x.shape;
-        if (xShape[0] !== this.len) {
-            throw Error(`Incorrect length input; expected ${this.len} but given ${xShape[0]}.`);
+        if (xShape[0] !== this.length) {
+            throw Error(`Incorrect length input; expected ${this.length} but given ${xShape[0]}.`);
         }
 
         // If this ndarray is one dimensional, call unpackArray, so we return numbers for the scalar values

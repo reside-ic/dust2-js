@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import array from "@stdlib/ndarray/array";
 import ndarray2array from "@stdlib/ndarray/to-array";
 import { ndarray } from "@stdlib/types/ndarray";
-import { Packer, UnpackResult } from "../src/packer.ts";
+import { Packer, UnpackResult } from "../src/Packer";
 
 describe("Packer class", () => {
     const scalarShape = new Map([
@@ -25,7 +25,7 @@ describe("Packer class", () => {
     describe("constructor", () => {
         test("builds expected fields for scalar-only packer", () => {
             const sut = new Packer({ shape: scalarShape });
-            expect(sut["len"]).toBe(3);
+            expect(sut.length).toBe(3);
             expect(sut["idx"]).toStrictEqual({
                 b: { start: 0, length: 1 },
                 c: { start: 1, length: 1 },
@@ -36,7 +36,7 @@ describe("Packer class", () => {
 
         test("builds expected properties for array-only packer", () => {
             const sut = new Packer({ shape: arrayShape });
-            expect(sut["len"]).toBe(11);
+            expect(sut.length).toBe(11);
             expect(sut["idx"]).toStrictEqual({
                 X: { start: 0, length: 3 },
                 Y: { start: 3, length: 8 }
@@ -46,7 +46,7 @@ describe("Packer class", () => {
 
         test("build expected properties for packer with both scalar and array values", () => {
             const sut = new Packer({ shape: mixedShape });
-            expect(sut["len"]).toBe(14);
+            expect(sut.length).toBe(14);
             expect(sut["idx"]).toStrictEqual({
                 a: { start: 0, length: 1 },
                 X: { start: 1, length: 3 },

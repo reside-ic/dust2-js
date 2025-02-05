@@ -1,4 +1,4 @@
-import { Packer } from "./packer.ts";
+import { Packer } from "./Packer";
 
 export interface DiscreteSystemGenerator<TShared, TInternal> {
     initial: (time: number, shared: TShared, internal: TInternal,

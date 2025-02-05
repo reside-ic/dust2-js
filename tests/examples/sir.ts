@@ -1,17 +1,18 @@
-import { DiscreteSystemGenerator } from "../../src/generator.ts";
+import { DiscreteSystemGenerator } from "../../src/DiscreteSystemGenerator";
+import { Packer } from "../../src/Packer";
 
-interface Shared {
+export interface SIRShared {
     N: number;
     I0: number;
     beta: number;
     gamma: number;
 }
 
-export class DiscreteSIR implements DiscreteSystemGenerator<Shared, null> {
+export class DiscreteSIR implements DiscreteSystemGenerator<SIRShared, null> {
     // it would be more js-ish if we returned an array, but that would
     // be harder once we work out how to get read-write slices from
     // ndarray.
-    initial(time: number, shared: Shared, internal: null, stateNext: number[]) {
+    initial(time: number, shared: SIRShared, internal: null, stateNext: number[]) {
         stateNext[0] = shared.N - shared.I0;
         stateNext[1] = shared.I0;
         stateNext[2] = 0;
@@ -19,7 +20,7 @@ export class DiscreteSIR implements DiscreteSystemGenerator<Shared, null> {
         stateNext[4] = 0;
     }
 
-    update(time: number, dt: number, state: number[], shared: Shared, internal: null, stateNext: number[]) {
+    update(time: number, dt: number, state: number[], shared: SIRShared, internal: null, stateNext: number[]) {
         const S = state[0];
         const I = state[1];
         const R = state[2];
@@ -38,11 +39,18 @@ export class DiscreteSIR implements DiscreteSystemGenerator<Shared, null> {
         stateNext[4] = cases_inc + n_SI;
     }
 
-    internal(shared: Shared): null{
+    internal(shared: SIRShared): null{
         return null;
     }
 
-    packingState(shared: Shared): Packer {
-        return Packer({shape: {S: [], I: [], R: [], casesCumul: [], casesInc: []}});
+    packingState(shared: SIRShared): Packer {
+        const shape = new Map<string, number[]>([
+            ["S", []],
+            ["I", []],
+            ["R", []],
+            ["casesCumul", []],
+            ["casesInc", []]
+        ]);
+        return new Packer({ shape });
     }
 }
