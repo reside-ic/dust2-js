@@ -4,7 +4,6 @@ import { Packer } from "./Packer";
 import { System } from "./System";
 
 // Extract TShare and TInternal types from a TGenerator type
-// TODO: can we make this even neater? Type alias within the class..?
 type TShared<TGenerator> = TGenerator extends DiscreteSystemGenerator<infer T, infer U> ? T : never
 type TInternal<TGenerator> = TGenerator extends DiscreteSystemGenerator<infer T, infer U> ? U : never;
 
@@ -16,10 +15,10 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
     //private readonly nParticlesTotal: number;
     private readonly statePacker: Packer;
     private readonly state: SystemState;
+    private readonly dt: number;
+    private readonly shared: TShared<TGenerator>[];
+    private readonly internal: TInternal<TGenerator>[];
     private time: number;
-    private dt: number;
-    private shared: TShared<TGenerator>[];
-    private internal: TInternal<TGenerator>[];
     //private shared: TShared[];
     //private internal: TInternal[];
 
