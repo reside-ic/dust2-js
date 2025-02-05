@@ -88,7 +88,7 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
         this.time = time;
     }
 
-    private particleStateToArray(state: ParticleState): number[] {
+    public particleStateToArray(state: ParticleState): number[] {
         const len = this.statePacker.length;
         const result = new Array<number>(len);
         for (let i = 0; i < len; i++) {
