@@ -1,7 +1,7 @@
 import { describe, test, expect } from "vitest";
-import { DiscreteSIR } from "./examples/sir";
-import { DiscreteSystem } from "../src/DiscreteSystem.ts";
-import { particleStateToArray } from "../src/utils.ts";
+import { DiscreteSIR } from "./examples/DiscreteSIR";
+import { DiscreteSystem } from "../src/DiscreteSystem";
+import { particleStateToArray } from "../src/utils";
 
 const generator = new DiscreteSIR();
 const shared = [

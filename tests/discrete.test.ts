@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { DiscreteSIR } from "./examples/sir.ts";
+import { DiscreteSIR } from "./examples/DiscreteSIR";
 
 test("can do anything with our interface", () => {
     const sir = new DiscreteSIR();
