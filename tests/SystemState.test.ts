@@ -17,18 +17,32 @@ describe("SystemState", () => {
     test("throws error when attempt get with invalid index", () => {
         const sut = createSystemState();
         expect(() => sut.getParticle(2, 2)).toThrowError("Group index should be an integer between 0 and 1, but is 2.");
-        expect(() => sut.getParticle(1, 3)).toThrowError("Particle index should be an integer between 0 and 2, but is 3.");
-        expect(() => sut.getParticle(0.5, 2)).toThrowError("Group index should be an integer between 0 and 1, but is 0.5.");
-        expect(() => sut.getParticle(1, 1.1)).toThrowError("Particle index should be an integer between 0 and 2, but is 1.1.");
+        expect(() => sut.getParticle(1, 3)).toThrowError(
+            "Particle index should be an integer between 0 and 2, but is 3."
+        );
+        expect(() => sut.getParticle(0.5, 2)).toThrowError(
+            "Group index should be an integer between 0 and 1, but is 0.5."
+        );
+        expect(() => sut.getParticle(1, 1.1)).toThrowError(
+            "Particle index should be an integer between 0 and 2, but is 1.1."
+        );
     });
 
     test("throws error when attempt set with invalid index", () => {
         const sut = createSystemState();
         const vals = [1, 2, 3, 4];
-        expect(() => sut.setParticle(2, 2, vals)).toThrowError("Group index should be an integer between 0 and 1, but is 2.");
-        expect(() => sut.setParticle(1, 3, vals)).toThrowError("Particle index should be an integer between 0 and 2, but is 3.");
-        expect(() => sut.setParticle(0.5, 2, vals)).toThrowError("Group index should be an integer between 0 and 1, but is 0.5.");
-        expect(() => sut.setParticle(1, 1.1, vals)).toThrowError("Particle index should be an integer between 0 and 2, but is 1.1.");
+        expect(() => sut.setParticle(2, 2, vals)).toThrowError(
+            "Group index should be an integer between 0 and 1, but is 2."
+        );
+        expect(() => sut.setParticle(1, 3, vals)).toThrowError(
+            "Particle index should be an integer between 0 and 2, but is 3."
+        );
+        expect(() => sut.setParticle(0.5, 2, vals)).toThrowError(
+            "Group index should be an integer between 0 and 1, but is 0.5."
+        );
+        expect(() => sut.setParticle(1, 1.1, vals)).toThrowError(
+            "Particle index should be an integer between 0 and 2, but is 1.1."
+        );
     });
 
     test("throws error when attempt set with array of incorrect length", () => {

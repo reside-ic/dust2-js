@@ -23,7 +23,7 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
     private _time: number;
 
     constructor(generator: TGenerator, shared: TShared<TGenerator>[], time: number, dt: number, nParticles: number) {
-        checkIntegerInRange("Number of particles", nParticles, 0);
+        checkIntegerInRange("Number of particles", nParticles, 1);
 
         this._generator = generator;
         this._time = time;

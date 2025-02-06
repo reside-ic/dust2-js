@@ -50,7 +50,7 @@ describe("DiscreteSystem", () => {
                     0.5, // dt
                     -3 // nParticles
                 )
-        ).toThrowError("Number of particles should be an integer greater than 0, but is -3.");
+        ).toThrowError("Number of particles should be an integer greater than or equal to 1, but is -3.");
 
         expect(
             () =>
@@ -61,7 +61,7 @@ describe("DiscreteSystem", () => {
                     0.5, // dt
                     3.1 // nParticles
                 )
-        ).toThrowError("Number of particles should be an integer greater than 0, but is 3.1.");
+        ).toThrowError("Number of particles should be an integer greater than or equal to 1, but is 3.1.");
     });
 
     const expectParticleGroupState = (
