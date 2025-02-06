@@ -72,15 +72,11 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
         if (time < this.time) {
             // TODO: throw here
         }
-        const nSteps = time - this.time / this.dt;
+        const nSteps = (time - this.time) / this.dt;
         for (let iGroup = 0; iGroup < this.nGroups; iGroup++) {
             for (let iParticle = 0; iParticle < this.nParticles; iParticle++) {
                 const shared = this.shared[iGroup];
                 const internal = this.internal[iGroup];
-                // Extract out just the state for a particle.  This
-                // will be (ideally!) a contiguous block of memory and
-                // we'll turn that into a js number[] for now at
-                // least.
                 const state = this.runParticle(shared, internal, this.state.getParticle(iGroup, iParticle), nSteps);
                 this.state.setParticle(iGroup, iParticle, state);
             }
@@ -101,7 +97,7 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
         let state = this.particleStateToArray(particleState);
         let stateNext = [...state];
         let time = this.time;
-        for (let i = 0; i < nSteps; ++i) {
+        for (let i = 0; i < nSteps; i++) {
             this.generator.update(time, this.dt, state, shared, internal, stateNext);
             time += this.dt;
             const tmp = state;
