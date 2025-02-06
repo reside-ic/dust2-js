@@ -41,22 +41,22 @@ interface IndexValues {
 }
 
 export class Packer {
-    public readonly length: number; // Total number of values
-    private readonly idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
-    private readonly shape: PackerShape;
+    private readonly _length: number; // Total number of values
+    private readonly _idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
+    private readonly _shape: PackerShape;
 
     constructor(options: PackerOptions) {
-        this.idx = {};
-        this.shape = options.shape;
-        this.length = 0;
-        for (const [name, value] of this.shape) {
+        this._idx = {};
+        this._shape = options.shape;
+        this._length = 0;
+        for (const [name, value] of this._shape) {
             validateShape(name, value);
             const n = prod(value); // total number of values in this shape
-            this.idx[name] = { start: this.length, length: n };
-            this.length += n;
+            this._idx[name] = { start: this._length, length: n };
+            this._length += n;
         }
 
-        if (!this.length) {
+        if (!this._length) {
             throw Error(
                 "Trying to generate an empty packer. You have not provided any entries in 'shape', " +
                     "which implies generating from a zero-length parameter vector."
@@ -64,19 +64,23 @@ export class Packer {
         }
     }
 
+    public get length() {
+        return this._length;
+    }
+
     private isScalar(name: string) {
-        return this.shape.get(name)?.length === 0;
+        return this._shape.get(name)?.length === 0;
     }
 
     public unpackArray(x: Array<number>): UnpackResult {
-        if (x.length !== this.length) {
-            throw Error(`Incorrect length input; expected ${this.length} but given ${x.length}.`);
+        if (x.length !== this._length) {
+            throw Error(`Incorrect length input; expected ${this._length} but given ${x.length}.`);
         }
 
         // Return a map of names to values in the format described by shape
         const result = new Map<string, number | ndarray>();
-        for (const [name, currentShape] of this.shape) {
-            const { start, length } = this.idx[name];
+        for (const [name, currentShape] of this._shape) {
+            const { start, length } = this._idx[name];
             if (this.isScalar(name)) {
                 result.set(name, x[start]);
             } else {
@@ -89,8 +93,8 @@ export class Packer {
 
     public unpackNdarray(x: ndarray): UnpackResult {
         const xShape = x.shape;
-        if (xShape[0] !== this.length) {
-            throw Error(`Incorrect length input; expected ${this.length} but given ${xShape[0]}.`);
+        if (xShape[0] !== this._length) {
+            throw Error(`Incorrect length input; expected ${this._length} but given ${xShape[0]}.`);
         }
 
         // If this ndarray is one dimensional, call unpackArray, so we return numbers for the scalar values
@@ -104,8 +108,8 @@ export class Packer {
 
         // Return a map of names to values in the format described by shape
         const result = new Map<string, ndarray>();
-        for (const [name, currentShape] of this.shape) {
-            const { start, length } = this.idx[name];
+        for (const [name, currentShape] of this._shape) {
+            const { start, length } = this._idx[name];
 
             // Take the correct slice of the input ndarray, and reshape
             const scalar = this.isScalar(name);

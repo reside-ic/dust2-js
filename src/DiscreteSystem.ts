@@ -2,90 +2,82 @@ import { ParticleState, SystemState } from "./SystemState";
 import { DiscreteSystemGenerator } from "./DiscreteSystemGenerator";
 import { Packer } from "./Packer";
 import { System } from "./System";
+import { checkIsPositiveInteger } from "./utils.ts";
 
 // Extract TShare and TInternal types from a TGenerator type
 type TShared<TGenerator> = TGenerator extends DiscreteSystemGenerator<infer T, infer U> ? T : never
 type TInternal<TGenerator> = TGenerator extends DiscreteSystemGenerator<infer T, infer U> ? U : never;
 
 export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>> implements System {
-    //private static TThisShared = TShared<TGenerator>;
-    private readonly generator: TGenerator
-    private readonly nParticles: number;
-    private readonly nGroups: number;
-    //private readonly nParticlesTotal: number;
-    private readonly statePacker: Packer;
-    private readonly state: SystemState;
-    private readonly dt: number;
-    private readonly shared: TShared<TGenerator>[];
-    private readonly internal: TInternal<TGenerator>[];
-    private time: number;
-    //private shared: TShared[];
-    //private internal: TInternal[];
+    private readonly _generator: TGenerator
+    private readonly _nParticles: number;
+    private readonly _nGroups: number;
+    private readonly _statePacker: Packer;
+    private readonly _state: SystemState;
+    private readonly _dt: number;
+    private readonly _shared: TShared<TGenerator>[];
+    private readonly _internal: TInternal<TGenerator>[];
+    private _time: number;
 
     constructor(generator: TGenerator,
                 shared: TShared<TGenerator>[],
                 time: number,
                 dt: number,
                 nParticles: number) {
-        this.generator = generator;
-        this.time = time;
-        this.dt = dt;
-        this.nParticles = nParticles; // number of particles per parameter set
-        this.nGroups = shared.length; // number of parameter sets
-        //this.nParticlesTotal = nParticles * this.nGroups;
-        this.statePacker = generator.packingState(shared[0]);
-        const nState = this.statePacker.length; // number of variables in the packer, as defined by the generator
+        checkIsPositiveInteger(nParticles, "nParticles");
 
-        //const dims = [nState, this.nParticles, this.nGroups]; // TODO: reverse later?
-        //const len = prod(dims);
-        //this.state = array(new Array(len).fill(0), {shape: dims});
-        this.state = new SystemState(this.nGroups, this.nParticles, nState);
-        this.shared = shared;
-        this.internal = shared.map((el) => generator.internal(el));
+        this._generator = generator;
+        this._time = time;
+        this._dt = dt;
+        this._nParticles = nParticles; // number of particles per parameter set
+        this._nGroups = shared.length; // number of parameter sets
+        this._statePacker = generator.packingState(shared[0]);
+        const nState = this._statePacker.length; // number of state elements in the packer, as defined by the generator
+
+        this._state = new SystemState(this._nGroups, this._nParticles, nState);
+        this._shared = shared;
+        this._internal = shared.map((el) => generator.internal(el));
     }
 
-    // Could do this as a property with a setter. We need a function
-    // ultimately for the ODE version as we will reset the solver.
-    setTime(time: number): void {
-        this.time = time;
+    public setTime(value: number) {
+        this._time = value;
     }
 
-    setStateInitial(): void {
-        for (let i = 0; i < this.nGroups; ++i) {
-            for (let j = 0; j < this.nParticles; ++j) {
-                const shared = this.shared[i];
-                const internal = this.internal[i];
-                const state = this.state.getParticle(i, j);
+    public get state(): Readonly<SystemState> {
+        return this._state as Readonly<SystemState>;
+    }
+
+    public setStateInitial(): void {
+        for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
+            for (let iParticle = 0; iParticle < this._nParticles; iParticle++) {
+                const shared = this._shared[iGroup];
+                const internal = this._internal[iGroup];
+                const state = this._state.getParticle(iGroup, iParticle);
                 const arrayState = this.particleStateToArray(state);
-                this.generator.initial(this.time, shared, internal, arrayState);
-                this.state.setParticle(i, j, arrayState);
+                this._generator.initial(this._time, shared, internal, arrayState);
+                this._state.setParticle(iGroup, iParticle, arrayState);
             }
         }
     }
 
-    // Do via property? Ideally return readonly with no copy.
-    getState(): SystemState {
-        return this.state;
-    }
-
-    runToTime(time: number): void {
-        if (time < this.time) {
-            // TODO: throw here
+    public runToTime(time: number): void {
+        if (time < this._time) {
+            throw RangeError(`Cannot run to requested time ${time}, which is less than current time ${this._time}.`);
         }
-        const nSteps = (time - this.time) / this.dt;
-        for (let iGroup = 0; iGroup < this.nGroups; iGroup++) {
-            for (let iParticle = 0; iParticle < this.nParticles; iParticle++) {
-                const shared = this.shared[iGroup];
-                const internal = this.internal[iGroup];
-                const state = this.runParticle(shared, internal, this.state.getParticle(iGroup, iParticle), nSteps);
-                this.state.setParticle(iGroup, iParticle, state);
+        const nSteps = (time - this._time) / this._dt;
+        for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
+            for (let iParticle = 0; iParticle < this._nParticles; iParticle++) {
+                const shared = this._shared[iGroup];
+                const internal = this._internal[iGroup];
+                const state = this.runParticle(shared, internal, this._state.getParticle(iGroup, iParticle), nSteps);
+                this._state.setParticle(iGroup, iParticle, state);
             }
         }
-        this.time = time;
+        this._time = time;
     }
 
     public particleStateToArray(state: ParticleState): number[] {
-        const len = this.statePacker.length;
+        const len = this._statePacker.length;
         const result = new Array<number>(len);
         for (let i = 0; i < len; i++) {
             result[i] = state.get(i);
@@ -96,25 +88,14 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
     private runParticle(shared: TShared<TGenerator>, internal: TInternal<TGenerator>, particleState: ParticleState, nSteps: number): number[] {
         let state = this.particleStateToArray(particleState);
         let stateNext = [...state];
-        let time = this.time;
+        let time = this._time;
         for (let i = 0; i < nSteps; i++) {
-            this.generator.update(time, this.dt, state, shared, internal, stateNext);
-            time += this.dt;
+            this._generator.update(time, this._dt, state, shared, internal, stateNext);
+            time += this._dt;
             const tmp = state;
             state = stateNext;
             stateNext = tmp;
         }
         return state;
     }
-
-   /* private setParticleState(iGroup: number, iParticle: number, state: number[]): void {
-        for (let i = 0; i < state.length; ++i) {
-            this.state[i, iParticle, iGroup] = state[i];
-        }
-
-    }
-
-    private getParticleState(iGroup: number, iParticle: number): number[] {
-        return ndarray2array(slice(this.state, new MultiSlice(null, iParticle, iGroup)));
-    }*/
 }

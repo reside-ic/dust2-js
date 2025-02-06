@@ -20,26 +20,44 @@ describe("DiscreteSystem", () => {
     test("can be created", () => {
         const sys = createSystem();
 
-        expect(sys["generator"]).toBe(generator);
-        expect(sys["time"]).toBe(5);
-        expect(sys["dt"]).toBe(0.5);
-        expect(sys["nParticles"]).toBe(3);
-        expect(sys["nGroups"]).toBe(2);
+        expect(sys["_generator"]).toBe(generator);
+        expect(sys["_time"]).toBe(5);
+        expect(sys["_dt"]).toBe(0.5);
+        expect(sys["_nParticles"]).toBe(3);
+        expect(sys["_nGroups"]).toBe(2);
 
-        const packer = sys["statePacker"];
+        const packer = sys["_statePacker"];
         expect(packer.length).toBe(5);
 
-        const state = sys["state"];
-        expect(state["nGroups"]).toBe(2);
-        expect(state["nParticles"]).toBe(3);
-        expect(state["nStateElements"]).toBe(5);
+        const state = sys["_state"];
+        expect(state["_nGroups"]).toBe(2);
+        expect(state["_nParticles"]).toBe(3);
+        expect(state["_nStateElements"]).toBe(5);
 
-        expect(sys["shared"]).toBe(shared);
-        expect(sys["internal"]).toStrictEqual([null, null]);
+        expect(sys["_shared"]).toBe(shared);
+        expect(sys["_internal"]).toStrictEqual([null, null]);
+    });
+
+    test("constructor throws error if nParticles is invalid", () => {
+        expect(() => new DiscreteSystem<DiscreteSIR>(
+            generator,
+            shared,
+            5, // time
+            0.5, // dt
+            -3 // nParticles
+        )).toThrowError("nParticles should be a positive integer, but is -3.");
+
+        expect(() => new DiscreteSystem<DiscreteSIR>(
+            generator,
+            shared,
+            5, // time
+            0.5, // dt
+            3.1 // nParticles
+        )).toThrowError("nParticles should be a positive integer, but is 3.1.");
     });
 
     const expectParticleGroupState = (sys: DiscreteSystem<any>, iGroup: number, nParticles: number, expectedValues: number[]) => {
-        const state = sys.getState();
+        const state = sys.state;
         for (let i = 0; i < nParticles; i++) {
             expect(sys.particleStateToArray(state.getParticle(iGroup, i))).toStrictEqual(expectedValues);
         }
@@ -71,7 +89,7 @@ describe("DiscreteSystem", () => {
     test("can set time", () => {
         const sys = createSystem();
         sys.setTime(25);
-        expect(sys["time"]).toBe(25);
+        expect(sys["_time"]).toBe(25);
     });
 
     test("can run to time", () => {
@@ -94,5 +112,11 @@ describe("DiscreteSystem", () => {
         const g2Step2State = new Array<number>(5);
         generator.update(5.5, 0.5, g2Step1State, shared[1], null, g2Step2State);
         expectParticleGroupState(sys, 1, 3, g2Step2State);
+    });
+
+    test("throws expected error if run to time which is before current time", () => {
+        const sys = createSystem();
+        sys.setStateInitial();
+        expect(() => sys.runToTime(1)).toThrowError("Cannot run to requested time 1, which is less than current time 5.");
     });
 });

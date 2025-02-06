@@ -26,35 +26,35 @@ describe("Packer class", () => {
         test("builds expected fields for scalar-only packer", () => {
             const sut = new Packer({ shape: scalarShape });
             expect(sut.length).toBe(3);
-            expect(sut["idx"]).toStrictEqual({
+            expect(sut["_idx"]).toStrictEqual({
                 b: { start: 0, length: 1 },
                 c: { start: 1, length: 1 },
                 a: { start: 2, length: 1 }
             });
-            expect(sut["shape"]).toBe(scalarShape);
+            expect(sut["_shape"]).toBe(scalarShape);
         });
 
         test("builds expected properties for array-only packer", () => {
             const sut = new Packer({ shape: arrayShape });
             expect(sut.length).toBe(11);
-            expect(sut["idx"]).toStrictEqual({
+            expect(sut["_idx"]).toStrictEqual({
                 X: { start: 0, length: 3 },
                 Y: { start: 3, length: 8 }
             });
-            expect(sut["shape"]).toBe(arrayShape);
+            expect(sut["_shape"]).toBe(arrayShape);
         });
 
         test("build expected properties for packer with both scalar and array values", () => {
             const sut = new Packer({ shape: mixedShape });
             expect(sut.length).toBe(14);
-            expect(sut["idx"]).toStrictEqual({
+            expect(sut["_idx"]).toStrictEqual({
                 a: { start: 0, length: 1 },
                 X: { start: 1, length: 3 },
                 b: { start: 4, length: 1 },
                 Y: { start: 5, length: 8 },
                 c: { start: 13, length: 1 }
             });
-            expect(sut["shape"]).toBe(mixedShape);
+            expect(sut["_shape"]).toBe(mixedShape);
         });
 
         test("throws error if empty shape", () => {

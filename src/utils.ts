@@ -16,3 +16,9 @@ export const shapeSlice = (shape: Shape, start: number) => {
     }
     return result;
 };
+
+export const checkIsPositiveInteger = (value: number, name: string) => {
+    if (!Number.isInteger(value) || value < 0 ) {
+        throw RangeError(`${name} should be a positive integer, but is ${value}.`);
+    }
+}
