@@ -45,7 +45,7 @@ describe("DiscreteSystem", () => {
             5, // time
             0.5, // dt
             -3 // nParticles
-        )).toThrowError("nParticles should be a positive integer, but is -3.");
+        )).toThrowError("Number of particles should be an integer greater than 0, but is -3.");
 
         expect(() => new DiscreteSystem<DiscreteSIR>(
             generator,
@@ -53,7 +53,7 @@ describe("DiscreteSystem", () => {
             5, // time
             0.5, // dt
             3.1 // nParticles
-        )).toThrowError("nParticles should be a positive integer, but is 3.1.");
+        )).toThrowError("Number of particles should be an integer greater than 0, but is 3.1.");
     });
 
     const expectParticleGroupState = (sys: DiscreteSystem<any>, iGroup: number, nParticles: number, expectedValues: number[]) => {

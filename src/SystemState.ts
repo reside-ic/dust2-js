@@ -1,4 +1,5 @@
 import ndarray from "ndarray";
+import { checkIntegerInRange } from "./utils.ts";
 
 export interface ParticleState {
     get: (i: number) => number;
@@ -15,7 +16,7 @@ export class SystemState {
         this._nGroups = nGroups;
         this._nParticles = nParticles;
         this._nStateElements = nStateElements;
-        // arrange the nd array with dimensions: group, particle, stateElement
+        // arrange the ndArray with dimensions: group, particle, stateElement
         const len = nGroups * nParticles * nStateElements;
         this._state = ndarray(new Array<number>(len).fill(0), [nGroups, nParticles, nStateElements]);
     }
@@ -38,13 +39,8 @@ export class SystemState {
     }
 
     private checkIndexes(iGroup: number, iParticle: number) {
-        // TODO: integers?
-        if (iGroup < 0 || iGroup >= this._nGroups) {
-            throw new RangeError(`Group index must be between 0 and ${this._nGroups - 1}`);
-        }
-        if (iParticle < 0 || iParticle >= this._nParticles) {
-            throw new RangeError(`Particle index must be between 0 and ${this._nParticles - 1}`);
-        }
+        checkIntegerInRange("Group index", iGroup, 0, this._nGroups - 1);
+        checkIntegerInRange("Particle index", iParticle, 0, this._nParticles - 1);
     }
 
 }

@@ -2,7 +2,7 @@ import { ParticleState, SystemState } from "./SystemState";
 import { DiscreteSystemGenerator } from "./DiscreteSystemGenerator";
 import { Packer } from "./Packer";
 import { System } from "./System";
-import { checkIsPositiveInteger } from "./utils.ts";
+import { checkIntegerInRange } from "./utils.ts";
 
 // Extract TShare and TInternal types from a TGenerator type
 type TShared<TGenerator> = TGenerator extends DiscreteSystemGenerator<infer T, infer U> ? T : never
@@ -24,7 +24,7 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
                 time: number,
                 dt: number,
                 nParticles: number) {
-        checkIsPositiveInteger(nParticles, "nParticles");
+        checkIntegerInRange("Number of particles", nParticles, 0);
 
         this._generator = generator;
         this._time = time;

@@ -17,8 +17,9 @@ export const shapeSlice = (shape: Shape, start: number) => {
     return result;
 };
 
-export const checkIsPositiveInteger = (value: number, name: string) => {
-    if (!Number.isInteger(value) || value < 0 ) {
-        throw RangeError(`${name} should be a positive integer, but is ${value}.`);
+export const checkIntegerInRange = (name: string, value: number, min: number, max?: number,) => {
+    if (!Number.isInteger(value) || value < min || value > max) {
+        const rangeMsg = max === undefined ? `greater than ${min}` : `between ${min} and ${max}`;
+        throw RangeError(`${name} should be an integer ${rangeMsg}, but is ${value}.`);
     }
 }
