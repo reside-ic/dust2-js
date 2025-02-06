@@ -46,17 +46,24 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
         return this._state as Readonly<SystemState>;
     }
 
-    public setStateInitial(): void {
+    // helper method to iterate over all particles and execute the provided function
+    private iterateParticles(f: (iGroup: number, iParticle: number) => void) {
         for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
             for (let iParticle = 0; iParticle < this._nParticles; iParticle++) {
-                const shared = this._shared[iGroup];
-                const internal = this._internal[iGroup];
-                const state = this._state.getParticle(iGroup, iParticle);
-                const arrayState = particleStateToArray(state);
-                this._generator.initial(this._time, shared, internal, arrayState);
-                this._state.setParticle(iGroup, iParticle, arrayState);
+                f(iGroup, iParticle);
             }
         }
+    }
+
+    public setStateInitial(): void {
+        this.iterateParticles((iGroup: number, iParticle: number) => {
+            const shared = this._shared[iGroup];
+            const internal = this._internal[iGroup];
+            const state = this._state.getParticle(iGroup, iParticle);
+            const arrayState = particleStateToArray(state);
+            this._generator.initial(this._time, shared, internal, arrayState);
+            this._state.setParticle(iGroup, iParticle, arrayState);
+        });
     }
 
     public runToTime(time: number): void {
@@ -64,14 +71,12 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
             throw RangeError(`Cannot run to requested time ${time}, which is less than current time ${this._time}.`);
         }
         const nSteps = (time - this._time) / this._dt;
-        for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
-            for (let iParticle = 0; iParticle < this._nParticles; iParticle++) {
-                const shared = this._shared[iGroup];
-                const internal = this._internal[iGroup];
-                const state = this.runParticle(shared, internal, this._state.getParticle(iGroup, iParticle), nSteps);
-                this._state.setParticle(iGroup, iParticle, state);
-            }
-        }
+        this.iterateParticles((iGroup: number, iParticle: number) => {
+            const shared = this._shared[iGroup];
+            const internal = this._internal[iGroup];
+            const state = this.runParticle(shared, internal, this._state.getParticle(iGroup, iParticle), nSteps);
+            this._state.setParticle(iGroup, iParticle, state);
+        });
         this._time = time;
     }
 
