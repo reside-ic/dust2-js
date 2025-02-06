@@ -5,11 +5,14 @@ import { System } from "./System";
 import { checkIntegerInRange } from "./utils.ts";
 
 // Extract TShare and TInternal types from a TGenerator type
-type TShared<TGenerator> = TGenerator extends DiscreteSystemGenerator<infer T, infer U> ? T : never
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type TShared<TGenerator> = TGenerator extends DiscreteSystemGenerator<infer T, infer U> ? T : never;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type TInternal<TGenerator> = TGenerator extends DiscreteSystemGenerator<infer T, infer U> ? U : never;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>> implements System {
-    private readonly _generator: TGenerator
+    private readonly _generator: TGenerator;
     private readonly _nParticles: number;
     private readonly _nGroups: number;
     private readonly _statePacker: Packer;
@@ -19,11 +22,7 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
     private readonly _internal: TInternal<TGenerator>[];
     private _time: number;
 
-    constructor(generator: TGenerator,
-                shared: TShared<TGenerator>[],
-                time: number,
-                dt: number,
-                nParticles: number) {
+    constructor(generator: TGenerator, shared: TShared<TGenerator>[], time: number, dt: number, nParticles: number) {
         checkIntegerInRange("Number of particles", nParticles, 0);
 
         this._generator = generator;
@@ -85,7 +84,12 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
         return result;
     }
 
-    private runParticle(shared: TShared<TGenerator>, internal: TInternal<TGenerator>, particleState: ParticleState, nSteps: number): number[] {
+    private runParticle(
+        shared: TShared<TGenerator>,
+        internal: TInternal<TGenerator>,
+        particleState: ParticleState,
+        nSteps: number
+    ): number[] {
         let state = this.particleStateToArray(particleState);
         let stateNext = [...state];
         let time = this._time;

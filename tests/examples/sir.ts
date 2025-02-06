@@ -39,10 +39,12 @@ export class DiscreteSIR implements DiscreteSystemGenerator<SIRShared, null> {
         stateNext[4] = cases_inc + n_SI;
     }
 
-    internal(shared: SIRShared): null{
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    internal(shared: SIRShared): null {
         return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     packingState(shared: SIRShared): Packer {
         const shape = new Map<string, number[]>([
             ["S", []],

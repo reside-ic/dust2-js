@@ -4,17 +4,18 @@ import { DiscreteSystem } from "../src/DiscreteSystem.ts";
 
 const generator = new DiscreteSIR();
 const shared = [
-    { N: 1000000, I0: 1, beta: 4, gamma: 2},
-    { N: 2000000, I0: 2, beta: 8, gamma: 4},
+    { N: 1000000, I0: 1, beta: 4, gamma: 2 },
+    { N: 2000000, I0: 2, beta: 8, gamma: 4 }
 ];
 
-const createSystem = () => new DiscreteSystem<DiscreteSIR>(
-    generator,
-    shared,
-    5, // time
-    0.5, // dt
-    3 // nParticles
-);
+const createSystem = () =>
+    new DiscreteSystem<DiscreteSIR>(
+        generator,
+        shared,
+        5, // time
+        0.5, // dt
+        3 // nParticles
+    );
 
 describe("DiscreteSystem", () => {
     test("can be created", () => {
@@ -39,24 +40,35 @@ describe("DiscreteSystem", () => {
     });
 
     test("constructor throws error if nParticles is invalid", () => {
-        expect(() => new DiscreteSystem<DiscreteSIR>(
-            generator,
-            shared,
-            5, // time
-            0.5, // dt
-            -3 // nParticles
-        )).toThrowError("Number of particles should be an integer greater than 0, but is -3.");
+        expect(
+            () =>
+                new DiscreteSystem<DiscreteSIR>(
+                    generator,
+                    shared,
+                    5, // time
+                    0.5, // dt
+                    -3 // nParticles
+                )
+        ).toThrowError("Number of particles should be an integer greater than 0, but is -3.");
 
-        expect(() => new DiscreteSystem<DiscreteSIR>(
-            generator,
-            shared,
-            5, // time
-            0.5, // dt
-            3.1 // nParticles
-        )).toThrowError("Number of particles should be an integer greater than 0, but is 3.1.");
+        expect(
+            () =>
+                new DiscreteSystem<DiscreteSIR>(
+                    generator,
+                    shared,
+                    5, // time
+                    0.5, // dt
+                    3.1 // nParticles
+                )
+        ).toThrowError("Number of particles should be an integer greater than 0, but is 3.1.");
     });
 
-    const expectParticleGroupState = (sys: DiscreteSystem<any>, iGroup: number, nParticles: number, expectedValues: number[]) => {
+    const expectParticleGroupState = (
+        sys: DiscreteSystem<any>,
+        iGroup: number,
+        nParticles: number,
+        expectedValues: number[]
+    ) => {
         const state = sys.state;
         for (let i = 0; i < nParticles; i++) {
             expect(sys.particleStateToArray(state.getParticle(iGroup, i))).toStrictEqual(expectedValues);
@@ -117,6 +129,8 @@ describe("DiscreteSystem", () => {
     test("throws expected error if run to time which is before current time", () => {
         const sys = createSystem();
         sys.setStateInitial();
-        expect(() => sys.runToTime(1)).toThrowError("Cannot run to requested time 1, which is less than current time 5.");
+        expect(() => sys.runToTime(1)).toThrowError(
+            "Cannot run to requested time 1, which is less than current time 5."
+        );
     });
 });

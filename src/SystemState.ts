@@ -42,5 +42,4 @@ export class SystemState {
         checkIntegerInRange("Group index", iGroup, 0, this._nGroups - 1);
         checkIntegerInRange("Particle index", iParticle, 0, this._nParticles - 1);
     }
-
 }
