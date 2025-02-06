@@ -16,14 +16,13 @@ export class DiscreteSIR implements DiscreteSystemGenerator<Shared, null> {
         stateNext[4] = 0;
     }
 
-    update(time: number, dt: number, state: number[], shared: Shared,
-           internal: null, stateNext: number[]) {
+    update(time: number, dt: number, state: number[], shared: Shared, internal: null, stateNext: number[]) {
         const S = state[0];
         const I = state[1];
         const R = state[2];
         const cases_cumul = state[3];
         const cases_inc = state[4];
-        const p_SI = 1 - Math.exp(-shared.beta * I / shared.N * dt);
+        const p_SI = 1 - Math.exp(((-shared.beta * I) / shared.N) * dt);
         const p_IR = 1 - Math.exp(-shared.gamma * dt);
         // const n_SI = monty::random::binomial<real_type>(rng_state, S, p_SI);
         // const n_IR = monty::random::binomial<real_type>(rng_state, I, p_IR);
