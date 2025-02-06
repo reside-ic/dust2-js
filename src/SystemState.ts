@@ -4,6 +4,7 @@ import { checkIntegerInRange } from "./utils.ts";
 export interface ParticleState {
     get: (i: number) => number;
     set: (i: number, value: number) => void;
+    size: number;
 }
 
 export class SystemState {
@@ -31,7 +32,7 @@ export class SystemState {
     public setParticle(iGroup: number, iParticle: number, values: number[]): void {
         this.checkIndexes(iGroup, iParticle);
         if (values.length !== this._nStateElements) {
-            throw new RangeError(`Particle array must be of length ${this._nStateElements}`);
+            throw new RangeError(`Particle state array must be of length ${this._nStateElements}.`);
         }
         for (let i = 0; i < values.length; i++) {
             this._state.set(iGroup, iParticle, i, values[i]);

@@ -2,7 +2,7 @@ import { ParticleState, SystemState } from "./SystemState";
 import { DiscreteSystemGenerator } from "./DiscreteSystemGenerator";
 import { Packer } from "./Packer";
 import { System } from "./System";
-import { checkIntegerInRange } from "./utils.ts";
+import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
 
 // Extract TShare and TInternal types from a TGenerator type
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -52,7 +52,7 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
                 const shared = this._shared[iGroup];
                 const internal = this._internal[iGroup];
                 const state = this._state.getParticle(iGroup, iParticle);
-                const arrayState = this.particleStateToArray(state);
+                const arrayState = particleStateToArray(state);
                 this._generator.initial(this._time, shared, internal, arrayState);
                 this._state.setParticle(iGroup, iParticle, arrayState);
             }
@@ -75,22 +75,13 @@ export class DiscreteSystem<TGenerator extends DiscreteSystemGenerator<any, any>
         this._time = time;
     }
 
-    public particleStateToArray(state: ParticleState): number[] {
-        const len = this._statePacker.length;
-        const result = new Array<number>(len);
-        for (let i = 0; i < len; i++) {
-            result[i] = state.get(i);
-        }
-        return result;
-    }
-
     private runParticle(
         shared: TShared<TGenerator>,
         internal: TInternal<TGenerator>,
         particleState: ParticleState,
         nSteps: number
     ): number[] {
-        let state = this.particleStateToArray(particleState);
+        let state = particleStateToArray(particleState);
         let stateNext = [...state];
         let time = this._time;
         for (let i = 0; i < nSteps; i++) {

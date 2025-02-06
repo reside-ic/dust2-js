@@ -1,6 +1,7 @@
 import { describe, test, expect } from "vitest";
 import { DiscreteSIR } from "./examples/sir";
 import { DiscreteSystem } from "../src/DiscreteSystem.ts";
+import { particleStateToArray } from "../src/utils.ts";
 
 const generator = new DiscreteSIR();
 const shared = [
@@ -71,7 +72,7 @@ describe("DiscreteSystem", () => {
     ) => {
         const state = sys.state;
         for (let i = 0; i < nParticles; i++) {
-            expect(sys.particleStateToArray(state.getParticle(iGroup, i))).toStrictEqual(expectedValues);
+            expect(particleStateToArray(state.getParticle(iGroup, i))).toStrictEqual(expectedValues);
         }
     };
 
