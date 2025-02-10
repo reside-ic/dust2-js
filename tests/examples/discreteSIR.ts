@@ -8,7 +8,7 @@ export interface SIRShared {
     gamma: number;
 }
 
-export class DiscreteSIR implements DiscreteSystemGenerator<SIRShared, null> {
+export const discreteSIR: DiscreteSystemGenerator<SIRShared, null> = {
     // it would be more js-ish if we returned an array, but that would
     // be harder once we work out how to get read-write slices from
     // ndarray.
@@ -18,7 +18,7 @@ export class DiscreteSIR implements DiscreteSystemGenerator<SIRShared, null> {
         stateNext[2] = 0;
         stateNext[3] = 0;
         stateNext[4] = 0;
-    }
+    },
 
     update(time: number, dt: number, state: number[], shared: SIRShared, internal: null, stateNext: number[]) {
         const S = state[0];
@@ -37,12 +37,12 @@ export class DiscreteSIR implements DiscreteSystemGenerator<SIRShared, null> {
         stateNext[2] = R + n_IR;
         stateNext[3] = cases_cumul + n_SI;
         stateNext[4] = cases_inc + n_SI;
-    }
+    },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     internal(shared: SIRShared): null {
         return null;
-    }
+    },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     packingState(shared: SIRShared): Packer {

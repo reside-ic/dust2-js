@@ -1,16 +1,17 @@
 import { describe, test, expect } from "vitest";
-import { DiscreteSIR } from "./examples/DiscreteSIR";
+import { discreteSIR } from "./examples/discreteSIR";
 import { DiscreteSystem } from "../src/DiscreteSystem";
 import { particleStateToArray } from "../src/utils";
+import { SIRShared } from "./examples/discreteSIR.ts";
 
-const generator = new DiscreteSIR();
+const generator = discreteSIR;
 const shared = [
     { N: 1000000, I0: 1, beta: 4, gamma: 2 },
     { N: 2000000, I0: 2, beta: 8, gamma: 4 }
 ];
 
 const createSystem = () =>
-    new DiscreteSystem<DiscreteSIR>(
+    new DiscreteSystem<SIRShared, null>(
         generator,
         shared,
         5, // time
@@ -43,7 +44,7 @@ describe("DiscreteSystem", () => {
     test("constructor throws error if nParticles is invalid", () => {
         expect(
             () =>
-                new DiscreteSystem<DiscreteSIR>(
+                new DiscreteSystem<SIRShared, null>(
                     generator,
                     shared,
                     5, // time
@@ -54,7 +55,7 @@ describe("DiscreteSystem", () => {
 
         expect(
             () =>
-                new DiscreteSystem<DiscreteSIR>(
+                new DiscreteSystem<SIRShared, null>(
                     generator,
                     shared,
                     5, // time
@@ -65,7 +66,7 @@ describe("DiscreteSystem", () => {
     });
 
     const expectParticleGroupState = (
-        sys: DiscreteSystem<any>,
+        sys: DiscreteSystem<any, any>,
         iGroup: number,
         nParticles: number,
         expectedValues: number[]
