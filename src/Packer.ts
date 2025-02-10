@@ -115,7 +115,18 @@ export class Packer {
             const scalar = this.isScalar(name);
             const inputSlice = scalar ? new Slice(start, start + 1) : new Slice(start, start + length);
             const resultShape = scalar ? residualDimensions : [...currentShape, ...residualDimensions];
+
             const values = slice(x, new MultiSlice(inputSlice, ...residualNullDimensions));
+
+            // TODO:
+            // Somehow pull out values from the ndarray slice - to its own (new) array potentially,
+            // and create a new ndarray from that
+            // use hi/lo to get sub-ndarray, then use transpose to permute
+            // const xLength = x.shape[0]; // TODO: declare this once
+            // const hiVal = xLength - start;
+            // const sliced = x.lo(start, residualNullDimension).hi(hiVal, residualNullDimension);
+            // const resultArray = sliced.transpose(...resultShape);
+
             const flatVals = ndarray2array(values);
             result.set(name, array(flatVals, { shape: resultShape }));
         }
