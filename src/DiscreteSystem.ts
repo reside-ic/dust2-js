@@ -5,7 +5,7 @@ import { System } from "./System";
 import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
 
 export class DiscreteSystem<TShared, TInternal> implements System {
-    private readonly _generator: DiscreteSystemGenerator<TShared,TInternal>;
+    private readonly _generator: DiscreteSystemGenerator<TShared, TInternal>;
     private readonly _nParticles: number;
     private readonly _nGroups: number;
     private readonly _statePacker: Packer;
@@ -15,7 +15,13 @@ export class DiscreteSystem<TShared, TInternal> implements System {
     private readonly _internal: TInternal[];
     private _time: number;
 
-    constructor(generator: DiscreteSystemGenerator<TShared,TInternal>, shared: TShared[], time: number, dt: number, nParticles: number) {
+    constructor(
+        generator: DiscreteSystemGenerator<TShared, TInternal>,
+        shared: TShared[],
+        time: number,
+        dt: number,
+        nParticles: number
+    ) {
         checkIntegerInRange("Number of particles", nParticles, 1);
 
         this._generator = generator;
@@ -73,12 +79,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         this._time = time;
     }
 
-    private runParticle(
-        shared: TShared,
-        internal: TInternal,
-        particleState: ParticleState,
-        nSteps: number
-    ): number[] {
+    private runParticle(shared: TShared, internal: TInternal, particleState: ParticleState, nSteps: number): number[] {
         let state = particleStateToArray(particleState);
         let stateNext = [...state];
         let time = this._time;

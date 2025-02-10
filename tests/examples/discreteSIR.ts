@@ -55,4 +55,4 @@ export const discreteSIR: DiscreteSystemGenerator<SIRShared, null> = {
         ]);
         return new Packer({ shape });
     }
-}
+};
