@@ -74,7 +74,7 @@ export class Packer {
         }
 
         // Return a map of names to values in the format described by shape
-        const result = new Map<string, number | ndarray>();
+        const result = new Map<string, number | ndarray.NdArray>();
         for (const [name, currentShape] of this._shape) {
             const { start, length } = this._idx[name];
             if (this.isScalar(name)) {
@@ -97,7 +97,6 @@ export class Packer {
         // If this NdArray is one dimensional, call unpackArray, so we return numbers for the scalar values
         if (xShape.length === 1) {
             // Because this is a 1D NdArray we can treat it like a ParticleState, and pull its values out to an array
-            // - we don't just use NdArray.data, as the NdaArray may be an incomplete view of a larger underlying array.
             const xArray = particleStateToArray(x as ParticleState);
             return this.unpackArray(xArray);
         }
@@ -118,16 +117,16 @@ export class Packer {
             if (scalar) {
                 sliced = x.pick(start, ...residualNullDimensions);
             } else {
-                 // We take a slice from the ndarray by doing a low then a high truncate - so the high truncate value
-                 // (from the end of the array) is the underlying length - (slice start + slice length)
-                 const hiTrunc = xLength - (start + length);
-                 sliced = x.lo(start, ...residualNullDimensions)
-                     .hi(hiTrunc, ...residualNullDimensions);
+                // We take a slice from the ndarray by doing a low then a high truncate - so the high truncate value
+                // (from the end of the array) is the underlying length - (slice start + slice length)
+                const hiTrunc = xLength - (start + length);
+                sliced = x.lo(start, ...residualNullDimensions).hi(hiTrunc, ...residualNullDimensions);
             }
 
-            // Reshape the slice with transpose
             const resultShape = scalar ? residualDimensions : [...currentShape, ...residualDimensions];
-            const unpacked = sliced.transpose(...resultShape);
+
+            // Reshape the sliced array - leave stride undefined to use default
+            const unpacked = ndarray(sliced.data, resultShape, undefined, sliced.offset);
             result.set(name, unpacked);
         }
 
