@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import array from "@stdlib/ndarray/array";
 import ndarray2array from "@stdlib/ndarray/to-array";
 import { ndarray } from "@stdlib/types/ndarray";
-import { Packer, UnpackResult } from "../src/packer.ts";
+import { Packer, UnpackResult } from "../src/Packer";
 
 describe("Packer class", () => {
     const scalarShape = new Map([
@@ -25,36 +25,36 @@ describe("Packer class", () => {
     describe("constructor", () => {
         test("builds expected fields for scalar-only packer", () => {
             const sut = new Packer({ shape: scalarShape });
-            expect(sut["len"]).toBe(3);
-            expect(sut["idx"]).toStrictEqual({
+            expect(sut.length).toBe(3);
+            expect(sut["_idx"]).toStrictEqual({
                 b: { start: 0, length: 1 },
                 c: { start: 1, length: 1 },
                 a: { start: 2, length: 1 }
             });
-            expect(sut["shape"]).toBe(scalarShape);
+            expect(sut["_shape"]).toBe(scalarShape);
         });
 
         test("builds expected properties for array-only packer", () => {
             const sut = new Packer({ shape: arrayShape });
-            expect(sut["len"]).toBe(11);
-            expect(sut["idx"]).toStrictEqual({
+            expect(sut.length).toBe(11);
+            expect(sut["_idx"]).toStrictEqual({
                 X: { start: 0, length: 3 },
                 Y: { start: 3, length: 8 }
             });
-            expect(sut["shape"]).toBe(arrayShape);
+            expect(sut["_shape"]).toBe(arrayShape);
         });
 
         test("build expected properties for packer with both scalar and array values", () => {
             const sut = new Packer({ shape: mixedShape });
-            expect(sut["len"]).toBe(14);
-            expect(sut["idx"]).toStrictEqual({
+            expect(sut.length).toBe(14);
+            expect(sut["_idx"]).toStrictEqual({
                 a: { start: 0, length: 1 },
                 X: { start: 1, length: 3 },
                 b: { start: 4, length: 1 },
                 Y: { start: 5, length: 8 },
                 c: { start: 13, length: 1 }
             });
-            expect(sut["shape"]).toBe(mixedShape);
+            expect(sut["_shape"]).toBe(mixedShape);
         });
 
         test("throws error if empty shape", () => {

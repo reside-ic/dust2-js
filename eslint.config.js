@@ -29,7 +29,7 @@ export default [
         }
     },
     {
-        files: ["tests/dust2.test.ts"],
+        files: ["**/*.test.ts"],
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
             "@typescript-eslint/explicit-module-boundary-types": "off",
