@@ -1,7 +1,5 @@
 import { describe, expect, test } from "vitest";
-import array from "@stdlib/ndarray/array";
-import ndarray2array from "@stdlib/ndarray/to-array";
-import { ndarray } from "@stdlib/types/ndarray";
+import ndarray from "ndarray";
 import { Packer, UnpackResult } from "../src/Packer";
 
 describe("Packer class", () => {
@@ -105,12 +103,12 @@ describe("Packer class", () => {
     });
 
     const expectUnpackedArrayValues = (result: UnpackResult) => {
-        const x = result.get("X") as ndarray;
+        const x = result.get("X") as ndarray.NdArray;
         expect(x.shape).toStrictEqual([3]);
         expect(x.get(0)).toBe(10);
         expect(x.get(1)).toBe(20);
         expect(x.get(2)).toBe(30);
-        const y = result.get("Y") as ndarray;
+        const y = result.get("Y") as ndarray.NdArray;
         expect(y.shape).toStrictEqual([2, 4]);
         expect(y.get(0, 0)).toBe(100);
         expect(y.get(0, 1)).toBe(200);
@@ -185,7 +183,7 @@ describe("Packer class", () => {
                 ])
             });
 
-            const x = array(
+            const x = ndarray(
                 new Int32Array([
                     1,
                     2, // a
@@ -200,33 +198,33 @@ describe("Packer class", () => {
                     1100,
                     1200 // Y22
                 ]),
-                { shape: [6, 2] }
+                [6, 2]
             );
 
             const result = sut.unpackNdarray(x);
 
             // Expect all results from unpack_ndarray to be ndarrays
-            const a = result.get("a") as ndarray;
-            expect(ndarray2array(a)).toStrictEqual([1, 2]);
+            const a = result.get("a") as ndarray.NdArray;
+            expect(a.shape).toStrictEqual([2]);
+            expect(a.get(0)).toBe(1);
+            expect(a.get(1)).toBe(2);
 
-            const b = result.get("b") as ndarray;
+            const b = result.get("b") as ndarray.NdArray;
             expect(b.shape).toStrictEqual([2]);
             expect(b.get(0)).toBe(30);
             expect(b.get(1)).toBe(40);
-            expect(ndarray2array(b)).toStrictEqual([30, 40]);
 
-            const y = result.get("Y") as ndarray;
+            const y = result.get("Y") as ndarray.NdArray;
+            expect(y.offset).toBe(4);
             expect(y.shape).toStrictEqual([2, 2, 2]);
-            expect(ndarray2array(y)).toStrictEqual([
-                [
-                    [500, 600],
-                    [700, 800]
-                ],
-                [
-                    [900, 1000],
-                    [1100, 1200]
-                ]
-            ]);
+            expect(y.get(0, 0, 0)).toBe(500);
+            expect(y.get(0, 0, 1)).toBe(600);
+            expect(y.get(0, 1, 0)).toBe(700);
+            expect(y.get(0, 1, 1)).toBe(800);
+            expect(y.get(1, 0, 0)).toBe(900);
+            expect(y.get(1, 0, 1)).toBe(1000);
+            expect(y.get(1, 1, 0)).toBe(1100);
+            expect(y.get(1, 1, 1)).toBe(1200);
         });
 
         test("as expected for 3D array, for both array and scalar values", () => {
@@ -237,7 +235,7 @@ describe("Packer class", () => {
                 ])
             });
 
-            const x = array(
+            const x = ndarray(
                 new Int32Array([
                     // a
                     1,
@@ -275,51 +273,54 @@ describe("Packer class", () => {
                     1102,
                     1202
                 ]),
-                { shape: [5, 3, 2] }
+                [5, 3, 2]
             );
 
             const result = sut.unpackNdarray(x);
 
-            const a = result.get("a") as ndarray;
-            expect(ndarray2array(a)).toStrictEqual([
-                [1, 2],
-                [3, 4],
-                [5, 6]
-            ]);
+            const a = result.get("a") as ndarray.NdArray;
+            expect(a.shape).toStrictEqual([3, 2]);
+            expect(a.get(0, 0)).toBe(1);
+            expect(a.get(0, 1)).toBe(2);
+            expect(a.get(1, 0)).toBe(3);
+            expect(a.get(1, 1)).toBe(4);
+            expect(a.get(2, 0)).toBe(5);
+            expect(a.get(2, 1)).toBe(6);
 
-            const y = result.get("Y") as ndarray;
+            const y = result.get("Y") as ndarray.NdArray;
             expect(y.shape).toStrictEqual([2, 2, 3, 2]);
-            expect(ndarray2array(y)).toStrictEqual([
-                [
-                    [
-                        [500, 600],
-                        [501, 601],
-                        [502, 602]
-                    ],
-                    [
-                        [700, 800],
-                        [701, 801],
-                        [702, 802]
-                    ]
-                ],
-                [
-                    [
-                        [900, 1000],
-                        [901, 1001],
-                        [902, 1002]
-                    ],
-                    [
-                        [1100, 1200],
-                        [1101, 1201],
-                        [1102, 1202]
-                    ]
-                ]
-            ]);
+            expect(y.get(0, 0, 0, 0)).toBe(500);
+            expect(y.get(0, 0, 0, 1)).toBe(600);
+            expect(y.get(0, 0, 1, 0)).toBe(501);
+            expect(y.get(0, 0, 1, 1)).toBe(601);
+            expect(y.get(0, 0, 2, 0)).toBe(502);
+            expect(y.get(0, 0, 2, 1)).toBe(602);
+
+            expect(y.get(0, 1, 0, 0)).toBe(700);
+            expect(y.get(0, 1, 0, 1)).toBe(800);
+            expect(y.get(0, 1, 1, 0)).toBe(701);
+            expect(y.get(0, 1, 1, 1)).toBe(801);
+            expect(y.get(0, 1, 2, 0)).toBe(702);
+            expect(y.get(0, 1, 2, 1)).toBe(802);
+
+            expect(y.get(1, 0, 0, 0)).toBe(900);
+            expect(y.get(1, 0, 0, 1)).toBe(1000);
+            expect(y.get(1, 0, 1, 0)).toBe(901);
+            expect(y.get(1, 0, 1, 1)).toBe(1001);
+            expect(y.get(1, 0, 2, 0)).toBe(902);
+            expect(y.get(1, 0, 2, 1)).toBe(1002);
+
+            expect(y.get(1, 1, 0, 0)).toBe(1100);
+            expect(y.get(1, 1, 0, 1)).toBe(1200);
+            expect(y.get(1, 1, 1, 0)).toBe(1101);
+            expect(y.get(1, 1, 1, 1)).toBe(1201);
+            expect(y.get(1, 1, 2, 0)).toBe(1102);
+            expect(y.get(1, 1, 2, 1)).toBe(1202);
         });
 
         test("unpacking one-dimensional ndarray is equivalent to unpacking number Array", () => {
             const sut = new Packer({ shape: mixedShape });
-            const x = array(
+            const x = ndarray(
                 new Int32Array([
                     1, //a
                     10,
@@ -336,7 +337,7 @@ describe("Packer class", () => {
                     800, //Y
                     3 // c
                 ]),
-                { shape: [14] }
+                [14]
             );
             const result = sut.unpackNdarray(x);
             expect(Array.from(result.keys())).toStrictEqual(["a", "X", "b", "Y", "c"]);
@@ -355,7 +356,7 @@ describe("Packer class", () => {
                 ])
             });
 
-            const x = array(
+            const x = ndarray(
                 new Int32Array([
                     1,
                     2, // a
@@ -368,7 +369,7 @@ describe("Packer class", () => {
                     900,
                     1000 // Y21
                 ]),
-                { shape: [5, 2] }
+                [5, 2]
             );
 
             expect(() => {
@@ -385,7 +386,7 @@ describe("Packer class", () => {
                 ])
             });
 
-            const x = array(
+            const x = ndarray(
                 new Int32Array([
                     1,
                     2, // a
@@ -400,32 +401,37 @@ describe("Packer class", () => {
                     1100,
                     1200 // Y22
                 ]),
-                { shape: [6, 2, 1] }
+                [6, 2, 1]
             );
 
             const result = sut.unpackNdarray(x);
 
             // Expect all results from unpack_ndarray to be ndarrays
-            const a = result.get("a") as ndarray;
+            const a = result.get("a") as ndarray.NdArray;
             expect(a.shape).toStrictEqual([2, 1]);
-            expect(ndarray2array(a)).toStrictEqual([[1], [2]]);
+            //expect(ndarray2array(a)).toStrictEqual([[1], [2]]);
+            expect(a.get(0, 0)).toBe(1);
+            expect(a.get(1, 0)).toBe(2);
 
-            const b = result.get("b") as ndarray;
+            const b = result.get("b") as ndarray.NdArray;
             expect(b.shape).toStrictEqual([2, 1]);
-            expect(ndarray2array(b)).toStrictEqual([[30], [40]]);
+            //expect(ndarray2array(b)).toStrictEqual([[30], [40]]);
+            expect(b.get(0, 0)).toBe(30);
+            expect(b.get(1, 0)).toBe(40);
 
-            const y = result.get("Y") as ndarray;
+            const y = result.get("Y") as ndarray.NdArray;
             expect(y.shape).toStrictEqual([2, 2, 2, 1]);
-            expect(ndarray2array(y)).toStrictEqual([
-                [
-                    [[500], [600]],
-                    [[700], [800]]
-                ],
-                [
-                    [[900], [1000]],
-                    [[1100], [1200]]
-                ]
-            ]);
+            expect(y.get(0, 0, 0, 0)).toBe(500);
+            expect(y.get(0, 0, 1, 0)).toBe(600);
+
+            expect(y.get(0, 1, 0, 0)).toBe(700);
+            expect(y.get(0, 1, 1, 0)).toBe(800);
+
+            expect(y.get(1, 0, 0, 0)).toBe(900);
+            expect(y.get(1, 0, 1, 0)).toBe(1000);
+
+            expect(y.get(1, 1, 0, 0)).toBe(1100);
+            expect(y.get(1, 1, 1, 0)).toBe(1200);
         });
     });
 });

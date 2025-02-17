@@ -1,15 +1,11 @@
-import array from "@stdlib/ndarray/array";
-import ndarray2array from "@stdlib/ndarray/to-array";
-import MultiSlice from "@stdlib/slice/multi";
-import Slice from "@stdlib/slice/ctor";
-import slice from "@stdlib/ndarray/slice";
-import { ndarray } from "@stdlib/types/ndarray";
-import { prod, shapeSlice } from "./utils";
+import ndarray from "ndarray";
+import { particleStateToArray, prod } from "./utils";
+import { ParticleState } from "./SystemState.ts";
 
 type PackerShape = Map<string, number[]>;
 
 // Unpack results return numbers for scalar values and ndarray for everything else, including 1D arrays
-export type UnpackResult = Map<string, number | ndarray>;
+export type UnpackResult = Map<string, number | ndarray.NdArray>;
 
 // This options type currently only defines the shapes of the unpacked values, but we expect to add other options later
 export interface PackerOptions {
@@ -78,46 +74,60 @@ export class Packer {
         }
 
         // Return a map of names to values in the format described by shape
-        const result = new Map<string, number | ndarray>();
+        const result = new Map<string, number | ndarray.NdArray>();
         for (const [name, currentShape] of this._shape) {
             const { start, length } = this._idx[name];
             if (this.isScalar(name)) {
                 result.set(name, x[start]);
             } else {
                 const values = x.slice(start, start + length);
-                result.set(name, array(values, { shape: currentShape }));
+                result.set(name, ndarray(values, currentShape));
             }
         }
         return result;
     }
 
-    public unpackNdarray(x: ndarray): UnpackResult {
+    public unpackNdarray(x: ndarray.NdArray): UnpackResult {
         const xShape = x.shape;
-        if (xShape[0] !== this._length) {
-            throw Error(`Incorrect length input; expected ${this._length} but given ${xShape[0]}.`);
+        const xLength = xShape[0];
+        if (xLength !== this._length) {
+            throw Error(`Incorrect length input; expected ${this._length} but given ${xLength}.`);
         }
 
-        // If this ndarray is one dimensional, call unpackArray, so we return numbers for the scalar values
-        if (x.shape.length === 1) {
-            return this.unpackArray(ndarray2array(x));
+        // If this NdArray is one dimensional, call unpackArray, so we return numbers for the scalar values
+        if (xShape.length === 1) {
+            // Because this is a 1D NdArray we can treat it like a ParticleState, and pull its values out to an array
+            const xArray = particleStateToArray(x as ParticleState);
+            return this.unpackArray(xArray);
         }
 
         // all dimensions except the first one as nulls - get all value for those dims
         const residualNullDimensions = new Array(xShape.length - 1).fill(null);
-        const residualDimensions = shapeSlice(xShape, 1); // all dimensions except the first one
+        const residualDimensions = xShape.slice(1); // all dimensions except the first one
 
         // Return a map of names to values in the format described by shape
-        const result = new Map<string, ndarray>();
+        const result = new Map<string, ndarray.NdArray>();
         for (const [name, currentShape] of this._shape) {
             const { start, length } = this._idx[name];
 
-            // Take the correct slice of the input ndarray, and reshape
             const scalar = this.isScalar(name);
-            const inputSlice = scalar ? new Slice(start, start + 1) : new Slice(start, start + length);
+
+            // Take the correct slice of the input ndarray
+            let sliced: ndarray.NdArray;
+            if (scalar) {
+                sliced = x.pick(start, ...residualNullDimensions);
+            } else {
+                // We take a slice from the ndarray by doing a low then a high truncate - so the high truncate value
+                // (from the end of the array) is the underlying length - (slice start + slice length)
+                const hiTrunc = xLength - (start + length);
+                sliced = x.lo(start, ...residualNullDimensions).hi(hiTrunc, ...residualNullDimensions);
+            }
+
             const resultShape = scalar ? residualDimensions : [...currentShape, ...residualDimensions];
-            const values = slice(x, new MultiSlice(inputSlice, ...residualNullDimensions));
-            const flatVals = ndarray2array(values);
-            result.set(name, array(flatVals, { shape: resultShape }));
+
+            // Reshape the sliced array - leave stride undefined to use default
+            const unpacked = ndarray(sliced.data, resultShape, undefined, sliced.offset);
+            result.set(name, unpacked);
         }
 
         return result;

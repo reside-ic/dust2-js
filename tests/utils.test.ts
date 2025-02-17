@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { checkIntegerInRange, particleStateToArray, prod, shapeSlice } from "../src/utils";
-import { Shape } from "@stdlib/types/ndarray";
+import { checkIntegerInRange, particleStateToArray, prod } from "../src/utils";
 import ndarray from "ndarray";
 import { ParticleState } from "../src/SystemState.ts";
 
@@ -11,24 +10,6 @@ describe("prod", () => {
 
     test("returns 1 for empty array", () => {
         expect(prod([])).toBe(1);
-    });
-});
-
-describe("shapeSlice", () => {
-    const shape = [10, 20, 30] as Shape;
-
-    test("returns slice from 1", () => {
-        expect(shapeSlice(shape, 1)).toStrictEqual([20, 30]);
-    });
-
-    test("returns slice from 2", () => {
-        expect(shapeSlice(shape, 2)).toStrictEqual([30]);
-    });
-
-    test("throws error if requested start exceeds length", () => {
-        expect(() => {
-            shapeSlice(shape, 3);
-        }).toThrowError("Cannot start shape slice at index 3 - shape has only 3 elements");
     });
 });
 
