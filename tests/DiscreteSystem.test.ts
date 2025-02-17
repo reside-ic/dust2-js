@@ -100,10 +100,10 @@ describe("DiscreteSystem", () => {
         expectParticleGroupState(sys, 1, 3, expectedGroup2Initial);
     });
 
-    test("can set time", () => {
+    test("can set and get time", () => {
         const sys = createSystem();
-        sys.setTime(25);
-        expect(sys["_time"]).toBe(25);
+        sys.time = 25;
+        expect(sys.time).toBe(25);
     });
 
     test("can run to time", () => {

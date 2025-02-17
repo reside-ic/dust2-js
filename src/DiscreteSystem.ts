@@ -37,7 +37,11 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         this._internal = shared.map((el) => generator.internal(el));
     }
 
-    public setTime(value: number) {
+    public get time() {
+        return this._time;
+    }
+
+    public set time(value: number) {
         this._time = value;
     }
 

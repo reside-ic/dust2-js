@@ -1,8 +1,8 @@
 import { SystemState } from "./SystemState";
 
 export interface System {
-    setStateInitial: () => void;
-    setTime: (time: number) => void;
+    time: number;
     state: Readonly<SystemState>;
+    setStateInitial: () => void;
     runToTime: (time: number) => void;
 }
