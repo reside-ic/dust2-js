@@ -5,6 +5,18 @@ import { particleStateToArray } from "../src/utils.ts";
 describe("SystemState", () => {
     const createSystemState = () => new SystemState(2, 3, 4);
 
+    test("can get nGroups", () => {
+        expect(createSystemState().nGroups).toBe(2);
+    });
+
+    test("can get nParticles", () => {
+        expect(createSystemState().nParticles).toBe(3);
+    });
+
+    test("can get nStateElements", () => {
+        expect(createSystemState().nStateElements).toBe(4);
+    });
+
     test("can set and get particles", () => {
         const sut = createSystemState();
         sut.setParticle(0, 1, [10, 20, 30, 40]);
