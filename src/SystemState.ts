@@ -22,6 +22,18 @@ export class SystemState {
         this._state = ndarray(new Array<number>(len).fill(0), [nGroups, nParticles, nStateElements]);
     }
 
+    public get nGroups(): number {
+        return this._nGroups;
+    }
+
+    public get nParticles(): number {
+        return this._nParticles;
+    }
+
+    public get nStateElements(): number {
+        return this._nStateElements;
+    }
+
     // Return an ndArray which is a view of a particle slice of the underlying array
     public getParticle(iGroup: number, iParticle: number): ParticleState {
         this.checkIndexes(iGroup, iParticle);
