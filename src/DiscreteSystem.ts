@@ -1,3 +1,4 @@
+import { Random, RngStateBuiltin } from "@reside-ic/random";
 import { ParticleState, SystemState } from "./SystemState";
 import { DiscreteSystemGenerator } from "./DiscreteSystemGenerator";
 import { Packer } from "./Packer";
@@ -13,6 +14,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
     private readonly _dt: number;
     private readonly _shared: TShared[];
     private readonly _internal: TInternal[];
+    private readonly _random: Random;
     private _time: number;
 
     constructor(
@@ -20,7 +22,8 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         shared: TShared[],
         time: number,
         dt: number,
-        nParticles: number
+        nParticles: number,
+        random?: Random
     ) {
         checkIntegerInRange("Number of particles", nParticles, 1);
 
@@ -35,6 +38,8 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         this._state = new SystemState(this._nGroups, this._nParticles, nState);
         this._shared = shared;
         this._internal = shared.map((el) => generator.internal(el));
+
+        this._random = random ? random : new Random(new RngStateBuiltin());
     }
 
     public get time() {
@@ -64,7 +69,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
             const internal = this._internal[iGroup];
             const state = this._state.getParticle(iGroup, iParticle);
             const arrayState = particleStateToArray(state);
-            this._generator.initial(this._time, shared, internal, arrayState);
+            this._generator.initial(this._time, shared, internal, arrayState, this._random);
             this._state.setParticle(iGroup, iParticle, arrayState);
         });
     }
@@ -88,7 +93,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         let stateNext = [...state];
         let time = this._time;
         for (let i = 0; i < nSteps; i++) {
-            this._generator.update(time, this._dt, state, shared, internal, stateNext);
+            this._generator.update(time, this._dt, state, shared, internal, stateNext, this._random);
             time += this._dt;
             const tmp = state;
             state = stateNext;

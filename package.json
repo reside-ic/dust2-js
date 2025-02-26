@@ -11,6 +11,7 @@
         "coverage": "vitest --coverage"
     },
     "dependencies": {
+        "@reside-ic/random": "^1.0.0",
         "ndarray": "^1.0.19"
     },
     "devDependencies": {
