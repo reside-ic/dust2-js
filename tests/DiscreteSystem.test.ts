@@ -12,9 +12,7 @@ const shared = [
     { N: 2000000, I0: 2, beta: 8, gamma: 4 }
 ];
 
-const random = new Random(new RngStateBuiltin());
-
-const createSystem = () =>
+const createSystem = (random?: Random) =>
     new DiscreteSystem<SIRShared, null>(
         generator,
         shared,
@@ -24,9 +22,12 @@ const createSystem = () =>
         random
     );
 
+const newSIRState = () => new Array<number>(5);
+
 describe("DiscreteSystem", () => {
     test("can be created", () => {
-        const sys = createSystem();
+        const random = new Random(new RngStateBuiltin());
+        const sys = createSystem(random);
 
         expect(sys["_generator"]).toBe(generator);
         expect(sys["_time"]).toBe(5);
@@ -125,39 +126,9 @@ describe("DiscreteSystem", () => {
         expect(sys.time).toBe(25);
     });
 
-    test("can run to time", () => {
-        const sys = createSystem();
-        sys.setStateInitial();
-        sys.runToTime(6); // 1 more than start time, should take 2 steps of 0.5
-
-        // Group 1
-        const g1StartState = [999999, 1, 0, 0, 0];
-        const g1Step1State = new Array<number>(5);
-        generator.update(5, 0.5, g1StartState, shared[0], null, g1Step1State, random);
-        const g1Step2State = new Array<number>(5);
-        generator.update(5.5, 0.5, g1Step1State, shared[0], null, g1Step2State, random);
-        expectParticleGroupState(sys, 0, 3, g1Step2State);
-
-        // Group 1
-        const g2StartState = [1999998, 2, 0, 0, 0];
-        const g2Step1State = new Array<number>(5);
-        generator.update(5, 0.5, g2StartState, shared[1], null, g2Step1State, random);
-        const g2Step2State = new Array<number>(5);
-        generator.update(5.5, 0.5, g2Step1State, shared[1], null, g2Step2State, random);
-        expectParticleGroupState(sys, 1, 3, g2Step2State);
-    });
-
-    test("throws expected error if run to time which is before current time", () => {
-        const sys = createSystem();
-        sys.setStateInitial();
-        expect(() => sys.runToTime(1)).toThrowError(
-            "Cannot run to requested time 1, which is less than current time 5."
-        );
-    });
-
-    test("Can initialise and run to time using Random", () => {
+    test("Can initialise and run to time using Walk generator", () => {
         const rngStateObserved = new RngStateObserved(new RngStateBuiltin());
-        const rnd = new Random(rngStateObserved);
+        const random = new Random(rngStateObserved);
         const compareRandom = new Random(rngStateObserved.replay());
         const np = 5;
         const walkShared = { n: 3, sd: 1 };
@@ -167,7 +138,7 @@ describe("DiscreteSystem", () => {
             0, // time
             1, // dt
             np, // nParticles
-            rnd
+            random
         );
         sys.runToTime(2);
         // each particle runs to time in turn, and at each time point takes values for each state value
@@ -178,5 +149,70 @@ describe("DiscreteSystem", () => {
             expect(particleStateToArray(particle)).toStrictEqual(expectedT2);
         }
         expect(sys.time).toEqual(2);
+    });
+
+    test("can initialise and run to time using SIR generator", () => {
+        const rngStateObserved = new RngStateObserved(new RngStateBuiltin());
+        const random = new Random(rngStateObserved);
+        const compareRandom = new Random(rngStateObserved.replay());
+
+        const start = 5;
+        const step1 = 5.5;
+        const dt = 0.5;
+
+        const sys = new DiscreteSystem<SIRShared, null>(
+            generator,
+            shared,
+            start, // time
+            dt, // dt
+            2, // nParticles
+            random
+        );
+        sys.setStateInitial();
+        sys.runToTime(6); // 1 more than start time, should take 2 steps of 0.5
+
+        const g1StartState = [999999, 1, 0, 0, 0];
+        const g2StartState = [1999998, 2, 0, 0, 0];
+
+        // Simulate each of the updates called by the System, using the compareRandom to replay the
+        // same random values in order so we get the same results
+        // 2 Groups (g) and 2 Particles (p)
+
+        // Group 1
+        const g1Shared = shared[0];
+        const g1p1Step1State = newSIRState();
+        generator.update(start, dt, g1StartState, g1Shared, null, g1p1Step1State, compareRandom);
+        const g1p1Step2State = newSIRState();
+        generator.update(step1, dt, g1p1Step1State, g1Shared, null, g1p1Step2State, compareRandom);
+
+        const g1p2Step1State = newSIRState();
+        generator.update(start, dt, g1StartState, g1Shared, null, g1p2Step1State, compareRandom);
+        const g1p2Step2State = newSIRState();
+        generator.update(step1, dt, g1p2Step1State, g1Shared, null, g1p2Step2State, compareRandom);
+
+        // Group 2
+        const g2Shared = shared[1];
+        const g2p1Step1State = newSIRState();
+        generator.update(start, dt, g2StartState, g2Shared, null, g2p1Step1State, compareRandom);
+        const g2p1Step2State = newSIRState();
+        generator.update(step1, dt, g2p1Step1State, g2Shared, null, g2p1Step2State, compareRandom);
+
+        const g2p2Step1State = newSIRState();
+        generator.update(start, dt, g2StartState, g2Shared, null, g2p2Step1State, compareRandom);
+        const g2p2Step2State = new Array<number>(5);
+        generator.update(step1, dt, g2p2Step1State, g2Shared, null, g2p2Step2State, compareRandom);
+
+        expect(particleStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(g1p1Step2State);
+        expect(particleStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(g1p2Step2State);
+        expect(particleStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(g2p1Step2State);
+        expect(particleStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(g2p2Step2State);
+    });
+
+    test("throws expected error if run to time which is before current time", () => {
+        const sys = createSystem();
+        sys.setStateInitial();
+        expect(() => sys.runToTime(1)).toThrowError(
+            "Cannot run to requested time 1, which is less than current time 5."
+        );
     });
 });

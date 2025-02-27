@@ -1,5 +1,6 @@
 import { DiscreteSystemGenerator } from "../../src/DiscreteSystemGenerator";
 import { Packer } from "../../src/Packer";
+import { Random } from "@reside-ic/random";
 
 export interface SIRShared {
     N: number;
@@ -20,7 +21,15 @@ export const discreteSIR: DiscreteSystemGenerator<SIRShared, null> = {
         stateNext[4] = 0;
     },
 
-    update(time: number, dt: number, state: number[], shared: SIRShared, internal: null, stateNext: number[]) {
+    update(
+        time: number,
+        dt: number,
+        state: number[],
+        shared: SIRShared,
+        internal: null,
+        stateNext: number[],
+        random: Random
+    ) {
         const S = state[0];
         const I = state[1];
         const R = state[2];
@@ -28,10 +37,8 @@ export const discreteSIR: DiscreteSystemGenerator<SIRShared, null> = {
         const cases_inc = state[4];
         const p_SI = 1 - Math.exp(((-shared.beta * I) / shared.N) * dt);
         const p_IR = 1 - Math.exp(-shared.gamma * dt);
-        // const n_SI = monty::random::binomial<real_type>(rng_state, S, p_SI);
-        // const n_IR = monty::random::binomial<real_type>(rng_state, I, p_IR);
-        const n_SI = S * p_SI;
-        const n_IR = I * p_IR;
+        const n_SI = random.binomial(S, p_SI);
+        const n_IR = random.binomial(I, p_IR);
         stateNext[0] = S - n_SI;
         stateNext[1] = I + n_SI - n_IR;
         stateNext[2] = R + n_IR;
