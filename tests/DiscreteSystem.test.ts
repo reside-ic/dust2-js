@@ -20,7 +20,8 @@ const createSystem = () =>
         shared,
         5, // time
         0.5, // dt
-        3 // nParticles
+        3, // nParticles
+        random
     );
 
 describe("DiscreteSystem", () => {
@@ -44,11 +45,19 @@ describe("DiscreteSystem", () => {
         expect(sys["_shared"]).toBe(shared);
         expect(sys["_internal"]).toStrictEqual([null, null]);
 
-        // TODO:test random
+        expect(sys["_random"]).toBe(random);
     });
 
     test("defaults to built in random", () => {
-        // TODO
+        const sys = new DiscreteSystem<SIRShared, null>(
+            generator,
+            shared,
+            5, // time
+            0.5, // dt
+            3 // nParticles
+        );
+        const defaultRandom = sys["_random"];
+        expect(defaultRandom.state).toBeInstanceOf(RngStateBuiltin);
     });
 
     test("constructor throws error if nParticles is invalid", () => {
@@ -145,8 +154,6 @@ describe("DiscreteSystem", () => {
             "Cannot run to requested time 1, which is less than current time 5."
         );
     });
-
-    // TODO: test w mock that random passed to initial?
 
     test("Can initialise and run to time using Random", () => {
         const rngStateObserved = new RngStateObserved(new RngStateBuiltin());
