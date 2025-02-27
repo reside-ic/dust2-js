@@ -7,29 +7,43 @@ export interface WalkShared {
     sd: number;
 }
 
+const checkStateRange = (state: number[], shared: WalkShared) => {
+    if (state.length < shared.n) {
+        throw RangeError(`State must have length of at least ${shared.n}`);
+    }
+};
+
 export const discreteWalk: DiscreteSystemGenerator<WalkShared, null> = {
     initial(time: number, shared: WalkShared, internal: null, stateNext: number[]) {
-        // TODO: thrwo error if stateNExt is too short
+        checkStateRange(stateNext, shared);
         for (let i = 0; i < shared.n; i++) {
             stateNext[i] = time;
         }
     },
 
-    update(time: number, dt: number, state: number[], shared: WalkShared, internal: null, stateNext: number[], random: Random) {
-        // TODO: thrwo error if state or stateNExt is too short
+    update(
+        time: number,
+        dt: number,
+        state: number[],
+        shared: WalkShared,
+        internal: null,
+        stateNext: number[],
+        random: Random
+    ) {
+        checkStateRange(state, shared);
+        checkStateRange(stateNext, shared);
         for (let i = 0; i < shared.n; i++) {
             stateNext[i] = random.normal(state[i], shared.sd);
         }
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     internal(shared: WalkShared): null {
         return null;
     },
 
     packingState(shared: WalkShared): Packer {
-        const shape = new Map<string, number[]>([
-            ["values", [shared.n]]
-        ]);
+        const shape = new Map<string, number[]>([["values", [shared.n]]]);
         return new Packer({ shape });
     }
-}
+};

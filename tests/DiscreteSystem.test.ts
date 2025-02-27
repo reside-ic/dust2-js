@@ -157,27 +157,26 @@ describe("DiscreteSystem", () => {
 
     test("Can initialise and run to time using Random", () => {
         const rngStateObserved = new RngStateObserved(new RngStateBuiltin());
-        const random = new Random(rngStateObserved);
+        const rnd = new Random(rngStateObserved);
         const compareRandom = new Random(rngStateObserved.replay());
         const np = 5;
-        const walkShared = {n: 3, sd: 1};;
+        const walkShared = { n: 3, sd: 1 };
         const sys = new DiscreteSystem<WalkShared, null>(
             discreteWalk,
             [walkShared],
             0, // time
             1, // dt
             np, // nParticles
-            random
+            rnd
         );
         sys.runToTime(2);
         // each particle runs to time in turn, and at each time point takes values for each state value
         for (let i = 0; i < np; i++) {
-            const expectedT1 = [...new Array(3)].map(t => compareRandom.randomNormal());
-            const expectedT2 = expectedT1.map(t1 => t1 + compareRandom.randomNormal());
+            const expectedT1 = [...new Array(3)].map((t) => compareRandom.randomNormal());
+            const expectedT2 = expectedT1.map((t1) => t1 + compareRandom.randomNormal());
             const particle = sys.state.getParticle(0, i);
             expect(particleStateToArray(particle)).toStrictEqual(expectedT2);
         }
         expect(sys.time).toEqual(2);
     });
-
 });
