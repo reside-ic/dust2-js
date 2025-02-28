@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { discreteSIR } from "./examples/discreteSIR";
+import { discreteSIR, SIRData } from "./examples/discreteSIR";
 import { discreteWalk, WalkShared } from "./examples/discreteWalk.ts";
 import { DiscreteSystem } from "../src/DiscreteSystem";
 import { particleStateToArray } from "../src/utils";
@@ -13,7 +13,7 @@ const shared = [
 ];
 
 const createSystem = (random?: Random) =>
-    new DiscreteSystem<SIRShared, null>(
+    new DiscreteSystem<SIRShared, null, SIRData>(
         generator,
         shared,
         5, // time
@@ -50,7 +50,7 @@ describe("DiscreteSystem", () => {
     });
 
     test("defaults to built in random", () => {
-        const sys = new DiscreteSystem<SIRShared, null>(
+        const sys = new DiscreteSystem<SIRShared, null, SIRData>(
             generator,
             shared,
             5, // time
@@ -64,7 +64,7 @@ describe("DiscreteSystem", () => {
     test("constructor throws error if nParticles is invalid", () => {
         expect(
             () =>
-                new DiscreteSystem<SIRShared, null>(
+                new DiscreteSystem<SIRShared, null, SIRData>(
                     generator,
                     shared,
                     5, // time
@@ -75,7 +75,7 @@ describe("DiscreteSystem", () => {
 
         expect(
             () =>
-                new DiscreteSystem<SIRShared, null>(
+                new DiscreteSystem<SIRShared, null, SIRData>(
                     generator,
                     shared,
                     5, // time
@@ -86,7 +86,7 @@ describe("DiscreteSystem", () => {
     });
 
     const expectParticleGroupState = (
-        sys: DiscreteSystem<any, any>,
+        sys: DiscreteSystem<any, any, any>,
         iGroup: number,
         nParticles: number,
         expectedValues: number[]
@@ -132,7 +132,7 @@ describe("DiscreteSystem", () => {
         const compareRandom = new Random(rngStateObserved.replay());
         const np = 5;
         const walkShared = { n: 3, sd: 1 };
-        const sys = new DiscreteSystem<WalkShared, null>(
+        const sys = new DiscreteSystem<WalkShared, null, null>(
             discreteWalk,
             [walkShared],
             0, // time
@@ -160,7 +160,7 @@ describe("DiscreteSystem", () => {
         const step1 = 5.5;
         const dt = 0.5;
 
-        const sys = new DiscreteSystem<SIRShared, null>(
+        const sys = new DiscreteSystem<SIRShared, null, SIRData>(
             generator,
             shared,
             start, // time

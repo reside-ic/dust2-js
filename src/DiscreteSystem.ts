@@ -5,8 +5,8 @@ import { Packer } from "./Packer";
 import { System } from "./System";
 import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
 
-export class DiscreteSystem<TShared, TInternal> implements System {
-    private readonly _generator: DiscreteSystemGenerator<TShared, TInternal>;
+export class DiscreteSystem<TShared, TInternal, TData> implements System {
+    private readonly _generator: DiscreteSystemGenerator<TShared, TInternal, TData>;
     private readonly _nParticles: number;
     private readonly _nGroups: number;
     private readonly _statePacker: Packer;
@@ -18,7 +18,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
     private _time: number;
 
     constructor(
-        generator: DiscreteSystemGenerator<TShared, TInternal>,
+        generator: DiscreteSystemGenerator<TShared, TInternal, TData>,
         shared: TShared[],
         time: number,
         dt: number,

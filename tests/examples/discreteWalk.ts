@@ -13,7 +13,7 @@ const checkStateRange = (state: number[], shared: WalkShared) => {
     }
 };
 
-export const discreteWalk: DiscreteSystemGenerator<WalkShared, null> = {
+export const discreteWalk: DiscreteSystemGenerator<WalkShared, null, null> = {
     initial(time: number, shared: WalkShared, internal: null, stateNext: number[]) {
         checkStateRange(stateNext, shared);
         for (let i = 0; i < shared.n; i++) {
@@ -45,5 +45,9 @@ export const discreteWalk: DiscreteSystemGenerator<WalkShared, null> = {
     packingState(shared: WalkShared): Packer {
         const shape = new Map<string, number[]>([["values", [shared.n]]]);
         return new Packer({ shape });
+    },
+
+    compareData() {
+        throw Error("not implemented!");
     }
 };
