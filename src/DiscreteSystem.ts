@@ -116,7 +116,7 @@ export class DiscreteSystem<TShared, TInternal, TData> implements System {
             }
         }
 
-        const result = new SystemDataComparison(this._nGroups, this._nGroups);
+        const result = new SystemDataComparison(this._nGroups, this._nParticles);
         this.iterateParticles((iGroup: number, iParticle: number) => {
             const iData = isSharedData ? sharedData : data[iGroup];
             const state = this._state.getParticle(iGroup, iParticle);

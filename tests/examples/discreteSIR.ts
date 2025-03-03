@@ -2,6 +2,7 @@ import { lngamma } from "ieee745gamma";
 import { DiscreteSystemGenerator } from "../../src/DiscreteSystemGenerator";
 import { Packer } from "../../src/Packer";
 import { Random } from "@reside-ic/random";
+import { poissonLogDensity } from "../../src/density.ts";
 
 export interface SIRShared {
     N: number;
@@ -13,9 +14,6 @@ export interface SIRShared {
 export interface SIRData {
     prevalence: number;
 }
-
-// TODO: make a module of density functions
-const poissonLogDensity = (x: number, lambda: number) => x * Math.log(lambda) - lambda - lngamma(x + 1);
 
 export const discreteSIR: DiscreteSystemGenerator<SIRShared, null, SIRData> = {
     // it would be more js-ish if we returned an array, but that would

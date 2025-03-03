@@ -1,21 +1,21 @@
 import { checkIntegerInRange } from "./utils.ts";
 
 export class SystemDataComparison {
-    private readonly _nGroups: number;
-    private readonly _nParticles: number;
+    public readonly nGroups: number;
+    public readonly nParticles: number;
     private readonly _comparisonValues: (number | undefined)[][];
 
     constructor(nGroups: number, nParticles: number) {
         checkIntegerInRange("nGroups", nGroups, 0);
         checkIntegerInRange("nParticles", nParticles, 0);
-        this._nGroups = nGroups;
-        this._nParticles = nParticles;
+        this.nGroups = nGroups;
+        this.nParticles = nParticles;
         this._comparisonValues = [...new Array(nGroups)].map(() => new Array(nParticles));
     }
 
     private rangeCheck(iGroup: number, iParticle: number) {
-        checkIntegerInRange("iGroup", iGroup, 0, this._nGroups - 1);
-        checkIntegerInRange("iParticle", iParticle, this._nParticles - 1);
+        checkIntegerInRange("iGroup", iGroup, 0, this.nGroups - 1);
+        checkIntegerInRange("iParticle", iParticle, 0, this.nParticles - 1);
     }
 
     setValue(iGroup: number, iParticle: number, value: number) {
