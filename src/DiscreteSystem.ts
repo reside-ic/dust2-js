@@ -4,6 +4,7 @@ import { DiscreteSystemGenerator } from "./DiscreteSystemGenerator";
 import { Packer } from "./Packer";
 import { System } from "./System";
 import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
+import { SystemDataComparison } from "./SystemDataComparison.ts";
 
 export class DiscreteSystem<TShared, TInternal, TData> implements System {
     private readonly _generator: DiscreteSystemGenerator<TShared, TInternal, TData>;
@@ -100,5 +101,31 @@ export class DiscreteSystem<TShared, TInternal, TData> implements System {
             stateNext = tmp;
         }
         return state;
+    }
+
+    public compareData(
+        data: TData[] | TData
+    ) {
+        // are we sharing data between all groups
+        const isSharedData = !Array.isArray(data) || data.length === 1;
+        let sharedData;
+        if (isSharedData) {
+            sharedData = Array.isArray(data) ? data[0] : data;
+        } else {
+            // check range for per-group date
+            if (data.length !== this._nGroups) {
+               throw new RangeError("Expected data to have same length as groups.");
+            }
+        }
+
+        const result = new SystemDataComparison(this._nGroups, this._nGroups);
+        this.iterateParticles((iGroup: number, iParticle: number) => {
+            const iData = isSharedData ? sharedData : data[iGroup];
+            const state = this._state.getParticle(iGroup, iParticle);
+            const comparisonValue = this._generator.compareData(
+                this._time, particleStateToArray(state), iData, this._shared, this._internal, this._random);
+            result.setValue(iGroup, iParticle, comparisonValue);
+        });
+        return result;
     }
 }

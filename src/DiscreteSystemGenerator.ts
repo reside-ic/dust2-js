@@ -19,7 +19,7 @@ export interface DiscreteSystemGenerator<TShared, TInternal, TData> {
         state: number[],
         data: TData,
         shared: TShared,
-        internal: null,
+        internal: TInternal,
         random: Random
     ): number;
 }

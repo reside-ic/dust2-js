@@ -83,5 +83,4 @@ export const discreteSIR: DiscreteSystemGenerator<SIRShared, null, SIRData> = {
         const modelledPrevalence = state[1];
         return poissonLogDensity(observedPrevalence, modelledPrevalence);
     }
-
 };
