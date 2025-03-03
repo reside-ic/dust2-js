@@ -1,4 +1,3 @@
-import { lngamma } from "ieee745gamma";
 import { DiscreteSystemGenerator } from "../../src/DiscreteSystemGenerator";
 import { Packer } from "../../src/Packer";
 import { Random } from "@reside-ic/random";

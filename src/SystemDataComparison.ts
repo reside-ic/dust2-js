@@ -6,8 +6,8 @@ export class SystemDataComparison {
     private readonly _comparisonValues: (number | undefined)[][];
 
     constructor(nGroups: number, nParticles: number) {
-        checkIntegerInRange("nGroups", nGroups, 0);
-        checkIntegerInRange("nParticles", nParticles, 0);
+        checkIntegerInRange("nGroups", nGroups, 1);
+        checkIntegerInRange("nParticles", nParticles, 1);
         this.nGroups = nGroups;
         this.nParticles = nParticles;
         this._comparisonValues = [...new Array(nGroups)].map(() => new Array(nParticles));
