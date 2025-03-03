@@ -6,7 +6,7 @@ import { System } from "./System";
 import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
 import { SystemDataComparison } from "./SystemDataComparison.ts";
 
-export class DiscreteSystem<TShared, TInternal, TData> implements System {
+export class DiscreteSystem<TShared, TInternal, TData> implements System<TData> {
     private readonly _generator: DiscreteSystemGenerator<TShared, TInternal, TData>;
     private readonly _nParticles: number;
     private readonly _nGroups: number;
@@ -110,7 +110,6 @@ export class DiscreteSystem<TShared, TInternal, TData> implements System {
         if (isSharedData) {
             sharedData = Array.isArray(data) ? data[0] : data;
         } else {
-            // check range for per-group date
             if (data.length !== this._nGroups) {
                 throw new RangeError("Expected data to have same length as groups.");
             }
