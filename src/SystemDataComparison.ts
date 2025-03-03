@@ -3,15 +3,14 @@ import { checkIntegerInRange } from "./utils.ts";
 export class SystemDataComparison {
     private readonly _nGroups: number;
     private readonly _nParticles: number;
-    private readonly  _comparisonValues: (number | undefined)[][];
+    private readonly _comparisonValues: (number | undefined)[][];
 
-    constructor(
-        nGroups: number,
-        nParticles: number
-    ) {
+    constructor(nGroups: number, nParticles: number) {
         checkIntegerInRange("nGroups", nGroups, 0);
         checkIntegerInRange("nParticles", nParticles, 0);
-        this._comparisonValues = [...new Array(nGroups)].map((i) => new Array(nParticles));
+        this._nGroups = nGroups;
+        this._nParticles = nParticles;
+        this._comparisonValues = [...new Array(nGroups)].map(() => new Array(nParticles));
     }
 
     private rangeCheck(iGroup: number, iParticle: number) {

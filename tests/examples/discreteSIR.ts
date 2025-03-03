@@ -11,7 +11,7 @@ export interface SIRShared {
 }
 
 export interface SIRData {
-    prevalence: number
+    prevalence: number;
 }
 
 // TODO: make a module of density functions
@@ -75,9 +75,9 @@ export const discreteSIR: DiscreteSystemGenerator<SIRShared, null, SIRData> = {
         time: number,
         state: number[],
         data: SIRData,
-        shared: SIRShared,
-        internal: null,
-        random: Random
+        shared: SIRShared, // eslint-disable-line @typescript-eslint/no-unused-vars
+        internal: null, // eslint-disable-line @typescript-eslint/no-unused-vars
+        random: Random // eslint-disable-line @typescript-eslint/no-unused-vars
     ): number {
         const observedPrevalence = data.prevalence;
         const modelledPrevalence = state[1];
