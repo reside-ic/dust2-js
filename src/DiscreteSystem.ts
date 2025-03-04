@@ -1,25 +1,24 @@
 import { Random, RngStateBuiltin } from "@reside-ic/random";
 import { ParticleState, SystemState } from "./SystemState";
-import { DiscreteSystemGenerator } from "./DiscreteSystemGenerator";
+import { DiscreteGenerator } from "./interfaces/DiscreteGenerator.ts";
 import { Packer } from "./Packer";
-import { System } from "./System";
+import { System } from "./interfaces/System.ts";
 import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
-import { SystemDataComparison } from "./SystemDataComparison.ts";
 
-export class DiscreteSystem<TShared, TInternal, TData> implements System<TData> {
-    private readonly _generator: DiscreteSystemGenerator<TShared, TInternal, TData>;
-    private readonly _nParticles: number;
-    private readonly _nGroups: number;
-    private readonly _statePacker: Packer;
-    private readonly _state: SystemState;
-    private readonly _dt: number;
-    private readonly _shared: TShared[];
-    private readonly _internal: TInternal[];
-    private readonly _random: Random;
-    private _time: number;
+export class DiscreteSystem<TShared, TInternal> implements System {
+    protected readonly _generator: DiscreteGenerator<TShared, TInternal>;
+    protected readonly _nParticles: number;
+    protected readonly _nGroups: number;
+    protected readonly _statePacker: Packer;
+    protected readonly _state: SystemState;
+    protected readonly _dt: number;
+    protected readonly _shared: TShared[];
+    protected readonly _internal: TInternal[];
+    protected readonly _random: Random;
+    protected _time: number;
 
     constructor(
-        generator: DiscreteSystemGenerator<TShared, TInternal, TData>,
+        generator: DiscreteGenerator<TShared, TInternal>,
         shared: TShared[],
         time: number,
         dt: number,
@@ -56,7 +55,7 @@ export class DiscreteSystem<TShared, TInternal, TData> implements System<TData> 
     }
 
     // helper method to iterate over all particles and execute the provided function
-    private iterateParticles(f: (iGroup: number, iParticle: number) => void) {
+    protected iterateParticles(f: (iGroup: number, iParticle: number) => void) {
         for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
             for (let iParticle = 0; iParticle < this._nParticles; iParticle++) {
                 f(iGroup, iParticle);
@@ -101,36 +100,5 @@ export class DiscreteSystem<TShared, TInternal, TData> implements System<TData> 
             stateNext = tmp;
         }
         return state;
-    }
-
-    public compareData(data: TData[] | TData) {
-        // are we sharing data between all groups
-        const isSharedData = !Array.isArray(data) || data.length === 1;
-        let sharedData: TData;
-        if (isSharedData) {
-            sharedData = Array.isArray(data) ? data[0] : data;
-        } else {
-            if (data.length !== this._nGroups) {
-                throw new RangeError("Expected data to have same length as groups.");
-            }
-        }
-
-        const result = new SystemDataComparison(this._nGroups, this._nParticles);
-        this.iterateParticles((iGroup: number, iParticle: number) => {
-            const iData = isSharedData ? sharedData : data[iGroup];
-            const state = this._state.getParticle(iGroup, iParticle);
-            const shared = this._shared[iGroup];
-            const internal = this._internal[iGroup];
-            const comparisonValue = this._generator.compareData(
-                this._time,
-                particleStateToArray(state),
-                iData,
-                shared,
-                internal,
-                this._random
-            );
-            result.setValue(iGroup, iParticle, comparisonValue);
-        });
-        return result;
     }
 }
