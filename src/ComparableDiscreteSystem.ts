@@ -1,6 +1,6 @@
+import ndarray from "ndarray";
 import { DiscreteSystem } from "./DiscreteSystem.ts";
 import { ComparableSystem } from "./interfaces/ComparableSystem.ts";
-import { SystemDataComparison } from "./SystemDataComparison.ts";
 import { particleStateToArray } from "./utils.ts";
 import { Random } from "@reside-ic/random";
 import { ComparableDiscreteGenerator } from "./interfaces/ComparableDiscreteGenerator.ts";
@@ -34,7 +34,7 @@ export class ComparableDiscreteSystem<TShared, TInternal, TData>
             }
         }
 
-        const result = new SystemDataComparison(this._nGroups, this._nParticles);
+        const result = ndarray(new Array(this._nGroups * this._nParticles), [this._nGroups, this._nParticles]);
         this.iterateParticles((iGroup: number, iParticle: number) => {
             const iData = isSharedData ? sharedData : data[iGroup];
             const state = this._state.getParticle(iGroup, iParticle);
@@ -48,7 +48,7 @@ export class ComparableDiscreteSystem<TShared, TInternal, TData>
                 internal,
                 this._random
             );
-            result.setValue(iGroup, iParticle, comparisonValue);
+            result.set(iGroup, iParticle, comparisonValue);
         });
         return result;
     }

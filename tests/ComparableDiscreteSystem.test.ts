@@ -1,10 +1,10 @@
 import { describe, test, expect, vi, Mocked } from "vitest";
 import { poissonLogDensity } from "../src/density.ts";
-import { SystemDataComparison } from "../src/SystemDataComparison.ts";
 import { discreteSIR, SIRData, SIRShared } from "./examples/discreteSIR.ts";
 import { Random } from "@reside-ic/random";
 import { ComparableDiscreteSystem } from "../src/ComparableDiscreteSystem.ts";
 import { expectedGroup1Initial, expectedGroup2Initial, shared } from "./examples/SIRTestHelpers.ts";
+import ndarray from "ndarray";
 
 const generator = discreteSIR;
 
@@ -25,16 +25,15 @@ describe("ComparableDiscreteSystem", () => {
         sys.setStateInitial(); // compare data with initial state where grp1 I = 1, and grp2 I = 2
         const data = [{ prevalence: 2 }, { prevalence: 3 }];
         const result = sys.compareData(data);
-        expect(result.nGroups).toBe(2);
-        expect(result.nParticles).toBe(3);
+        expect(result.shape).toStrictEqual([2, 3]);
         const expectedGrp1Value = poissonLogDensity(2, 1);
-        expect(result.getValue(0, 0)).toBe(expectedGrp1Value);
-        expect(result.getValue(0, 1)).toBe(expectedGrp1Value);
-        expect(result.getValue(0, 2)).toBe(expectedGrp1Value);
+        expect(result.get(0, 0)).toBe(expectedGrp1Value);
+        expect(result.get(0, 1)).toBe(expectedGrp1Value);
+        expect(result.get(0, 2)).toBe(expectedGrp1Value);
         const expectedGrp2Value = poissonLogDensity(3, 2);
-        expect(result.getValue(1, 0)).toBe(expectedGrp2Value);
-        expect(result.getValue(1, 1)).toBe(expectedGrp2Value);
-        expect(result.getValue(1, 2)).toBe(expectedGrp2Value);
+        expect(result.get(1, 0)).toBe(expectedGrp2Value);
+        expect(result.get(1, 1)).toBe(expectedGrp2Value);
+        expect(result.get(1, 2)).toBe(expectedGrp2Value);
 
         expect(genCompareDataSpy).toHaveBeenCalledTimes(6);
         const expectedGrp1Params = [5, expectedGroup1Initial, data[0], shared[0], null, sys["_random"]];
@@ -48,21 +47,19 @@ describe("ComparableDiscreteSystem", () => {
     });
 
     const expectSharedDataResult = (
-        result: SystemDataComparison,
+        result: ndarray.NdArray,
         data: SIRData,
         genCompareDataSpy: Mocked<any>,
         random: Random
     ) => {
-        expect(result.nGroups).toBe(2);
-        expect(result.nParticles).toBe(3);
         const expectedGrp1Value = poissonLogDensity(2, 1);
-        expect(result.getValue(0, 0)).toBe(expectedGrp1Value);
-        expect(result.getValue(0, 1)).toBe(expectedGrp1Value);
-        expect(result.getValue(0, 2)).toBe(expectedGrp1Value);
+        expect(result.get(0, 0)).toBe(expectedGrp1Value);
+        expect(result.get(0, 1)).toBe(expectedGrp1Value);
+        expect(result.get(0, 2)).toBe(expectedGrp1Value);
         const expectedGrp2Value = poissonLogDensity(2, 2);
-        expect(result.getValue(1, 0)).toBe(expectedGrp2Value);
-        expect(result.getValue(1, 1)).toBe(expectedGrp2Value);
-        expect(result.getValue(1, 2)).toBe(expectedGrp2Value);
+        expect(result.get(1, 0)).toBe(expectedGrp2Value);
+        expect(result.get(1, 1)).toBe(expectedGrp2Value);
+        expect(result.get(1, 2)).toBe(expectedGrp2Value);
 
         expect(genCompareDataSpy).toHaveBeenCalledTimes(6);
         const expectedGrp1Params = [5, expectedGroup1Initial, data, shared[0], null, random];
