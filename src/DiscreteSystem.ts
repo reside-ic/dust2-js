@@ -1,24 +1,24 @@
 import { Random, RngStateBuiltin } from "@reside-ic/random";
 import { ParticleState, SystemState } from "./SystemState";
-import { DiscreteSystemGenerator } from "./DiscreteSystemGenerator";
+import { DiscreteGenerator } from "./interfaces/DiscreteGenerator.ts";
 import { Packer } from "./Packer";
-import { System } from "./System";
+import { System } from "./interfaces/System.ts";
 import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
 
 export class DiscreteSystem<TShared, TInternal> implements System {
-    private readonly _generator: DiscreteSystemGenerator<TShared, TInternal>;
-    private readonly _nParticles: number;
-    private readonly _nGroups: number;
-    private readonly _statePacker: Packer;
-    private readonly _state: SystemState;
-    private readonly _dt: number;
-    private readonly _shared: TShared[];
-    private readonly _internal: TInternal[];
-    private readonly _random: Random;
-    private _time: number;
+    protected readonly _generator: DiscreteGenerator<TShared, TInternal>;
+    protected readonly _nParticles: number;
+    protected readonly _nGroups: number;
+    protected readonly _statePacker: Packer;
+    protected readonly _state: SystemState;
+    protected readonly _dt: number;
+    protected readonly _shared: TShared[];
+    protected readonly _internal: TInternal[];
+    protected readonly _random: Random;
+    protected _time: number;
 
     constructor(
-        generator: DiscreteSystemGenerator<TShared, TInternal>,
+        generator: DiscreteGenerator<TShared, TInternal>,
         shared: TShared[],
         time: number,
         dt: number,
@@ -55,7 +55,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
     }
 
     // helper method to iterate over all particles and execute the provided function
-    private iterateParticles(f: (iGroup: number, iParticle: number) => void) {
+    protected iterateParticles(f: (iGroup: number, iParticle: number) => void) {
         for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
             for (let iParticle = 0; iParticle < this._nParticles; iParticle++) {
                 f(iGroup, iParticle);

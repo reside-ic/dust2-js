@@ -1,6 +1,7 @@
-import { DiscreteSystemGenerator } from "../../src/DiscreteSystemGenerator";
 import { Packer } from "../../src/Packer";
 import { Random } from "@reside-ic/random";
+import { poissonLogDensity } from "../../src/density.ts";
+import { ComparableDiscreteGenerator } from "../../src/interfaces/ComparableDiscreteGenerator.ts";
 
 export interface SIRShared {
     N: number;
@@ -9,7 +10,11 @@ export interface SIRShared {
     gamma: number;
 }
 
-export const discreteSIR: DiscreteSystemGenerator<SIRShared, null> = {
+export interface SIRData {
+    prevalence: number;
+}
+
+export const discreteSIR: ComparableDiscreteGenerator<SIRShared, null, SIRData> = {
     // it would be more js-ish if we returned an array, but that would
     // be harder once we work out how to get read-write slices from
     // ndarray.
@@ -61,5 +66,18 @@ export const discreteSIR: DiscreteSystemGenerator<SIRShared, null> = {
             ["casesInc", []]
         ]);
         return new Packer({ shape });
+    },
+
+    compareData(
+        time: number,
+        state: number[],
+        data: SIRData,
+        shared: SIRShared, // eslint-disable-line @typescript-eslint/no-unused-vars
+        internal: null, // eslint-disable-line @typescript-eslint/no-unused-vars
+        random: Random // eslint-disable-line @typescript-eslint/no-unused-vars
+    ): number {
+        const observedPrevalence = data.prevalence;
+        const modelledPrevalence = state[1];
+        return poissonLogDensity(observedPrevalence, modelledPrevalence);
     }
 };
