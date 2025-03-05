@@ -1,7 +1,7 @@
 import { Random } from "@reside-ic/random";
-import { Packer } from "./Packer";
+import { Packer } from "../Packer.ts";
 
-export interface DiscreteSystemGenerator<TShared, TInternal> {
+export interface DiscreteGenerator<TShared, TInternal> {
     initial: (time: number, shared: TShared, internal: TInternal, stateNext: number[], random: Random) => void;
     update: (
         time: number,

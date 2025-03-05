@@ -1,16 +1,13 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi, afterEach } from "vitest";
 import { discreteSIR } from "./examples/discreteSIR";
 import { discreteWalk, WalkShared } from "./examples/discreteWalk.ts";
 import { DiscreteSystem } from "../src/DiscreteSystem";
 import { particleStateToArray } from "../src/utils";
 import { SIRShared } from "./examples/discreteSIR.ts";
 import { Random, RngStateBuiltin, RngStateObserved } from "@reside-ic/random";
+import { expectedGroup1Initial, expectedGroup2Initial, shared } from "./examples/SIRTestHelpers.ts";
 
 const generator = discreteSIR;
-const shared = [
-    { N: 1000000, I0: 1, beta: 4, gamma: 2 },
-    { N: 2000000, I0: 2, beta: 8, gamma: 4 }
-];
 
 const createSystem = (random?: Random) =>
     new DiscreteSystem<SIRShared, null>(
@@ -25,6 +22,10 @@ const createSystem = (random?: Random) =>
 const newSIRState = () => new Array<number>(5);
 
 describe("DiscreteSystem", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     test("can be created", () => {
         const random = new Random(new RngStateBuiltin());
         const sys = createSystem(random);
@@ -101,22 +102,7 @@ describe("DiscreteSystem", () => {
         const sys = createSystem();
         sys.setStateInitial();
 
-        const expectedGroup1Initial = [
-            999999, // shared.N - shared.I0;
-            1, // shared.I0;
-            0,
-            0,
-            0
-        ];
         expectParticleGroupState(sys, 0, 3, expectedGroup1Initial);
-
-        const expectedGroup2Initial = [
-            1999998, // shared.N - shared.I0;
-            2, // shared.I0;
-            0,
-            0,
-            0
-        ];
         expectParticleGroupState(sys, 1, 3, expectedGroup2Initial);
     });
 

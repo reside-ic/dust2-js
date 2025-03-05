@@ -1,4 +1,4 @@
-import { SystemState } from "./SystemState";
+import { SystemState } from "../SystemState.ts";
 
 export interface System {
     time: number;
