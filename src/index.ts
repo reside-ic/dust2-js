@@ -5,4 +5,5 @@ export type { System } from "./interfaces/System";
 export { ComparableDiscreteSystem } from "./ComparableDiscreteSystem";
 export { DiscreteSystem } from "./DiscreteSystem";
 export { Packer } from "./Packer";
+export type { PackerOptions, PackerShape, UnpackResult } from "./Packer";
 export { SystemState } from "./SystemState.ts";

@@ -5,12 +5,32 @@ import { particleStateToArray } from "./utils.ts";
 import { Random } from "@reside-ic/random";
 import { ComparableDiscreteGenerator } from "./interfaces/ComparableDiscreteGenerator.ts";
 
+/**
+ * Implementation of {@link ComparableSystem} for discrete systems, for use with generators which support comparison
+ * to data.
+ * @typeParam TShared Values which are shared between all particles in a group and are not mutated by them -
+ * the model parameter values for that group
+ *
+ * @typeParam TInternal Internal state values which can be mutated by generators, used to improve efficiency of the
+ * system by e.g. caching calculation results for use by other particles.
+ *
+ * @typeParam TData Type of each data point which will be compared with system state.
+ */
 export class ComparableDiscreteSystem<TShared, TInternal, TData>
     extends DiscreteSystem<TShared, TInternal>
     implements ComparableSystem<TData>
 {
-    declare _generator: ComparableDiscreteGenerator<TShared, TInternal, TData>;
+    protected declare _generator: ComparableDiscreteGenerator<TShared, TInternal, TData>;
 
+    /**
+     *
+     * @param generator Generator (model) implementation for the System
+     * @param shared Array of TShared, each representing the parameters for a group of particles
+     * @param time Initial time for the system
+     * @param dt Time step to be used when updating the system
+     * @param nParticles Number of particles per group
+     * @param random Random number generator which may be used by the generator
+     */
     constructor(
         generator: ComparableDiscreteGenerator<TShared, TInternal, TData>,
         shared: TShared[],

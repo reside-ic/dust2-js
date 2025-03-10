@@ -2,14 +2,27 @@ import ndarray from "ndarray";
 import { particleStateToArray, prod } from "./utils";
 import { ParticleState } from "./SystemState.ts";
 
-type PackerShape = Map<string, number[]>;
+/**
+ * Type defining the unpacked shape for a {@link Packer} where value names are mapped to a number[] defining the size
+ * of each dimension.
+ */
+export type PackerShape = Map<string, number[]>;
 
-// Unpack results return numbers for scalar values and ndarray for everything else, including 1D arrays
+/**
+ * Result for {@link Packer}'s unpack results, which provide numbers for scalar values and ndarray for everything else,
+ * including one-dimensional arrays
+ */
 export type UnpackResult = Map<string, number | ndarray.NdArray>;
 
 // This options type currently only defines the shapes of the unpacked values, but we expect to add other options later
+/**
+ * Type defining options for the {@link Packer} class
+ */
 export interface PackerOptions {
-    // Mapping of packed value names to their unpacked shape. Scalars are represented by empty array.
+    /**
+     * Mapping of packed value names to their unpacked shape (as an array of numbers). Scalars are represented by an
+     * empty array.
+     */
     shape: PackerShape;
 }
 
@@ -36,11 +49,19 @@ interface IndexValues {
     length: number;
 }
 
+/**
+ * Class which can pack multiple values which may have multiple dimensions into a one-dimensional array of values,
+ * and unpack them again.
+ */
 export class Packer {
     private readonly _length: number; // Total number of values
     private readonly _idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
     private readonly _shape: PackerShape;
 
+    /**
+     *
+     * @param options Packing options for the Packer
+     */
     constructor(options: PackerOptions) {
         this._idx = {};
         this._shape = options.shape;
@@ -60,6 +81,9 @@ export class Packer {
         }
     }
 
+    /**
+     * Returns the total number of values which will be held in a one-dimensional array after packing by this Packer.
+     */
     public get length() {
         return this._length;
     }
@@ -68,6 +92,10 @@ export class Packer {
         return this._shape.get(name)?.length === 0;
     }
 
+    /**
+     * Unpacks a one-dimensional array to the shapes defined by this Packer.
+     * @param x A standard number array
+     */
     public unpackArray(x: Array<number>): UnpackResult {
         if (x.length !== this._length) {
             throw Error(`Incorrect length input; expected ${this._length} but given ${x.length}.`);
@@ -87,6 +115,11 @@ export class Packer {
         return result;
     }
 
+    /**
+     * Unpacks an {@link https://github.com/scijs/ndarray | NdArray } to the shapes defined by this Packer. We require the first dimension in the NdArray to equal
+     * {@link Packer.length | length}. Any additional dimensions are added to the configured shapes for each unpacked value.
+     * @param x NdArray of numbers
+     */
     public unpackNdarray(x: ndarray.NdArray): UnpackResult {
         const xShape = x.shape;
         const xLength = xShape[0];
