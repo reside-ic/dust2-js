@@ -1,4 +1,4 @@
-import { DiscreteSystemGenerator } from "../../src/DiscreteSystemGenerator.ts";
+import { DiscreteGenerator } from "../../src/interfaces/DiscreteGenerator.ts";
 import { Random } from "@reside-ic/random";
 import { Packer } from "../../src/Packer.ts";
 
@@ -13,7 +13,7 @@ const checkStateRange = (state: number[], shared: WalkShared) => {
     }
 };
 
-export const discreteWalk: DiscreteSystemGenerator<WalkShared, null, null> = {
+export const discreteWalk: DiscreteGenerator<WalkShared, null> = {
     initial(time: number, shared: WalkShared, internal: null, stateNext: number[]) {
         checkStateRange(stateNext, shared);
         for (let i = 0; i < shared.n; i++) {
@@ -45,9 +45,5 @@ export const discreteWalk: DiscreteSystemGenerator<WalkShared, null, null> = {
     packingState(shared: WalkShared): Packer {
         const shape = new Map<string, number[]>([["values", [shared.n]]]);
         return new Packer({ shape });
-    },
-
-    compareData() {
-        throw Error("not implemented!");
     }
 };
