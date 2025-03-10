@@ -11,7 +11,7 @@ jobs:
               with:
                   node-version: 22.x
             - run: npm ci
-            - run: npm run-script docs
+            - run: npm run docs
             - name: Publish
               uses: peaceiris/actions-gh-pages@v4
               with:
