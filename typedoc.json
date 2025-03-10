@@ -4,5 +4,6 @@
     "excludePrivate": true,
     "excludeProtected": true,
     "excludeInternal": true,
-    "excludeNotDocumented": false
+    "excludeNotDocumented": false,
+    "readme": "docs.md"
 }

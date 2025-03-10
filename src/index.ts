@@ -7,3 +7,4 @@ export { DiscreteSystem } from "./DiscreteSystem";
 export { Packer } from "./Packer";
 export type { PackerOptions, PackerShape, UnpackResult } from "./Packer";
 export { SystemState } from "./SystemState.ts";
+export type { ParticleState } from "./SystemState.ts";
