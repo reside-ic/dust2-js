@@ -1,8 +1,8 @@
 import { SystemState } from "../SystemState.ts";
 
 /**
-* Interface defining the basic functionality of a dust system, composed of a number of particles
-* */
+ * Interface defining the basic functionality of a dust system, composed of a number of particles
+ * */
 export interface System {
     /**
      * The current time in the system

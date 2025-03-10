@@ -116,8 +116,10 @@ export class Packer {
     }
 
     /**
-     * Unpacks an {@link https://github.com/scijs/ndarray | NdArray } to the shapes defined by this Packer. We require the first dimension in the NdArray to equal
-     * {@link Packer.length | length}. Any additional dimensions are added to the configured shapes for each unpacked value.
+     * Unpacks an {@link https://github.com/scijs/ndarray | NdArray } to the shapes defined by this Packer.
+     * We require the first dimension in the NdArray to equal {@link Packer.length | length}. Any additional
+     * dimensions are added to the configured shapes for each unpacked value.
+     *
      * @param x NdArray of numbers
      */
     public unpackNdarray(x: ndarray.NdArray): UnpackResult {

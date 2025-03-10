@@ -2,7 +2,8 @@ import { DiscreteGenerator } from "./DiscreteGenerator.ts";
 import { Random } from "@reside-ic/random";
 
 /**
- * Interface which extends {@link DiscreteGenerator} by adding functionality to compare particle state with observed data.
+ * Interface which extends {@link DiscreteGenerator} by adding functionality to compare particle state with observed
+ * data.
  *
  * @typeParam TShared Values which are shared between all particles in a group and are not mutated by them -
  * the model parameter values for that group

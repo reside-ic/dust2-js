@@ -2,7 +2,7 @@ import { System } from "./System";
 import { NdArray } from "ndarray";
 
 /**
-* Interface which extends {@link System} by adding functionality to compare system state with observed data.
+ * Interface which extends {@link System} by adding functionality to compare system state with observed data.
  *
  * @typeParam TData Type of each data point which will be compared with system state.
  */

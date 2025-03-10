@@ -20,7 +20,7 @@ export class ComparableDiscreteSystem<TShared, TInternal, TData>
     extends DiscreteSystem<TShared, TInternal>
     implements ComparableSystem<TData>
 {
-    protected declare _generator: ComparableDiscreteGenerator<TShared, TInternal, TData>;
+    declare protected _generator: ComparableDiscreteGenerator<TShared, TInternal, TData>;
 
     /**
      *
