@@ -201,4 +201,22 @@ describe("DiscreteSystem", () => {
             "Cannot run to requested time 1, which is less than current time 5."
         );
     });
+
+    test("can update shared", () => {
+        const sys = createSystem();
+        const newShared = [
+            { N: 3000000, I0: 1, beta: 4, gamma: 2 },
+            { N: 4000000, I0: 2, beta: 8, gamma: 4 }
+        ];
+        sys.updateShared(newShared);
+        expect(sys["_shared"]).toBe(newShared);
+    });
+
+    test("throws expected error if update shared with invalid length", () => {
+        const sys = createSystem();
+        const newShared = [ { N: 3000000, I0: 1, beta: 4, gamma: 2 } ];
+        expect(() => sys.updateShared(newShared)).toThrowError(
+            "New shared value must be same length as previous value. Expected 2 but got 1."
+        );
+    });
 });
