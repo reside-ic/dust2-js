@@ -9,7 +9,7 @@ export default [
         files: ["**/*.{js,mjs,cjs,ts}"]
     },
     {
-        ignores: ["dist/*", "vite.config.js"]
+        ignores: ["dist/*", "vite.config.js", "docs/*"]
     },
     {
         rules: {

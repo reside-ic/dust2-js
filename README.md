@@ -28,4 +28,9 @@ Lint config is in `eslint.config.js`.
 
 Build for distribution with `npm run build`.
 
+## Documentation
+
+Docs are built with [Typedoc](https://typedoc.org). Pushes to the main  branch update a Github Pages site at https://reside-ic.github.io/dust2-js
+with the latest docs. New code which is exported should be documented with [TSDoc](https://tsdoc.org) comments.
+
 
