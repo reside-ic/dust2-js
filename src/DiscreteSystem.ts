@@ -145,8 +145,10 @@ export class DiscreteSystem<TShared, TInternal> implements System {
      */
     public updateShared(newShared: TShared[]) {
         if (newShared.length !== this._shared.length) {
-            throw new DustParameterError("New shared value must be same length as previous value. " +
-                                            `Expected ${this._shared.length} but got ${newShared.length}.`);
+            throw new DustParameterError(
+                "New shared value must be same length as previous value. " +
+                    `Expected ${this._shared.length} but got ${newShared.length}.`
+            );
         }
         this._shared = newShared;
     }

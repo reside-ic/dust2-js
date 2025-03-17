@@ -214,7 +214,7 @@ describe("DiscreteSystem", () => {
 
     test("throws expected error if update shared with invalid length", () => {
         const sys = createSystem();
-        const newShared = [ { N: 3000000, I0: 1, beta: 4, gamma: 2 } ];
+        const newShared = [{ N: 3000000, I0: 1, beta: 4, gamma: 2 }];
         expect(() => sys.updateShared(newShared)).toThrowError(
             "New shared value must be same length as previous value. Expected 2 but got 1."
         );
