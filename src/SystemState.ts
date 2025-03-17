@@ -1,5 +1,6 @@
 import ndarray from "ndarray";
-import { checkIntegerInRange } from "./utils.ts";
+import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
+import { DustParameterError } from "./errors.ts";
 
 /**
  * Interface representing state for a particular particle, which is returned by {@link SystemState.getParticle}
@@ -116,8 +117,20 @@ export class SystemState {
      * particle to the third position.
      */
     public reorder(reordering: ndarray.NdArray) {
-        // TODO: expect reordering shape to be ngroups * nparticles
-        // TODO: expect each reordering to contain all and only expected values
+        const shape = reordering.shape;
+        if (shape.length !== 2 || shape[0] !== this._nGroups || shape[1] !== this._nParticles) {
+            throw new DustParameterError("Unexpected reordering shape. " +
+                `Expected [${this._nGroups}, ${this._nParticles}] but got ${JSON.stringify(shape)}.`);
+        }
+        // Check that each reordering contains expected values
+        for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
+            const reorder = particleStateToArray(reordering.pick(iGroup, null));
+            const sortedReorder= reorder.toSorted();
+            if (sortedReorder.some((value: number, index:number) => value !== index)) {
+                throw new DustParameterError("Unexpected reorder values.");
+            }
+        }
+
         const reordered = this.newState();
         for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
             for (let newParticleIndex = 0; newParticleIndex < this._nParticles; newParticleIndex++) {
