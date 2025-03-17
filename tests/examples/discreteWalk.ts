@@ -45,5 +45,10 @@ export const discreteWalk: DiscreteGenerator<WalkShared, null> = {
     packingState(shared: WalkShared): Packer {
         const shape = new Map<string, number[]>([["values", [shared.n]]]);
         return new Packer({ shape });
+    },
+
+    updateShared(shared: WalkShared, newShared: WalkShared) {
+        shared.n = newShared.n;
+        shared.sd = newShared.sd;
     }
 };

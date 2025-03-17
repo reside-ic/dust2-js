@@ -56,4 +56,12 @@ export interface DiscreteGenerator<TShared, TInternal> {
      * @param shared The shared state which the result should pack
      */
     packingState(shared: TShared): Packer;
+
+    /**
+     * Updates values in a system parameter set from a new parameter set. A generator may
+     * do custom updating of some values.
+     * @param shared The shared parameter set to update
+     * @param newShared The parameter set to update from
+     */
+    updateShared(shared: TShared, newShared: TShared): void;
 }
