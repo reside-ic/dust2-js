@@ -205,11 +205,14 @@ describe("DiscreteSystem", () => {
     test("can update shared", () => {
         const sys = createSystem();
         const newShared = [
-            { N: 3000000, I0: 1, beta: 4, gamma: 2 },
-            { N: 4000000, I0: 2, beta: 8, gamma: 4 }
+            { N: 3000000, I0: 10, beta: 40, gamma: 20 },
+            { N: 4000000, I0: 20, beta: 80, gamma: 40 }
         ];
         sys.updateShared(newShared);
-        expect(sys["_shared"]).toBe(newShared);
+        const sysShared = sys["_shared"];
+        // Expect all values except N to have been updated
+        expect(sysShared[0]).toStrictEqual({ N: 1000000, I0: 10, beta: 40, gamma: 20 });
+        expect(sysShared[1]).toStrictEqual({ N: 2000000, I0: 20, beta: 80, gamma: 40 });
     });
 
     test("throws expected error if update shared with invalid length", () => {

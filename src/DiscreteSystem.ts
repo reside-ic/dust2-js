@@ -140,7 +140,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
     }
 
     /**
-     * Sets new shared (parameter) values for all groups in the system.
+     * Updates shared (parameter) values for all groups in the system.
      * @param newShared Updated parameter values. The length must match the existing number of groups in the system.
      */
     public updateShared(newShared: TShared[]) {
@@ -150,6 +150,8 @@ export class DiscreteSystem<TShared, TInternal> implements System {
                     `Expected ${this._shared.length} but got ${newShared.length}.`
             );
         }
-        this._shared = newShared;
+        for (let i = 0; i < this._shared.length; i++) {
+            this._generator.updateShared(this._shared[i], newShared[i]);
+        }
     }
 }

@@ -79,5 +79,12 @@ export const discreteSIR: ComparableDiscreteGenerator<SIRShared, null, SIRData> 
         const observedPrevalence = data.prevalence;
         const modelledPrevalence = state[1];
         return poissonLogDensity(observedPrevalence, modelledPrevalence);
+    },
+
+    updateShared(shared: SIRShared, newShared: SIRShared) {
+        // does not update N
+        shared.I0 = newShared.I0;
+        shared.beta = newShared.beta;
+        shared.gamma = newShared.gamma;
     }
 };
