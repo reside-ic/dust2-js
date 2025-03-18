@@ -77,7 +77,7 @@ describe("ndArrayFrom", () => {
         expect(() => ndArrayFrom([])).toThrow("Cannot convert from empty source");
     });
 
-    test("throws error if source arrays are difference length", () => {
+    test("throws error if source arrays are different lengths", () => {
         expect(() => ndArrayFrom([
             [1, 2],
             [3, 4, 5]
