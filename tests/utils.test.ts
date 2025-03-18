@@ -78,17 +78,16 @@ describe("ndArrayFrom", () => {
     });
 
     test("throws error if source arrays are different lengths", () => {
-        expect(() => ndArrayFrom([
-            [1, 2],
-            [3, 4, 5]
-        ])).toThrow("Source arrays must all be the same length");
+        expect(() =>
+            ndArrayFrom([
+                [1, 2],
+                [3, 4, 5]
+            ])
+        ).toThrow("Source arrays must all be the same length");
     });
 
     test("can convert array of empty arrays", () => {
-        const result = ndArrayFrom([
-            [],
-            []
-        ]);
+        const result = ndArrayFrom([[], []]);
         expect(result.shape).toStrictEqual([2, 0]);
     });
 });

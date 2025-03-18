@@ -24,7 +24,7 @@ export const checkIntegerInRange = (name: string, value: number, min: number, ma
 // Convert an array of arrays into an NdArray
 export const ndArrayFrom = (source: number[][]): ndarray.NdArray => {
     if (source.length === 0) {
-        throw new DustParameterError("Cannot convert from empty source")
+        throw new DustParameterError("Cannot convert from empty source");
     }
     const expectedLength = source[0].length;
     if (source.some((arr) => arr.length !== expectedLength)) {
