@@ -1,3 +1,4 @@
+import ndarray from "ndarray";
 import { ParticleState } from "./SystemState.ts";
 
 // Product of all values in a number array
@@ -17,4 +18,14 @@ export const checkIntegerInRange = (name: string, value: number, min: number, ma
         const rangeMsg = max === undefined ? `greater than or equal to ${min}` : `between ${min} and ${max}`;
         throw RangeError(`${name} should be an integer ${rangeMsg}, but is ${value}.`);
     }
+};
+
+// Convert an array of arrays into an NdArray
+export const ndArrayFrom = (source: number[][]): ndarray.NdArray => {
+    // TODO: check all items in source have the same length
+    const values = source.reduce((acc, current) => {
+        acc.push(...current);
+        return acc;
+    }, [] as number[]);
+    return ndarray(values, [source.length, source[0].length]);
 };

@@ -119,15 +119,18 @@ export class SystemState {
     public reorder(reordering: ndarray.NdArray) {
         const shape = reordering.shape;
         if (shape.length !== 2 || shape[0] !== this._nGroups || shape[1] !== this._nParticles) {
-            throw new DustParameterError("Unexpected reordering shape. " +
-                `Expected [${this._nGroups}, ${this._nParticles}] but got ${JSON.stringify(shape)}.`);
+            throw new DustParameterError(
+                "Unexpected reordering shape. " +
+                    `Expected [${this._nGroups},${this._nParticles}] but got ${JSON.stringify(shape)}.`
+            );
         }
         // Check that each reordering contains expected values
         for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
             const reorder = particleStateToArray(reordering.pick(iGroup, null));
-            const sortedReorder= reorder.toSorted();
-            if (sortedReorder.some((value: number, index:number) => value !== index)) {
-                throw new DustParameterError("Unexpected reorder values.");
+            const sortedReorder = reorder.toSorted();
+            // Each reordering should contain every index value once so, when sorted, each value should equal its index
+            if (sortedReorder.some((value: number, index: number) => value !== index)) {
+                throw new DustParameterError(`Unexpected reorder values: ${JSON.stringify(reorder)}`);
             }
         }
 
