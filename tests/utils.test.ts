@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { checkIntegerInRange, particleStateToArray, prod } from "../src/utils";
+import { checkIntegerInRange, ndArrayFrom, particleStateToArray, prod } from "../src/utils";
 import ndarray from "ndarray";
 import { ParticleState } from "../src/SystemState.ts";
 
@@ -54,5 +54,41 @@ describe("checkIntegerInRange", () => {
     test("does not throw when value is greater than or equal to min, when there is no max", () => {
         checkIntegerInRange("Test", 12, 10);
         checkIntegerInRange("Test", 10, 10);
+    });
+});
+
+describe("ndArrayFrom", () => {
+    test("can convert number[][] to ndArray", () => {
+        const result = ndArrayFrom([
+            [1, 2],
+            [3, 4],
+            [5, 6]
+        ]);
+        expect(result.shape).toStrictEqual([3, 2]);
+        expect(result.get(0, 0)).toBe(1);
+        expect(result.get(0, 1)).toBe(2);
+        expect(result.get(1, 0)).toBe(3);
+        expect(result.get(1, 1)).toBe(4);
+        expect(result.get(2, 0)).toBe(5);
+        expect(result.get(2, 1)).toBe(6);
+    });
+
+    test("throws error if source length is 0", () => {
+        expect(() => ndArrayFrom([])).toThrow("Cannot convert from empty source");
+    });
+
+    test("throws error if source arrays are difference length", () => {
+        expect(() => ndArrayFrom([
+            [1, 2],
+            [3, 4, 5]
+        ])).toThrow("Source arrays must all be the same length");
+    });
+
+    test("can convert array of empty arrays", () => {
+        const result = ndArrayFrom([
+            [],
+            []
+        ]);
+        expect(result.shape).toStrictEqual([2, 0]);
     });
 });
