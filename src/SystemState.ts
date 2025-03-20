@@ -139,6 +139,11 @@ export class SystemState {
             }
         }
 
+        this.reorderNoCheck(reordering);
+    }
+
+    // We'll use this eventually when we want to generate our own indexes internal to the package
+    private reorderNoCheck(reordering: ndarray.NdArray) {
         for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
             for (let newParticleIndex = 0; newParticleIndex < this._nParticles; newParticleIndex++) {
                 const oldParticleIndex = reordering.get(iGroup, newParticleIndex);
