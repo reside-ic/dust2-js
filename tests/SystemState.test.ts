@@ -80,7 +80,7 @@ describe("SystemState", () => {
 
     test("can reorder particles", () => {
         const sut = createSystemStateForReorder();
-        const reordering = ndArrayFrom([
+        let reordering = ndArrayFrom([
             [1, 2, 0],
             [2, 0, 1]
         ]);
@@ -92,6 +92,20 @@ describe("SystemState", () => {
 
         expect(particleStateToArray(sut.getParticle(1, 0))).toStrictEqual([50, 60]);
         expect(particleStateToArray(sut.getParticle(1, 1))).toStrictEqual([10, 20]);
+        expect(particleStateToArray(sut.getParticle(1, 2))).toStrictEqual([30, 40]);
+
+        // Test that successive reordering work as expected
+        reordering = ndArrayFrom([
+            [2, 1, 0],
+            [1, 0, 2]
+        ]);
+        sut.reorder(reordering);
+        expect(particleStateToArray(sut.getParticle(0, 0))).toStrictEqual([1, 2]);
+        expect(particleStateToArray(sut.getParticle(0, 1))).toStrictEqual([5, 6]);
+        expect(particleStateToArray(sut.getParticle(0, 2))).toStrictEqual([3, 4]);
+
+        expect(particleStateToArray(sut.getParticle(1, 0))).toStrictEqual([10, 20]);
+        expect(particleStateToArray(sut.getParticle(1, 1))).toStrictEqual([50, 60]);
         expect(particleStateToArray(sut.getParticle(1, 2))).toStrictEqual([30, 40]);
     });
 

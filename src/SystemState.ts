@@ -32,6 +32,7 @@ export interface ParticleState {
  */
 export class SystemState {
     private _state: ndarray.NdArray;
+    private _stateNext: ndarray.NdArray; // a working area for building next state value before swapping into _state
     private readonly _nGroups: number;
     private readonly _nParticles: number;
     private readonly _nStateElements: number;
@@ -47,6 +48,7 @@ export class SystemState {
         this._nParticles = nParticles;
         this._nStateElements = nStateElements;
         this._state = this.newState();
+        this._stateNext = this.newState();
     }
 
     private newState() {
@@ -137,17 +139,16 @@ export class SystemState {
             }
         }
 
-        const reordered = this.newState();
         for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
             for (let newParticleIndex = 0; newParticleIndex < this._nParticles; newParticleIndex++) {
                 const oldParticleIndex = reordering.get(iGroup, newParticleIndex);
                 const particleValues = this.getParticle(iGroup, oldParticleIndex);
                 for (let iStateElement = 0; iStateElement < this._nStateElements; iStateElement++) {
-                    reordered.set(iGroup, newParticleIndex, iStateElement, particleValues.get(iStateElement));
+                    this._stateNext.set(iGroup, newParticleIndex, iStateElement, particleValues.get(iStateElement));
                 }
             }
         }
 
-        this._state = reordered;
+        [this._state, this._stateNext] = [this._stateNext, this._state]; // swap
     }
 }
