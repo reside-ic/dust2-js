@@ -1,5 +1,5 @@
 import ndarray from "ndarray";
-import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
+import { checkIntegerInRange } from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
 
 /**
@@ -114,7 +114,8 @@ export class SystemState {
      * and whose second dimension defines a new order of particles for each group. For example, if this state has three
      * particles per group, a reordering of `[2, 0, 1]` for any group would imply that its current third particle should
      * be reordered to the first position, its current first particle to the second position, and its current second
-     * particle to the third position.
+     * particle to the third position. Reordering can also perform filtering and duplication i.e. indexes between 0
+     * and {@link nParticles} - 1 may be repeated or omitted in the reordering.
      */
     public reorder(reordering: ndarray.NdArray) {
         const shape = reordering.shape;
@@ -126,11 +127,13 @@ export class SystemState {
         }
         // Check that each reordering contains expected values
         for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
-            const reorder = particleStateToArray(reordering.pick(iGroup, null));
-            const sortedReorder = reorder.toSorted();
-            // Each reordering should contain every index value once so, when sorted, each value should equal its index
-            if (sortedReorder.some((value: number, index: number) => value !== index)) {
-                throw new DustParameterError(`Unexpected reorder values: ${JSON.stringify(reorder)}`);
+            for (let newParticleIndex = 0; newParticleIndex < this._nParticles; newParticleIndex++) {
+                checkIntegerInRange(
+                    "Reordering index",
+                    reordering.get(iGroup, newParticleIndex),
+                    0,
+                    this._nParticles - 1
+                );
             }
         }
 
