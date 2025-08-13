@@ -125,11 +125,11 @@ export class DiscreteSystem<TShared, TInternal> implements System {
             const shared = this._shared[iGroup];
             const internal = this._internal[iGroup];
             const state = this.runParticle(
-              shared,
-              internal,
-              this._zeroEvery[iGroup],
-              this._state.getParticle(iGroup, iParticle),
-              nSteps
+                shared,
+                internal,
+                this._zeroEvery[iGroup],
+                this._state.getParticle(iGroup, iParticle),
+                nSteps
             );
             this._state.setParticle(iGroup, iParticle, state);
         });
@@ -137,22 +137,22 @@ export class DiscreteSystem<TShared, TInternal> implements System {
     }
 
     private runParticle(
-      shared: TShared,
-      internal: TInternal,
-      zeroEvery: ZeroEvery,
-      particleState: ParticleState,
-      nSteps: number
+        shared: TShared,
+        internal: TInternal,
+        zeroEvery: ZeroEvery,
+        particleState: ParticleState,
+        nSteps: number
     ): number[] {
         let state = particleStateToArray(particleState);
         let stateNext = [...state];
         let time = this._time;
         for (let i = 0; i < nSteps; i++) {
             zeroEvery.forEach(([frequency, indicesToReset]) => {
-              const isAlmostZero = time % frequency < floatingPointTolerance;
-              const isAlmostFrequency = frequency - time % frequency < floatingPointTolerance;
-              if (isAlmostZero || isAlmostFrequency) {
-                indicesToReset.forEach(idx => state[idx] = 0);
-              };
+                const isAlmostZero = time % frequency < floatingPointTolerance;
+                const isAlmostFrequency = frequency - (time % frequency) < floatingPointTolerance;
+                if (isAlmostZero || isAlmostFrequency) {
+                    indicesToReset.forEach((idx) => (state[idx] = 0));
+                }
             });
             this._generator.update(time, this._dt, state, shared, internal, stateNext, this._random);
             time += this._dt;
