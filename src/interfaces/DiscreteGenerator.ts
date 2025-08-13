@@ -1,5 +1,6 @@
 import { Random } from "@reside-ic/random";
 import { Packer } from "../Packer.ts";
+import { ZeroEvery } from "../zero.ts";
 
 /**
  * Interface defining the functionality of a discrete time model, which can be used by {@link DiscreteSystem}
@@ -64,4 +65,11 @@ export interface DiscreteGenerator<TShared, TInternal> {
      * @param newShared The parameter set to update from
      */
     updateShared(shared: TShared, newShared: TShared): void;
+
+    /**
+     * Gets a {@link ZeroEvery} vector used to reset certain indices of state to 0 at a
+     * given frequency
+     * @param shared The shared parameter set to update
+     */
+    zeroEvery?(shared: TShared): ZeroEvery;
 }
