@@ -149,8 +149,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         for (let i = 0; i < nSteps; i++) {
             zeroEvery.forEach(([frequency, indicesToReset]) => {
               const isAlmostZero = time % frequency < floatingPointTolerance;
-              const isAlmostFrequency =
-                Math.abs(time % frequency - frequency) < floatingPointTolerance;
+              const isAlmostFrequency = frequency - time % frequency < floatingPointTolerance;
               if (isAlmostZero || isAlmostFrequency) {
                 indicesToReset.forEach(idx => state[idx] = 0);
               };
