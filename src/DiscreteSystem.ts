@@ -59,7 +59,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         this._state = new SystemState(this._nGroups, this._nParticles, nState);
         this._shared = shared;
         this._internal = shared.map(generator.internal);
-        this._zeroEvery = generator.zeroEvery ? shared.map(generator.zeroEvery) : shared.map(_ => []);
+        this._zeroEvery = generator.zeroEvery ? shared.map(generator.zeroEvery) : shared.map(() => []);
 
         this._random = random ? random : new Random(new RngStateBuiltin());
     }
@@ -147,7 +147,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         for (let i = 0; i < nSteps; i++) {
             zeroEvery.forEach(([frequency, indicesToReset]) => {
               if (time % frequency > 1e-12) return;
-              indicesToReset.forEach(i => state[i] = 0);
+              indicesToReset.forEach(idx => state[idx] = 0);
             });
             this._generator.update(time, this._dt, state, shared, internal, stateNext, this._random);
             time += this._dt;
