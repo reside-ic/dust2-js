@@ -13,6 +13,8 @@ const createSystem = (shared: ABState) =>
         1 // nParticles
     );
 
+// TODO: remove when mrc-6246 is added
+// https://mrc-ide.myjetbrains.com/youtrack/agiles/103-79/current?issue=mrc-6246
 const simulateToTime = (shared: ABState, time: number) => {
     const ret = { a: [] as number[], b: [] as number[] };
     const sys = createSystem(shared);

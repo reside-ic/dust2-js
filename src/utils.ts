@@ -37,3 +37,11 @@ export const ndArrayFrom = (source: number[][]): ndarray.NdArray => {
     }, [] as number[]);
     return ndarray(values, [source.length, expectedLength]);
 };
+
+const floatingPointTolerance = 1e-12;
+
+export const floatIsDivisibleBy = (a: number, b: number) => {
+    const isAlmostZero = a % b < floatingPointTolerance;
+    const isAlmostB = b - (a % b) < floatingPointTolerance;
+    return isAlmostZero || isAlmostB;
+};
