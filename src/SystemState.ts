@@ -1,7 +1,6 @@
 import ndarray from "ndarray";
-import { checkIntegerInRange, checkIndicesWithinMax, checkNestedArrayLengthsMatch } from "./utils.ts";
+import { checkIntegerInRange, checkIndicesForMax, checkNestedArrayLengthsMatch } from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
-import { index } from "typedoc/dist/lib/output/themes/default/partials";
 
 /**
  * Interface representing state for a particular particle, which is returned by {@link SystemState.getParticle}
@@ -183,7 +182,7 @@ export class SystemState {
             // We also validate non-empty index arrays here
             const iterateAll = !indices.length;
             if (!iterateAll) {
-                checkIndicesWithinMax(name, indices, stateIndexCount - 1);
+                checkIndicesForMax(name, indices, stateIndexCount - 1);
             }
             const indexCount = iterateAll ? stateIndexCount : indices.length;
             for (let i = 0; i < indexCount; i++) {

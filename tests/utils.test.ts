@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { checkIntegerInRange, ndArrayFrom, particleStateToArray, prod } from "../src/utils";
+import { checkIndicesForMax, checkIntegerInRange, ndArrayFrom, particleStateToArray, prod } from "../src/utils";
 import ndarray from "ndarray";
 import { ParticleState } from "../src/SystemState.ts";
 
@@ -89,5 +89,41 @@ describe("ndArrayFrom", () => {
     test("can convert array of empty arrays", () => {
         const result = ndArrayFrom([[], []]);
         expect(result.shape).toStrictEqual([2, 0]);
+    });
+});
+
+describe("checkIndicesForMax", () => {
+    test("does not throw error for valid indices", () => {
+        checkIndicesForMax("TEST", [0, 2, 5], 5);
+    });
+
+    test("throws expected error if indices are not ordered", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [0, 3, 1], 3);
+        }).toThrow("TEST indices must be ordered with no duplicates");
+    });
+
+    test("throws expected error if indices contain duplicates", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [0, 0, 1], 3);
+        }).toThrow("TEST indices must be ordered with no duplicates");
+    });
+
+    test("throws expected error if any indices are greater than max", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [0, 1, 2, 5], 4);
+        }).toThrow("TEST should be an integer between 0 and 4, but is 5");
+    });
+
+    test("throws expected error if any indices are less than 0", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [-1, 1, 2, 3], 4);
+        }).toThrow("TEST should be an integer between 0 and 4, but is -1");
+    });
+
+    test("throws expected error if any indices are not integers", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [0, 1, 2.5, 3], 4);
+        }).toThrow("TEST should be an integer between 0 and 4, but is 2.5");
     });
 });

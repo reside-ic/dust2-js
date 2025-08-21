@@ -21,7 +21,7 @@ export const checkIntegerInRange = (name: string, value: number, min: number, ma
     }
 };
 
-export const checkIndicesWithinMax = (name: string, indices: number[], max: number) => {
+export const checkIndicesForMax = (name: string, indices: number[], max: number) => {
     // Check an index array provided to setState is valid, with each value >= 0 and <= some max, and the whole list
     // being ordered and containing no duplicates
     for(let i = 0; i < indices.length; i++) {
