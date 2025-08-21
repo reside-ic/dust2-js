@@ -1,5 +1,5 @@
 import { Random, RngStateBuiltin } from "@reside-ic/random";
-import { ParticleState, SystemState } from "./SystemState";
+import { ParticleState, SystemState, SystemSubState } from "./SystemState";
 import { DiscreteGenerator } from "./interfaces/DiscreteGenerator.ts";
 import { Packer } from "./Packer";
 import { System } from "./interfaces/System.ts";
@@ -104,6 +104,10 @@ export class DiscreteSystem<TShared, TInternal> implements System {
             this._generator.initial(this._time, shared, internal, arrayState, this._random);
             this._state.setParticle(iGroup, iParticle, arrayState);
         });
+    }
+
+    public setState(newState: SystemSubState, groupIndices: number[] = [], particleIndices: number[] = [], stateElementIndices: number[] = []) {
+        this._state.setState(newState, groupIndices, particleIndices, stateElementIndices);
     }
 
     /**

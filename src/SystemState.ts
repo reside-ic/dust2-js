@@ -169,9 +169,9 @@ export class SystemState {
         // Check that the dimensions of new state actually match size of the indices arrays provided (or the relevant dimension of the
         // whole state if not
         const expectedNewStateLengths = [
-            groupIndices.length || this._nGroups - 1,
-            particleIndices.length || this._nParticles - 1,
-            stateElementIndices.length || this._nStateElements -1
+            groupIndices.length || this._nGroups,
+            particleIndices.length || this._nParticles,
+            stateElementIndices.length || this._nStateElements
         ];
         const expectedNewStateNames = ["newState Groups", "newState Particles", "newState State Elements"];
         checkNestedArrayLengthsMatch(newState, expectedNewStateLengths, expectedNewStateNames);
@@ -191,9 +191,9 @@ export class SystemState {
             }
         }
 
-        iterateIndices("Group", groupIndices, this._nGroups, (g: number, ig: number) => {
-            iterateIndices("Particle", particleIndices, this._nParticles, (p: number, ip: number) => {
-                iterateIndices("State Element", stateElementIndices, this._nStateElements, (v: number, iv: number) => {
+        iterateIndices("Group index", groupIndices, this._nGroups, (g: number, ig: number) => {
+            iterateIndices("Particle index", particleIndices, this._nParticles, (p: number, ip: number) => {
+                iterateIndices("State Element index", stateElementIndices, this._nStateElements, (v: number, iv: number) => {
                     this._state.set(g, p, v, newState[ig][ip][iv]);
                 });
             });
