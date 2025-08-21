@@ -106,7 +106,12 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         });
     }
 
-    public setState(newState: SystemSubState, groupIndices: number[] = [], particleIndices: number[] = [], stateElementIndices: number[] = []) {
+    public setState(
+        newState: SystemSubState,
+        groupIndices: number[] = [],
+        particleIndices: number[] = [],
+        stateElementIndices: number[] = []
+    ) {
         this._state.setState(newState, groupIndices, particleIndices, stateElementIndices);
     }
 

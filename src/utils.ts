@@ -24,35 +24,46 @@ export const checkIntegerInRange = (name: string, value: number, min: number, ma
 export const checkIndicesForMax = (name: string, indices: number[], max: number) => {
     // Check an index array provided to setState is valid, with each value >= 0 and <= some max, and the whole list
     // being ordered and containing no duplicates
-    for(let i = 0; i < indices.length; i++) {
+    for (let i = 0; i < indices.length; i++) {
         const indexValue = indices[i];
         checkIntegerInRange(name, indexValue, 0, max);
-        if (i > 0 && indexValue <= indices[i-1]) {
+        if (i > 0 && indexValue <= indices[i - 1]) {
             throw new RangeError(`${name} indices must be ordered with no duplicates`);
         }
     }
-}
+};
 
-export const checkNestedArrayLengthsMatch = (array: Array<unknown>, expectedLengths: number[], expectedLengthNames: string[], currentIndexes: number[] = []) => {
+export const checkNestedArrayLengthsMatch = (
+    array: Array<unknown>,
+    expectedLengths: number[],
+    expectedLengthNames: string[],
+    currentIndexes: number[] = []
+) => {
     // Recursively check that a multidimensional array has the expected length for each member at every level, and throw
     // meaningful error if not
     if (expectedLengths.length !== expectedLengthNames.length) {
-        throw new Error("Unexpected parameters in checkNestedArrayLengthsMatch: expectedLengths and expectedLengthNames should be same length");
+        throw new Error(
+            "Unexpected parameters in checkNestedArrayLengthsMatch: " + "" +
+            "expectedLengths and expectedLengthNames should be same length"
+        );
     }
     if (array.length !== expectedLengths[0]) {
         const currentIndexesSuffix = currentIndexes.length ? ` at index ${currentIndexes}` : "";
-        throw new RangeError(`${expectedLengthNames[0]} should have length ${expectedLengths[0]} but was ${array.length}${currentIndexesSuffix}`)
+        throw new RangeError(
+            `${expectedLengthNames[0]} should have length ${expectedLengths[0]} ` +
+            `but was ${array.length}${currentIndexesSuffix}`
+        );
     }
     if (expectedLengths.length > 1) {
         const nextExpectedLengths = expectedLengths.slice(1);
         const nextExpectedLengthNames = expectedLengthNames.slice(1);
         for (let i = 0; i < array.length; i++) {
             const nestedArr = array[i] as Array<unknown>;
-            const nestedCurrentIndexes = [...currentIndexes, i]
+            const nestedCurrentIndexes = [...currentIndexes, i];
             checkNestedArrayLengthsMatch(nestedArr, nextExpectedLengths, nextExpectedLengthNames, nestedCurrentIndexes);
         }
     }
-}
+};
 
 // Convert an array of arrays into an NdArray
 export const ndArrayFrom = (source: number[][]): ndarray.NdArray => {

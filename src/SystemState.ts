@@ -163,11 +163,16 @@ export class SystemState {
         [this._state, this._stateNext] = [this._stateNext, this._state]; // swap
     }
 
-    public setState(newState: SystemSubState, groupIndices: number[] = [], particleIndices: number[] = [], stateElementIndices: number[] = []) {
+    public setState(
+        newState: SystemSubState,
+        groupIndices: number[] = [],
+        particleIndices: number[] = [],
+        stateElementIndices: number[] = []
+    ) {
         // NB providing empty indices array means to iterate all indexes in order
 
-        // Check that the dimensions of new state actually match size of the indices arrays provided (or the relevant dimension of the
-        // whole state if not
+        // Check that the dimensions of new state actually match size of the indices arrays
+        // provided (or the relevant dimension of the whole state if not)
         const expectedNewStateLengths = [
             groupIndices.length || this._nGroups,
             particleIndices.length || this._nParticles,
@@ -176,7 +181,12 @@ export class SystemState {
         const expectedNewStateNames = ["newState Groups", "newState Particles", "newState State Elements"];
         checkNestedArrayLengthsMatch(newState, expectedNewStateLengths, expectedNewStateNames);
 
-        const iterateIndices = (name: string, indices: number[], stateIndexCount:  number, f: (index: number, i: number) => void) => {
+        const iterateIndices = (
+            name: string,
+            indices: number[],
+            stateIndexCount: number,
+            f: (index: number, i: number) => void
+        ) => {
             // Each of the index arrays provided may be empty, in which case we should iterate over all the indices
             // in the state
             // We also validate non-empty index arrays here
@@ -189,13 +199,18 @@ export class SystemState {
                 const index = iterateAll ? i : indices[i];
                 f(index, i);
             }
-        }
+        };
 
         iterateIndices("Group index", groupIndices, this._nGroups, (g: number, ig: number) => {
             iterateIndices("Particle index", particleIndices, this._nParticles, (p: number, ip: number) => {
-                iterateIndices("State Element index", stateElementIndices, this._nStateElements, (v: number, iv: number) => {
-                    this._state.set(g, p, v, newState[ig][ip][iv]);
-                });
+                iterateIndices(
+                    "State Element index",
+                    stateElementIndices,
+                    this._nStateElements,
+                    (v: number, iv: number) => {
+                        this._state.set(g, p, v, newState[ig][ip][iv]);
+                    }
+                );
             });
         });
     }

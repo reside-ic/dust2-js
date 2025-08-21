@@ -109,14 +109,7 @@ describe("DiscreteSystem", () => {
     test("can set state", () => {
         const sys = createSystem();
         sys.setStateInitial();
-        const subState = [
-            [
-                [17, 18],
-            ],
-            [
-                [27, 28]
-            ]
-        ];
+        const subState = [[[17, 18]], [[27, 28]]];
         sys.setState(subState, [], [2], [3, 4]);
         expect(particleStateToArray(sys.state.getParticle(0, 2))).toStrictEqual([
             999999, // shared.N - shared.I0;

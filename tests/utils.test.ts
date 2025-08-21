@@ -1,5 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { checkIndicesForMax, checkIntegerInRange, checkNestedArrayLengthsMatch, ndArrayFrom, particleStateToArray, prod } from "../src/utils";
+import {
+    checkIndicesForMax,
+    checkIntegerInRange,
+    checkNestedArrayLengthsMatch,
+    ndArrayFrom,
+    particleStateToArray,
+    prod
+} from "../src/utils";
 import ndarray from "ndarray";
 import { ParticleState, SystemSubState } from "../src/SystemState.ts";
 
@@ -163,7 +170,10 @@ describe("checkNestedArrayLengthsMatch", () => {
     test("throws expected error if expectedLengths and expectedLengthNames do not match", () => {
         expect(() => {
             checkNestedArrayLengthsMatch(testArray, [2, 3], expectedNames);
-        }).toThrow("Unexpected parameters in checkNestedArrayLengthsMatch: expectedLengths and expectedLengthNames should be same length");
+        }).toThrow(
+            "Unexpected parameters in checkNestedArrayLengthsMatch: " +
+            "expectedLengths and expectedLengthNames should be same length"
+        );
     });
 
     test("throws expected error if top level length is not expected", () => {

@@ -181,14 +181,7 @@ describe("SystemState", () => {
 
     test("can set substate", () => {
         const sut = createSystemState(); // 2, 3, 4
-        const subState: SystemSubState = [
-            [
-                [98, 76]
-            ],
-            [
-                [54, 32]
-            ]
-        ];
+        const subState: SystemSubState = [[[98, 76]], [[54, 32]]];
 
         // both groups, 2nd particle only, 2nd and 4th state elements
         sut.setState(subState, [0, 1], [1], [1, 3]);
@@ -215,51 +208,32 @@ describe("SystemState", () => {
                 [108, 109, 110, 111]
             ]
         ];
-        expect(() => sut.setState(fullState))
-            .toThrow("State Elements should have length 4 but was 5 at index 0,2");
+        expect(() => sut.setState(fullState)).toThrow("State Elements should have length 4 but was 5 at index 0,2");
     });
 
     test("throws expected error when substate is the wrong shape", () => {
         const sut = createSystemState(); // 2, 3, 4
-        const subState: SystemSubState = [
-            [
-                [98, 76]
-            ],
-            [
-                [54, 32]
-            ]
-        ];
+        const subState: SystemSubState = [[[98, 76]], [[54, 32]]];
 
-        expect(() => sut.setState(subState, [0, 1], [0, 1], [1, 3]))
-            .toThrow("Particles should have length 2 but was 1 at index 0");
+        expect(() => sut.setState(subState, [0, 1], [0, 1], [1, 3])).toThrow(
+            "Particles should have length 2 but was 1 at index 0"
+        );
     });
 
     test("throws expected error when substate indices are invalid for system", () => {
         const sut = createSystemState();
-        const subState: SystemSubState = [
-            [
-                [98, 76]
-            ],
-            [
-                [54, 32]
-            ]
-        ];
-        expect(() => sut.setState(subState, [0, 1], [8], [1, 3]))
-            .toThrow("Particle index should be an integer between 0 and 2, but is 8");
+        const subState: SystemSubState = [[[98, 76]], [[54, 32]]];
+        expect(() => sut.setState(subState, [0, 1], [8], [1, 3])).toThrow(
+            "Particle index should be an integer between 0 and 2, but is 8"
+        );
     });
 
     test("throws expected error when substate indices are invalid", () => {
         const sut = createSystemState();
-        const subState: SystemSubState = [
-            [
-                [98, 76]
-            ],
-            [
-                [54, 32]
-            ]
-        ];
-        expect(() => sut.setState(subState, [0, -1], [1], [1, 3]))
-            .toThrow("Group index should be an integer between 0 and 1, but is -1");
+        const subState: SystemSubState = [[[98, 76]], [[54, 32]]];
+        expect(() => sut.setState(subState, [0, -1], [1], [1, 3])).toThrow(
+            "Group index should be an integer between 0 and 1, but is -1"
+        );
     });
 
     test("throws expected error when substate indices are not compatible with provided substate", () => {
@@ -269,11 +243,10 @@ describe("SystemState", () => {
                 [98, 76],
                 [98, 76]
             ],
-            [
-                [54, 32]
-            ]
+            [[54, 32]]
         ];
-        expect(() => sut.setState(subState, [0, 1], [0, 1], [1, 3]))
-            .toThrow("newState Particles should have length 2 but was 1 at index 1");
+        expect(() => sut.setState(subState, [0, 1], [0, 1], [1, 3])).toThrow(
+            "newState Particles should have length 2 but was 1 at index 1"
+        );
     });
 });
