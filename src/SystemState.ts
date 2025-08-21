@@ -1,6 +1,7 @@
 import ndarray from "ndarray";
-import { checkIntegerInRange } from "./utils.ts";
+import { checkIntegerInRange, checkIndicesWithinMax, checkNestedArrayLengthsMatch } from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
+import { index } from "typedoc/dist/lib/output/themes/default/partials";
 
 /**
  * Interface representing state for a particular particle, which is returned by {@link SystemState.getParticle}
@@ -24,6 +25,12 @@ export interface ParticleState {
      */
     size: number;
 }
+
+export type ParticleSubState = number[];
+export type GroupSubState = ParticleSubState[];
+
+/* Type used for set state updates - TODO: NdArray version */
+export type SystemSubState = GroupSubState[];
 
 /**
  * Class representing the state of a {@link System} made up of {@link SystemState.nGroups | nGroups} groups with
@@ -155,5 +162,42 @@ export class SystemState {
         }
 
         [this._state, this._stateNext] = [this._stateNext, this._state]; // swap
+    }
+
+    public setState(newState: SystemSubState, groupIndices: number[] = [], particleIndices: number[] = [], stateElementIndices: number[] = []) {
+        // NB providing empty indices array means to iterate all indexes in order
+
+        // Check that the dimensions of new state actually match size of the indices arrays provided (or the relevant dimension of the
+        // whole state if not
+        const expectedNewStateLengths = [
+            groupIndices.length || this._nGroups - 1,
+            particleIndices.length || this._nParticles - 1,
+            stateElementIndices.length || this._nStateElements -1
+        ];
+        const expectedNewStateNames = ["newState Groups", "newState Particles", "newState State Elements"];
+        checkNestedArrayLengthsMatch(newState, expectedNewStateLengths, expectedNewStateNames);
+
+        const iterateIndices = (name: string, indices: number[], stateIndexCount:  number, f: (index: number, i: number) => void) => {
+            // Each of the index arrays provided may be empty, in which case we should iterate over all the indices
+            // in the state
+            // We also validate non-empty index arrays here
+            const iterateAll = !indices.length;
+            if (!iterateAll) {
+                checkIndicesWithinMax(name, indices, stateIndexCount - 1);
+            }
+            const indexCount = iterateAll ? stateIndexCount : indices.length;
+            for (let i = 0; i < indexCount; i++) {
+                const index = iterateAll ? i : indices[i];
+                f(index, i);
+            }
+        }
+
+        iterateIndices("Group", groupIndices, this._nGroups, (g: number, ig: number) => {
+            iterateIndices("Particle", particleIndices, this._nParticles, (p: number, ip: number) => {
+                iterateIndices("State Element", stateElementIndices, this._nStateElements, (v: number, iv: number) => {
+                    this._state.set(g, p, v, newState[ig][ip][iv]);
+                });
+            });
+        });
     }
 }
