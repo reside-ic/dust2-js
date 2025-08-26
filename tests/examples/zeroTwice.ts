@@ -25,7 +25,7 @@ export const zeroTwice: DiscreteGenerator<ABState, null> = {
         return new Packer({ shape });
     },
 
-    zeroEvery(shared) {
+    getZeroEvery(shared) {
         return [
             [shared.a, [0]],
             [shared.b, [1]]

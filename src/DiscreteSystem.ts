@@ -59,7 +59,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         this._state = new SystemState(this._nGroups, this._nParticles, nState);
         this._shared = shared;
         this._internal = shared.map(generator.internal);
-        this._zeroEvery = generator.zeroEvery ? shared.map(generator.zeroEvery) : shared.map(() => []);
+        this._zeroEvery = generator.getZeroEvery ? shared.map(generator.getZeroEvery) : shared.map(() => []);
 
         this._random = random ? random : new Random(new RngStateBuiltin());
     }

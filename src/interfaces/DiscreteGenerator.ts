@@ -71,5 +71,5 @@ export interface DiscreteGenerator<TShared, TInternal> {
      * given frequency
      * @param shared The shared parameter set to update
      */
-    zeroEvery?(shared: TShared): ZeroEvery;
+    getZeroEvery?(shared: TShared): ZeroEvery;
 }
