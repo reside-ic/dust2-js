@@ -28,7 +28,9 @@ export interface ParticleState {
 export type ParticleSubState = number[];
 export type GroupSubState = ParticleSubState[];
 
-/* Type used for set state updates - TODO: NdArray version */
+/**
+ * Type used for full or partial state updates.
+ */
 export type SystemSubState = GroupSubState[];
 
 /**
@@ -163,14 +165,23 @@ export class SystemState {
         [this._state, this._stateNext] = [this._stateNext, this._state]; // swap
     }
 
+    /**
+     * Sets new values in the state
+     * @param newState The new state values for all of part of the state. If partial state, the shape must match the
+     * values provided in the indices parameters
+     * @param groupIndices The group indices, in order, which the first dimension of newState are setting values for.
+     * If empty, this means newState provides values for all groups.
+     * @param particleIndices The particle indices, in order, which the second dimension of newState are setting values
+     * for. If empty, this means newState provides values for all particles.
+     * @param stateElementIndices The state element indices, in order, which the second dimension of newState are
+     * setting values for. If empty, this means newState provides values for all particles.
+     */
     public setState(
         newState: SystemSubState,
         groupIndices: number[] = [],
         particleIndices: number[] = [],
         stateElementIndices: number[] = []
     ) {
-        // NB providing empty indices array means to iterate all indexes in order
-
         // Check that the dimensions of new state actually match size of the indices arrays
         // provided (or the relevant dimension of the whole state if not)
         const expectedNewStateLengths = [
