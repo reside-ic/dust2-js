@@ -106,7 +106,7 @@ describe("DiscreteSystem", () => {
         expectParticleGroupState(sys, 1, 3, expectedGroup2Initial);
     });
 
-    test("can set state", () => {
+    test("can set substate", () => {
         const sys = createSystem();
         sys.setStateInitial();
         const subState = [[[17, 18]], [[27, 28]]];
@@ -125,6 +125,34 @@ describe("DiscreteSystem", () => {
             27,
             28
         ]); // expectedGroup2Initial with the updated values
+    });
+
+    test("can set full state", () => {
+        const sys = createSystem();
+        sys.setStateInitial();
+
+        const newGrp1Part1 = [11111, 1, 2, 3, 4];
+        const newGrp1Part2 = [22222, 2, 3, 4, 5];
+        const newGrp1Part3 = [33333, 3, 4, 5, 6];
+
+        const newGrp2Part1 = [11110, 10, 20, 30, 40];
+        const newGrp2Part2 = [22220, 20, 30, 40, 50];
+        const newGrp2Part3 = [33330, 30, 40, 50, 60];
+
+        const newState = [
+            [newGrp1Part1, newGrp1Part2, newGrp1Part3],
+            [newGrp2Part1, newGrp2Part2, newGrp2Part3]
+        ];
+
+        sys.setState(newState);
+
+        expect(particleStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(newGrp1Part1);
+        expect(particleStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(newGrp1Part2);
+        expect(particleStateToArray(sys.state.getParticle(0, 2))).toStrictEqual(newGrp1Part3);
+
+        expect(particleStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(newGrp2Part1);
+        expect(particleStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(newGrp2Part2);
+        expect(particleStateToArray(sys.state.getParticle(1, 2))).toStrictEqual(newGrp2Part3);
     });
 
     test("can set and get time", () => {
