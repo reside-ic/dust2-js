@@ -44,7 +44,6 @@ export const checkNestedArrayLengthsMatch = (
     if (expectedLengths.length !== expectedLengthNames.length) {
         throw new Error(
             "Unexpected parameters in checkNestedArrayLengthsMatch: " +
-                "" +
                 "expectedLengths and expectedLengthNames should be same length"
         );
     }
