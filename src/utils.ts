@@ -43,15 +43,16 @@ export const checkNestedArrayLengthsMatch = (
     // meaningful error if not
     if (expectedLengths.length !== expectedLengthNames.length) {
         throw new Error(
-            "Unexpected parameters in checkNestedArrayLengthsMatch: " + "" +
-            "expectedLengths and expectedLengthNames should be same length"
+            "Unexpected parameters in checkNestedArrayLengthsMatch: " +
+                "" +
+                "expectedLengths and expectedLengthNames should be same length"
         );
     }
     if (array.length !== expectedLengths[0]) {
         const currentIndexesSuffix = currentIndexes.length ? ` at index ${currentIndexes}` : "";
         throw new RangeError(
             `${expectedLengthNames[0]} should have length ${expectedLengths[0]} ` +
-            `but was ${array.length}${currentIndexesSuffix}`
+                `but was ${array.length}${currentIndexesSuffix}`
         );
     }
     if (expectedLengths.length > 1) {

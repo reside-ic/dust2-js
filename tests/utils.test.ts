@@ -172,7 +172,7 @@ describe("checkNestedArrayLengthsMatch", () => {
             checkNestedArrayLengthsMatch(testArray, [2, 3], expectedNames);
         }).toThrow(
             "Unexpected parameters in checkNestedArrayLengthsMatch: " +
-            "expectedLengths and expectedLengthNames should be same length"
+                "expectedLengths and expectedLengthNames should be same length"
         );
     });
 
