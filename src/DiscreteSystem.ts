@@ -1,5 +1,6 @@
 import { Random, RngStateBuiltin } from "@reside-ic/random";
 import { ParticleState, SystemState, SystemSubState } from "./SystemState";
+import { SystemSimulateResult } from "./SystemSimulateResult.ts";
 import { DiscreteGenerator } from "./interfaces/DiscreteGenerator.ts";
 import { Packer } from "./Packer";
 import { System } from "./interfaces/System.ts";
@@ -143,6 +144,26 @@ export class DiscreteSystem<TShared, TInternal> implements System {
             this._state.setParticle(iGroup, iParticle, state);
         });
         this._time = time;
+    }
+
+    public simulate(times: number[], stateElementIndices: number[] = []): SystemSimulateResult {
+        //- validate times - must be increasing, no duplicates,  must not be less than current time, must align with dt
+        //- validate stateElementIndices - can be out of order. should allow duplicates? Must be in range.
+
+        // TODO: allow case where first time is current time - no progression needed for first colelction
+
+        const stateIndicesToReturn = stateElementIndices.length ? stateElementIndices : [...Array(this._state.nStateElements).keys()];
+
+        const result = new SystemSimulateResult(this._nGroups, this._nParticles, stateElementIndices.length, times.length);
+        times.forEach((t) => {
+            this.runToTime(t);
+            this.iterateParticles((iGroup: number, iParticle: number) => {
+                const particle = this._state.getParticle(iGroup, iParticle);
+                const stateValues = stateIndicesToReturn.map((index) => particle.get(index));
+                result.setValuesForTime(iGroup, iParticle, t, stateValues);
+            });
+        });
+        return result;
     }
 
     private runParticle(shared: TShared, internal: TInternal, particleState: ParticleState, nSteps: number): number[] {

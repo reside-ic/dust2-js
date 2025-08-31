@@ -1,4 +1,5 @@
 import { SystemState, SystemSubState } from "../SystemState.ts";
+import { SystemSimulateResult } from "../SystemSimulateResult.ts";
 
 /**
  * Interface defining the basic functionality of a dust system, composed of a number of particles
@@ -42,4 +43,6 @@ export interface System {
      * @param time The time to run to
      */
     runToTime(time: number): void;
+
+    simulate(times: number[], stateElementIndices: number[]): SystemSimulateResult;
 }
