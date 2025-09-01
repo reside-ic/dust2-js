@@ -14,6 +14,9 @@ export class SystemSimulateResult {
         this._nStateElements = nStateElements;
         this._nTimes = nTimes;
 
+        // TODO: should include the times themselves, not just time indexes and be able to get state for those
+        // TODO: same for state element names
+
         // arrange the ndArray with dimensions: group, particle, stateElement * time
         const len = this._nGroups * this._nParticles * this._nStateElements * this._nTimes;
         this._resultValues = ndarray(new Array<number>(len).fill(0), [this._nGroups, this._nParticles, this._nStateElements, this._nTimes]);
@@ -23,9 +26,16 @@ export class SystemSimulateResult {
         this.checkIndexes(iGroup, iParticle, null, iTime);
         // TODO: validate number of state values
         for (let i = 0; i < stateValues.length; i++) {
-            this._resultValues.set(iGroup, iParticle, iTime, stateValues[i]);
+            this._resultValues.set(iGroup, iParticle, i, iTime, stateValues[i]);
         }
     }
+
+    public resultValues() {
+        return this._resultValues;
+    }
+
+    // TODO: the results for the gets should have an interface identical to ParticleState, but less restrictive name!
+    // Then should be able to use (renamed) ParticleStateToArray util on result
 
     public getValuesForTime(iGroup: number, iParticle: number, iTime: number) {
         this.checkIndexes(iGroup, iParticle, null, iTime);

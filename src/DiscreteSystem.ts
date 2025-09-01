@@ -155,12 +155,12 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         const stateIndicesToReturn = stateElementIndices.length ? stateElementIndices : [...Array(this._state.nStateElements).keys()];
 
         const result = new SystemSimulateResult(this._nGroups, this._nParticles, stateElementIndices.length, times.length);
-        times.forEach((t) => {
+        times.forEach((t, iTime) => {
             this.runToTime(t);
             this.iterateParticles((iGroup: number, iParticle: number) => {
                 const particle = this._state.getParticle(iGroup, iParticle);
                 const stateValues = stateIndicesToReturn.map((index) => particle.get(index));
-                result.setValuesForTime(iGroup, iParticle, t, stateValues);
+                result.setValuesForTime(iGroup, iParticle, iTime, stateValues);
             });
         });
         return result;
