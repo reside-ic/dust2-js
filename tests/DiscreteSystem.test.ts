@@ -303,63 +303,78 @@ describe("DiscreteSystem", () => {
 
         const result = sys.simulate([6, 7], [0, 2, 4]); // 1 and 2 more than start time, should take 4 steps of 0.5
 
-        // Simulate each of the updates called by the System, using the compareRandom to replay the
+        // Manually run each of the updates called by the System, using the compareRandom to replay the
         // same random values in order so we get the same results
         // 2 Groups (g) and 2 Particles (p)
 
-        // TIME 6
+        const getNextState = (start, currentState, shared) => {
+            const nextState = newSIRState();
+            generator.update(start, dt, currentState, shared, null, nextState, compareRandom);
+            return nextState;
+        };
 
+        // TIME 6
         // Group 1
         const g1Shared = simulateShared[0];
-        const g1p1Step1State = newSIRState();
-        generator.update(start, dt, g1StartState, g1Shared, null, g1p1Step1State, compareRandom);
-        const g1p1Step2State = newSIRState();
-        generator.update(step1, dt, g1p1Step1State, g1Shared, null, g1p1Step2State, compareRandom);
+        const g1p1Step1State = getNextState(start, g1StartState, g1Shared);
+        const g1p1Step2State = getNextState(step1, g1p1Step1State, g1Shared);
 
-        const g1p2Step1State = newSIRState();
-        generator.update(start, dt, g1StartState, g1Shared, null, g1p2Step1State, compareRandom);
-        const g1p2Step2State = newSIRState();
-        generator.update(step1, dt, g1p2Step1State, g1Shared, null, g1p2Step2State, compareRandom);
+        const g1p2Step1State = getNextState(start, g1StartState, g1Shared);
+        const g1p2Step2State = getNextState(step1, g1p2Step1State, g1Shared);
 
         // Group 2
         const g2Shared = simulateShared[1];
-        const g2p1Step1State = newSIRState();
-        generator.update(start, dt, g2StartState, g2Shared, null, g2p1Step1State, compareRandom);
-        const g2p1Step2State = newSIRState();
-        generator.update(step1, dt, g2p1Step1State, g2Shared, null, g2p1Step2State, compareRandom);
+        const g2p1Step1State = getNextState(start, g2StartState, g2Shared);
+        const g2p1Step2State = getNextState(step1, g2p1Step1State, g2Shared);
 
-        const g2p2Step1State = newSIRState();
-        generator.update(start, dt, g2StartState, g2Shared, null, g2p2Step1State, compareRandom);
-        const g2p2Step2State = newSIRState();
-        generator.update(step1, dt, g2p2Step1State, g2Shared, null, g2p2Step2State, compareRandom);
+        const g2p2Step1State = getNextState(start, g2StartState, g2Shared);
+        const g2p2Step2State = getNextState(step1, g2p2Step1State, g2Shared);
 
         // TIME 7
-        const g1p1Step3State = newSIRState();
-        generator.update(step2, dt, g1p1Step2State, g1Shared, null, g1p1Step3State, compareRandom);
-        const g1p1Step4State = newSIRState();
-        generator.update(step3, dt, g1p1Step3State, g1Shared, null, g1p1Step4State, compareRandom);
+        // Group 1
+        const g1p1Step3State = getNextState(step2, g1p1Step2State, g1Shared);
+        const g1p1Step4State = getNextState(step3, g1p1Step3State, g1Shared);
 
-        const g1p2Step3State = newSIRState();
-        generator.update(step2, dt, g1p2Step2State, g1Shared, null, g1p2Step3State, compareRandom);
-        const g1p2Step4State = newSIRState();
-        generator.update(step3, dt, g1p2Step3State, g1Shared, null, g1p2Step4State, compareRandom);
+        const g1p2Step3State = getNextState(step2, g1p2Step2State, g1Shared);
+        const g1p2Step4State = getNextState(step3, g1p2Step3State, g1Shared);
 
-        const g2p1Step3State = newSIRState();
-        generator.update(step2, dt, g2p1Step2State, g2Shared, null, g2p1Step3State, compareRandom);
-        const g2p1Step4State = newSIRState();
-        generator.update(step3, dt, g2p1Step3State, g2Shared, null, g2p1Step4State, compareRandom);
+        // Group 2
+        const g2p1Step3State = getNextState(step2, g2p1Step2State, g2Shared);
+        const g2p1Step4State = getNextState(step3, g2p1Step3State, g2Shared);
 
-        const g2p2Step3State = newSIRState();
-        generator.update(step2, dt, g2p2Step2State, g2Shared, null, g2p2Step3State, compareRandom);
-        const g2p2Step4State = newSIRState();
-        generator.update(step3, dt, g2p2Step3State, g2Shared, null, g2p2Step4State, compareRandom);
+        const g2p2Step3State = getNextState(step2, g2p2Step2State, g2Shared);
+        const g2p2Step4State = getNextState(step3, g2p2Step3State, g2Shared);
 
-        // TODO: test get all values after get interface and toArray util sorted out
-        const g1p1se1Result = result.getStateElement(0, 0, 0); //get state element for both times
-        expect(g1p1se1Result.size).toBe(2);
-        expect(g1p1se1Result.get(0)).toBe(g1p1Step2State[0]);
-        expect(g1p1se1Result.get(1)).toBe(g1p1Step4State[0]);
+        // Test can get expected state element values for both times
+        // State element indexes 0, 1, 2 in result should map to 0, 2, 4 in full state
+        // Group 1
+        expect(arrayStateToArray(result.getStateElement(0, 0, 0))).toStrictEqual([g1p1Step2State[0], g1p1Step4State[0]]);
+        expect(arrayStateToArray(result.getStateElement(0, 0, 1))).toStrictEqual([g1p1Step2State[2], g1p1Step4State[2]]);
+        expect(arrayStateToArray(result.getStateElement(0, 0, 2))).toStrictEqual([g1p1Step2State[4], g1p1Step4State[4]]);
 
-        //TODO: also test get by time
+        expect(arrayStateToArray(result.getStateElement(0, 1, 0))).toStrictEqual([g1p2Step2State[0], g1p2Step4State[0]]);
+        expect(arrayStateToArray(result.getStateElement(0, 1, 1))).toStrictEqual([g1p2Step2State[2], g1p2Step4State[2]]);
+        expect(arrayStateToArray(result.getStateElement(0, 1, 2))).toStrictEqual([g1p2Step2State[4], g1p2Step4State[4]]);
+
+        // Group 2
+        expect(arrayStateToArray(result.getStateElement(1, 0, 0))).toStrictEqual([g2p1Step2State[0], g2p1Step4State[0]]);
+        expect(arrayStateToArray(result.getStateElement(1, 0, 1))).toStrictEqual([g2p1Step2State[2], g2p1Step4State[2]]);
+        expect(arrayStateToArray(result.getStateElement(1, 0, 2))).toStrictEqual([g2p1Step2State[4], g2p1Step4State[4]]);
+
+        expect(arrayStateToArray(result.getStateElement(1, 1, 0))).toStrictEqual([g2p2Step2State[0], g2p2Step4State[0]]);
+        expect(arrayStateToArray(result.getStateElement(1, 1, 1))).toStrictEqual([g2p2Step2State[2], g2p2Step4State[2]]);
+        expect(arrayStateToArray(result.getStateElement(1, 1, 2))).toStrictEqual([g2p2Step2State[4], g2p2Step4State[4]]);
+
+        // Test can get get all state values for a time (for a particle) - NB "iTime" param here is time index, not time value
+        // Group 1
+        expect(arrayStateToArray(result.getValuesForTime(0, 0, 0))).toStrictEqual([g1p1Step2State[0], g1p1Step2State[2], g1p1Step2State[4]]);
+        expect(arrayStateToArray(result.getValuesForTime(0, 0, 1))).toStrictEqual([g1p1Step4State[0], g1p1Step4State[2], g1p1Step4State[4]]);
+        expect(arrayStateToArray(result.getValuesForTime(0, 1, 0))).toStrictEqual([g1p2Step2State[0], g1p2Step2State[2], g1p2Step2State[4]]);
+        expect(arrayStateToArray(result.getValuesForTime(0, 1, 1))).toStrictEqual([g1p2Step4State[0], g1p2Step4State[2], g1p2Step4State[4]]);
+        // Group 2
+        expect(arrayStateToArray(result.getValuesForTime(1, 0, 0))).toStrictEqual([g2p1Step2State[0], g2p1Step2State[2], g2p1Step2State[4]]);
+        expect(arrayStateToArray(result.getValuesForTime(1, 0, 1))).toStrictEqual([g2p1Step4State[0], g2p1Step4State[2], g2p1Step4State[4]]);
+        expect(arrayStateToArray(result.getValuesForTime(1, 1, 0))).toStrictEqual([g2p2Step2State[0], g2p2Step2State[2], g2p2Step2State[4]]);
+        expect(arrayStateToArray(result.getValuesForTime(1, 1, 1))).toStrictEqual([g2p2Step4State[0], g2p2Step4State[2], g2p2Step4State[4]]);
     });
 });

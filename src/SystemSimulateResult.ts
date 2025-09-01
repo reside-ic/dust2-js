@@ -1,5 +1,6 @@
 import ndarray from "ndarray";
 import { checkIntegerInRange } from "./utils.ts";
+import { ArrayState } from "./SystemState.ts";
 
 export class SystemSimulateResult {
     private _nGroups: number;
@@ -34,16 +35,13 @@ export class SystemSimulateResult {
         return this._resultValues;
     }
 
-    // TODO: the results for the gets should have an interface identical to ParticleState, but less restrictive name!
-    // Then should be able to use (renamed) ParticleStateToArray util on result
-
-    public getValuesForTime(iGroup: number, iParticle: number, iTime: number) {
+    public getValuesForTime(iGroup: number, iParticle: number, iTime: number): ArrayState {
         this.checkIndexes(iGroup, iParticle, null, iTime);
         return this._resultValues.pick(iGroup, iParticle, null, iTime);
     }
 
     // for all times
-    public getStateElement(iGroup: number, iParticle: number, iStateElement: number) {
+    public getStateElement(iGroup: number, iParticle: number, iStateElement: number): ArrayState {
         this.checkIndexes(iGroup, iParticle, iStateElement, null);
         return this._resultValues.pick(iGroup, iParticle, iStateElement, null);
     }
