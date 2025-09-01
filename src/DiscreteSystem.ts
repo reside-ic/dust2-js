@@ -150,13 +150,19 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         //- validate times - must be increasing, no duplicates,  must not be less than current time, must align with dt
         //- validate stateElementIndices - can be out of order. should allow duplicates? Must be in range.
 
-        // TODO: allow case where first time is current time - no progression needed for first colelction
+        // Allow case where first time is current time - no progression needed for first result set
+        let preRunSaveValues = times[0] === this._time;
 
         const stateIndicesToReturn = stateElementIndices.length ? stateElementIndices : [...Array(this._state.nStateElements).keys()];
 
         const result = new SystemSimulateResult(this._nGroups, this._nParticles, stateElementIndices.length, times.length);
         times.forEach((t, iTime) => {
-            this.runToTime(t);
+            if (preRunSaveValues) {
+                preRunSaveValues = false
+            } else {
+                this.runToTime(t);
+            }
+
             this.iterateParticles((iGroup: number, iParticle: number) => {
                 const particle = this._state.getParticle(iGroup, iParticle);
                 const stateValues = stateIndicesToReturn.map((index) => particle.get(index));
