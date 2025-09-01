@@ -283,67 +283,81 @@ describe("DiscreteSystem", () => {
         const step3 = 6.5;
         const dt = 0.5;
 
+        const simulateShared = [
+            { N: 1000000, I0: 1, beta: 4, gamma: 2 },
+            { N: 2000000, I0: 2, beta: 8, gamma: 4 }
+        ];
+
+        const g1StartState = [999999, 1, 0, 0, 0];
+        const g2StartState = [1999998, 2, 0, 0, 0];
+
         const sys = new DiscreteSystem<SIRShared, null>(
             generator,
-            shared,
+            simulateShared,
             start, // time
             dt, // dt
             2, // nParticles
             random
         );
         sys.setStateInitial();
-        const result = sys.simulate([6, 7], [0, 2, 4]); // 1 and 2 more than start time, should take 4 steps of 0.5
 
-        const g1StartState = [999999, 1, 0, 0, 0];
-        const g2StartState = [1999998, 2, 0, 0, 0];
+        const result = sys.simulate([6, 7], [0, 2, 4]); // 1 and 2 more than start time, should take 4 steps of 0.5
 
         // Simulate each of the updates called by the System, using the compareRandom to replay the
         // same random values in order so we get the same results
         // 2 Groups (g) and 2 Particles (p)
 
+        // TIME 6
+
         // Group 1
-        const g1Shared = shared[0];
+        const g1Shared = simulateShared[0];
         const g1p1Step1State = newSIRState();
         generator.update(start, dt, g1StartState, g1Shared, null, g1p1Step1State, compareRandom);
         const g1p1Step2State = newSIRState();
         generator.update(step1, dt, g1p1Step1State, g1Shared, null, g1p1Step2State, compareRandom);
-        const g1p1Step3State = newSIRState();
-        generator.update(step2, dt, g1p1Step2State, g1Shared, null, g1p1Step3State, compareRandom);
-        const g1p1Step4State = newSIRState();
-        generator.update(step3, dt, g1p1Step3State, g1Shared, null, g1p1Step4State, compareRandom);
 
         const g1p2Step1State = newSIRState();
         generator.update(start, dt, g1StartState, g1Shared, null, g1p2Step1State, compareRandom);
         const g1p2Step2State = newSIRState();
         generator.update(step1, dt, g1p2Step1State, g1Shared, null, g1p2Step2State, compareRandom);
-        const g1p2Step3State = newSIRState();
-        generator.update(step2, dt, g1p2Step2State, g1Shared, null, g1p2Step3State, compareRandom);
-        const g1p2Step4State = newSIRState();
-        generator.update(step3, dt, g1p2Step3State, g1Shared, null, g1p2Step4State, compareRandom);
 
         // Group 2
-        const g2Shared = shared[1];
+        const g2Shared = simulateShared[1];
         const g2p1Step1State = newSIRState();
         generator.update(start, dt, g2StartState, g2Shared, null, g2p1Step1State, compareRandom);
         const g2p1Step2State = newSIRState();
         generator.update(step1, dt, g2p1Step1State, g2Shared, null, g2p1Step2State, compareRandom);
-        const g2p1Step3State = newSIRState();
-        generator.update(step2, dt, g2p1Step2State, g2Shared, null, g2p1Step3State, compareRandom);
-        const g2p1Step4State = newSIRState();
-        generator.update(step3, dt, g2p1Step3State, g2Shared, null, g2p1Step4State, compareRandom);
 
         const g2p2Step1State = newSIRState();
         generator.update(start, dt, g2StartState, g2Shared, null, g2p2Step1State, compareRandom);
         const g2p2Step2State = newSIRState();
         generator.update(step1, dt, g2p2Step1State, g2Shared, null, g2p2Step2State, compareRandom);
+
+        // TIME 7
+        const g1p1Step3State = newSIRState();
+        generator.update(step2, dt, g1p1Step2State, g1Shared, null, g1p1Step3State, compareRandom);
+        const g1p1Step4State = newSIRState();
+        generator.update(step3, dt, g1p1Step3State, g1Shared, null, g1p1Step4State, compareRandom);
+
+        const g1p2Step3State = newSIRState();
+        generator.update(step2, dt, g1p2Step2State, g1Shared, null, g1p2Step3State, compareRandom);
+        const g1p2Step4State = newSIRState();
+        generator.update(step3, dt, g1p2Step3State, g1Shared, null, g1p2Step4State, compareRandom);
+
+        const g2p1Step3State = newSIRState();
+        generator.update(step2, dt, g2p1Step2State, g2Shared, null, g2p1Step3State, compareRandom);
+        const g2p1Step4State = newSIRState();
+        generator.update(step3, dt, g2p1Step3State, g2Shared, null, g2p1Step4State, compareRandom);
+
         const g2p2Step3State = newSIRState();
         generator.update(step2, dt, g2p2Step2State, g2Shared, null, g2p2Step3State, compareRandom);
         const g2p2Step4State = newSIRState();
         generator.update(step3, dt, g2p2Step3State, g2Shared, null, g2p2Step4State, compareRandom);
 
+        // TODO: test get all values after get interface and toArray util sorted out
         const g1p1se1Result = result.getStateElement(0, 0, 0); //get state element for both times
         expect(g1p1se1Result.size).toBe(2);
-        expect(g1p1se1Result.get(0)).toBe(g1p1Step1State[0]);
+        expect(g1p1se1Result.get(0)).toBe(g1p1Step2State[0]);
         expect(g1p1se1Result.get(1)).toBe(g1p1Step4State[0]);
 
         //TODO: also test get by time
