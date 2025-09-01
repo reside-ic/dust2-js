@@ -1,10 +1,10 @@
 import { Random, RngStateBuiltin } from "@reside-ic/random";
-import { ParticleState, SystemState, SystemSubState } from "./SystemState";
+import { ArrayState, SystemState, SystemSubState } from "./SystemState";
 import { SystemSimulateResult } from "./SystemSimulateResult.ts";
 import { DiscreteGenerator } from "./interfaces/DiscreteGenerator.ts";
 import { Packer } from "./Packer";
 import { System } from "./interfaces/System.ts";
-import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
+import { checkIntegerInRange, arrayStateToArray } from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
 
 /**
@@ -101,7 +101,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
             const shared = this._shared[iGroup];
             const internal = this._internal[iGroup];
             const state = this._state.getParticle(iGroup, iParticle);
-            const arrayState = particleStateToArray(state);
+            const arrayState = arrayStateToArray(state);
             this._generator.initial(this._time, shared, internal, arrayState, this._random);
             this._state.setParticle(iGroup, iParticle, arrayState);
         });
@@ -166,8 +166,8 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         return result;
     }
 
-    private runParticle(shared: TShared, internal: TInternal, particleState: ParticleState, nSteps: number): number[] {
-        let state = particleStateToArray(particleState);
+    private runParticle(shared: TShared, internal: TInternal, particleState: ArrayState, nSteps: number): number[] {
+        let state = arrayStateToArray(particleState);
         let stateNext = [...state];
         let time = this._time;
         for (let i = 0; i < nSteps; i++) {

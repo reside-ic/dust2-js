@@ -1,11 +1,11 @@
 import ndarray from "ndarray";
-import { ParticleState } from "./SystemState.ts";
+import { ArrayState } from "./SystemState.ts";
 import { DustParameterError } from "./errors.ts";
 
 // Product of all values in a number array
 export const prod = (array: number[]) => array.reduce((prev, current) => prev * current, 1);
 
-export const particleStateToArray = (state: ParticleState): number[] => {
+export const arrayStateToArray = (state: ArrayState): number[] => {
     const len = state.size;
     const result = new Array<number>(len);
     for (let i = 0; i < len; i++) {

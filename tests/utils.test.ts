@@ -4,11 +4,11 @@ import {
     checkIntegerInRange,
     checkNestedArrayLengthsMatch,
     ndArrayFrom,
-    particleStateToArray,
+    arrayStateToArray,
     prod
 } from "../src/utils";
 import ndarray from "ndarray";
-import { ParticleState, SystemSubState } from "../src/SystemState.ts";
+import { ArrayState, SystemSubState } from "../src/SystemState.ts";
 
 describe("prod", () => {
     test("returns product of all elements in array", () => {
@@ -20,10 +20,10 @@ describe("prod", () => {
     });
 });
 
-describe("particleStateToArray", () => {
+describe("arrayStateToArray", () => {
     test("returns expected array", () => {
-        const state = ndarray([1, 2, 3, 4], [4]) as ParticleState;
-        expect(particleStateToArray(state)).toStrictEqual([1, 2, 3, 4]);
+        const state = ndarray([1, 2, 3, 4], [4]) as ArrayState;
+        expect(arrayStateToArray(state)).toStrictEqual([1, 2, 3, 4]);
     });
 });
 

@@ -2,7 +2,7 @@ import { describe, test, expect, vi, afterEach } from "vitest";
 import { discreteSIR } from "./examples/discreteSIR";
 import { discreteWalk, WalkShared } from "./examples/discreteWalk.ts";
 import { DiscreteSystem } from "../src/DiscreteSystem";
-import { particleStateToArray } from "../src/utils";
+import { arrayStateToArray } from "../src/utils";
 import { SIRShared } from "./examples/discreteSIR.ts";
 import { Random, RngStateBuiltin, RngStateObserved } from "@reside-ic/random";
 import { expectedGroup1Initial, expectedGroup2Initial, shared } from "./examples/SIRTestHelpers.ts";
@@ -94,7 +94,7 @@ describe("DiscreteSystem", () => {
     ) => {
         const state = sys.state;
         for (let i = 0; i < nParticles; i++) {
-            expect(particleStateToArray(state.getParticle(iGroup, i))).toStrictEqual(expectedValues);
+            expect(arrayStateToArray(state.getParticle(iGroup, i))).toStrictEqual(expectedValues);
         }
     };
 
@@ -111,14 +111,14 @@ describe("DiscreteSystem", () => {
         sys.setStateInitial();
         const subState = [[[17, 18]], [[27, 28]]];
         sys.setState(subState, [], [2], [3, 4]);
-        expect(particleStateToArray(sys.state.getParticle(0, 2))).toStrictEqual([
+        expect(arrayStateToArray(sys.state.getParticle(0, 2))).toStrictEqual([
             999999, // shared.N - shared.I0;
             1, // shared.I0;
             0,
             17,
             18
         ]); // expectedGroup1Initial with the updated values
-        expect(particleStateToArray(sys.state.getParticle(1, 2))).toStrictEqual([
+        expect(arrayStateToArray(sys.state.getParticle(1, 2))).toStrictEqual([
             1999998, // shared.N - shared.I0;
             2, // shared.I0;
             0,
@@ -146,13 +146,13 @@ describe("DiscreteSystem", () => {
 
         sys.setState(newState);
 
-        expect(particleStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(newGrp1Part1);
-        expect(particleStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(newGrp1Part2);
-        expect(particleStateToArray(sys.state.getParticle(0, 2))).toStrictEqual(newGrp1Part3);
+        expect(arrayStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(newGrp1Part1);
+        expect(arrayStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(newGrp1Part2);
+        expect(arrayStateToArray(sys.state.getParticle(0, 2))).toStrictEqual(newGrp1Part3);
 
-        expect(particleStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(newGrp2Part1);
-        expect(particleStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(newGrp2Part2);
-        expect(particleStateToArray(sys.state.getParticle(1, 2))).toStrictEqual(newGrp2Part3);
+        expect(arrayStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(newGrp2Part1);
+        expect(arrayStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(newGrp2Part2);
+        expect(arrayStateToArray(sys.state.getParticle(1, 2))).toStrictEqual(newGrp2Part3);
     });
 
     test("can set and get time", () => {
@@ -181,7 +181,7 @@ describe("DiscreteSystem", () => {
             const expectedT1 = [...new Array(3)].map((t) => compareRandom.randomNormal());
             const expectedT2 = expectedT1.map((t1) => t1 + compareRandom.randomNormal());
             const particle = sys.state.getParticle(0, i);
-            expect(particleStateToArray(particle)).toStrictEqual(expectedT2);
+            expect(arrayStateToArray(particle)).toStrictEqual(expectedT2);
         }
         expect(sys.time).toEqual(2);
     });
@@ -237,10 +237,10 @@ describe("DiscreteSystem", () => {
         const g2p2Step2State = new Array<number>(5);
         generator.update(step1, dt, g2p2Step1State, g2Shared, null, g2p2Step2State, compareRandom);
 
-        expect(particleStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(g1p1Step2State);
-        expect(particleStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(g1p2Step2State);
-        expect(particleStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(g2p1Step2State);
-        expect(particleStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(g2p2Step2State);
+        expect(arrayStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(g1p1Step2State);
+        expect(arrayStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(g1p2Step2State);
+        expect(arrayStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(g2p1Step2State);
+        expect(arrayStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(g2p2Step2State);
     });
 
     test("throws expected error if run to time which is before current time", () => {
