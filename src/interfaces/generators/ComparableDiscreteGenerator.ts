@@ -4,7 +4,7 @@ import { Random } from "@reside-ic/random";
 /**
  * Interface which extends {@link DiscreteGenerator} by adding functionality to compare particle state with observed
  * data.
- * 
+ *
  * @typeParam TData Type of each data point which will be compared with system state.
  */
 export interface ComparableDiscreteGenerator<TShared, TInternal, TData> extends DiscreteGenerator<TShared, TInternal> {

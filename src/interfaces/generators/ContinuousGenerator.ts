@@ -39,7 +39,7 @@ export interface ContinuousGeneratorODE<TShared, TInternal> extends BaseGenerato
      * @param y The value of the variables
      */
     output?(t: number, y: number[]): number[];
-};
+}
 
 /**
  * Extends {@link BaseGenerator}. This interface defines the functionality of a continuous time model
@@ -73,4 +73,4 @@ export interface ContinuousGeneratorDDE<TShared, TInternal> extends BaseGenerato
      * compute delayed versions of variables
      */
     output?(t: number, y: number[], solution: Solution): number[];
-};
+}
