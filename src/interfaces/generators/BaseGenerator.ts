@@ -1,10 +1,10 @@
 import { Random } from "@reside-ic/random";
-import { Packer } from "../Packer.ts";
+import { Packer } from "../../Packer";
+import { ZeroEvery } from "../../zero";
 
 /**
- * Interface defining the functionality of a discrete time model, which can be used by {@link DiscreteSystem}
- * to initialise and update particles. Generators are stateless and are always provided with all state and other
- * parameters required to update the particle in each method.
+ * Interface defining the functionality of a general odin model. Generators are stateless and are always provided
+ * with all state and other parameters required to update the particle in each method.
  *
  * @typeParam TShared Values which are shared between all particles in a group and are not mutated by them -
  * the model parameter values for that group
@@ -12,7 +12,7 @@ import { Packer } from "../Packer.ts";
  * @typeParam TInternal Internal state values which can be mutated by generators, used to improve efficiency of the
  * system by e.g. caching calculation results for use by other particles.
  */
-export interface DiscreteGenerator<TShared, TInternal> {
+export interface BaseGenerator<TShared, TInternal> {
     /**
      * Sets the initial state of a particle.
      *
@@ -64,4 +64,11 @@ export interface DiscreteGenerator<TShared, TInternal> {
      * @param newShared The parameter set to update from
      */
     updateShared(shared: TShared, newShared: TShared): void;
+
+    /**
+     * Gets a {@link ZeroEvery} vector used to reset certain indices of state to 0 at a
+     * given frequency
+     * @param shared The shared parameter set to update
+     */
+    getZeroEvery?(shared: TShared): ZeroEvery;
 }

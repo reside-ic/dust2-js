@@ -5,12 +5,6 @@ import { Random } from "@reside-ic/random";
  * Interface which extends {@link DiscreteGenerator} by adding functionality to compare particle state with observed
  * data.
  *
- * @typeParam TShared Values which are shared between all particles in a group and are not mutated by them -
- * the model parameter values for that group
- *
- * @typeParam TInternal Internal state values which can be mutated by generators, used to improve efficiency of the
- * system by e.g. caching calculation results for use by other particles.
- *
  * @typeParam TData Type of each data point which will be compared with system state.
  */
 export interface ComparableDiscreteGenerator<TShared, TInternal, TData> extends DiscreteGenerator<TShared, TInternal> {

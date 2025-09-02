@@ -3,7 +3,7 @@ import { DiscreteSystem } from "./DiscreteSystem.ts";
 import { ComparableSystem } from "./interfaces/ComparableSystem.ts";
 import { particleStateToArray } from "./utils.ts";
 import { Random } from "@reside-ic/random";
-import { ComparableDiscreteGenerator } from "./interfaces/ComparableDiscreteGenerator.ts";
+import { ComparableDiscreteGenerator } from "./interfaces/generators/ComparableDiscreteGenerator.ts";
 
 /**
  * Implementation of {@link ComparableSystem} for discrete systems, for use with generators which support comparison
