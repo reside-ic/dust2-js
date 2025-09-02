@@ -7,4 +7,5 @@ export { DiscreteSystem } from "./DiscreteSystem";
 export { Packer } from "./Packer";
 export type { PackerOptions, PackerShape, UnpackResult } from "./Packer";
 export { SystemState } from "./SystemState.ts";
+export { SystemSimulateResult } from "./SystemSimulateResult.ts";
 export type { ArrayState } from "./SystemState.ts";

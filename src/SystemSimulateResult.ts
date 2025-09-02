@@ -2,6 +2,11 @@ import ndarray from "ndarray";
 import { checkIntegerInRange } from "./utils.ts";
 import { ArrayState } from "./SystemState.ts";
 
+/**
+ * Class which provides results of {@link System#simulate | System.simulate}, providing an underlying
+ * {@link https://www.npmjs.com/package/ndarray | NdArray} as well as helper methods to
+ * get state values by element index or time index.
+ */
 export class SystemSimulateResult {
     private _nGroups: number;
     private readonly _nParticles: number;
@@ -9,10 +14,14 @@ export class SystemSimulateResult {
     private readonly _nTimes: number;
     private readonly _resultValues: ndarray.NdArray;
 
+    /**
+     *
+     * @param nGroups The number of groups in the {@link System}
+     * @param nParticles The number of particles per group
+     * @param nStateElements The number of state elements for which this object holds state values
+     * @param nTimes The number of times for which this object holds state values
+     */
     constructor(nGroups: number, nParticles: number, nStateElements: number, nTimes: number) {
-        // TODO: we could include the times themselves, not just time indexes and be able to get state for those
-        // TODO: same for state element names
-
         checkIntegerInRange("Number of groups", nGroups, 1);
         checkIntegerInRange("Number of particles", nParticles, 1);
         checkIntegerInRange("Number of state elements", nStateElements, 1);
@@ -33,6 +42,15 @@ export class SystemSimulateResult {
         ]);
     }
 
+    /**
+     * Sets result state values for a given particle at a given time.
+     * @param iGroup Index of the group
+     * @param iParticle Index of the particle
+     * @param iTime Index of the time - NB not time value, but the index in the times parameter provided to
+     * {@link System#simulate  | System.simulate}
+     * @param stateValues The state values to set, for all values requested in the stateElementIndices parameter
+     * provided to {@link System#simulate  | System.simulate}
+     */
     public setValuesForTime(iGroup: number, iParticle: number, iTime: number, stateValues: number[]) {
         this.checkIndexes(iGroup, iParticle, null, iTime);
         if (stateValues.length !== this._nStateElements) {
@@ -43,16 +61,34 @@ export class SystemSimulateResult {
         }
     }
 
+    /**
+     * Provides the underlying {@link https://www.npmjs.com/package/ndarray | NdArray} holding all result values
+     */
     public resultValues() {
         return this._resultValues;
     }
 
+    /**
+     * Returns all the result state values for a given time index.
+     *
+     * @param iGroup Index of the group
+     * @param iParticle Index of the particle
+     * @param iTime Index of the time - NB not time value, but the index in the times parameter provided to
+     * {@link System#simulate | System.simulate}
+     */
     public getValuesForTime(iGroup: number, iParticle: number, iTime: number): ArrayState {
         this.checkIndexes(iGroup, iParticle, null, iTime);
         return this._resultValues.pick(iGroup, iParticle, null, iTime);
     }
 
-    // for all times
+    /**
+     * Returns values at all time indexes, for a given state element index.
+     *
+     * @param iGroup Index of the group
+     * @param iParticle Index of the particle
+     * @param iStateElement Index of the state element - NB not the element index within the entire System state, but
+     * the index in the stateElementIndices parameter provided to {@link System#simulate | System.simulate}
+     */
     public getStateElement(iGroup: number, iParticle: number, iStateElement: number): ArrayState {
         this.checkIndexes(iGroup, iParticle, iStateElement, null);
         return this._resultValues.pick(iGroup, iParticle, iStateElement, null);
