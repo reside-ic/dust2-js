@@ -155,12 +155,19 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         // Allow case where first time is current time - no progression needed for first result set
         let preRunSaveValues = times[0] === this._time;
 
-        const stateIndicesToReturn = stateElementIndices.length ? stateElementIndices : [...Array(this._state.nStateElements).keys()];
+        const stateIndicesToReturn = stateElementIndices.length
+            ? stateElementIndices
+            : [...Array(this._state.nStateElements).keys()];
 
-        const result = new SystemSimulateResult(this._nGroups, this._nParticles, stateIndicesToReturn.length, times.length);
+        const result = new SystemSimulateResult(
+            this._nGroups,
+            this._nParticles,
+            stateIndicesToReturn.length,
+            times.length
+        );
         times.forEach((t, iTime) => {
             if (preRunSaveValues) {
-                preRunSaveValues = false
+                preRunSaveValues = false;
             } else {
                 this.runToTime(t);
             }

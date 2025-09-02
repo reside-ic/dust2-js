@@ -22,8 +22,8 @@ export const checkIntegerInRange = (name: string, value: number, min: number, ma
 };
 
 export const checkIndicesForMax = (name: string, indices: number[], max: number) => {
-    // Check an index array provided to setState or simulate is valid, with each value >= 0 and <= some max, and the whole list
-    // being ordered and containing no duplicates
+    // Check an index array provided to setState or simulate is valid, with each value >= 0 and <= some max, and the
+    // whole list being ordered and containing no duplicates
     for (let i = 0; i < indices.length; i++) {
         const indexValue = indices[i];
         checkIntegerInRange(name, indexValue, 0, max);
@@ -37,14 +37,14 @@ export const checkTimes = (times: number[], min: number) => {
     // Check a list of times is ordered, with no duplicates, with each greater than a minimum time
     for (let i = 0; i < times.length; i++) {
         const time = times[i];
-        if (time <  min) {
+        if (time < min) {
             throw new RangeError(`Times must be greater than or equal to ${min}, but found ${time}.`);
         }
         if (i > 0 && time <= times[i - 1]) {
             throw new RangeError("Times must be ordered with no duplicates.");
         }
     }
-}
+};
 
 export const checkNestedArrayLengthsMatch = (
     array: Array<unknown>,

@@ -5,7 +5,8 @@ import {
     checkNestedArrayLengthsMatch,
     ndArrayFrom,
     arrayStateToArray,
-    prod, checkTimes
+    prod,
+    checkTimes
 } from "../src/utils";
 import ndarray from "ndarray";
 import { ArrayState, SystemSubState } from "../src/SystemState.ts";
@@ -230,18 +231,15 @@ describe("checkNestedArrayLengthsMatch", () => {
             checkTimes([1, 1.5, 3, 10], 1);
         });
         test("throws error if any time is less than min", () => {
-            expect(() => checkTimes([0,1, 2, 3], 1))
-                .toThrow("Times must be greater than or equal to 1, but found 0.");
+            expect(() => checkTimes([0, 1, 2, 3], 1)).toThrow("Times must be greater than or equal to 1, but found 0.");
         });
 
         test("throws error if times are not in order", () => {
-            expect(() => checkTimes([0, 1, 0.5, 3], 0))
-                .toThrow("Times must be ordered with no duplicates.");
+            expect(() => checkTimes([0, 1, 0.5, 3], 0)).toThrow("Times must be ordered with no duplicates.");
         });
 
         test("throws error if there are duplicates", () => {
-            expect(() => checkTimes([1, 2, 2, 3], 1))
-                .toThrow("Times must be ordered with no duplicates.");
+            expect(() => checkTimes([1, 2, 2, 3], 1)).toThrow("Times must be ordered with no duplicates.");
         });
     });
 });

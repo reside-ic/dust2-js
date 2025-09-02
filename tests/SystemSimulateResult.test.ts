@@ -8,7 +8,7 @@ describe("SystemSimulateResult", () => {
 
         sut.setValuesForTime(0, 0, 0, [1, 2, 3, 4]);
         sut.setValuesForTime(1, 2, 1, [9, 8, 7, 6]);
-        
+
         const t0Vals = sut.getValuesForTime(0, 0, 0);
         expect(arrayStateToArray(t0Vals)).toStrictEqual([1, 2, 3, 4]);
 
@@ -35,14 +35,18 @@ describe("SystemSimulateResult", () => {
     });
 
     test("constructor validates size parameters", () => {
-        expect(() => new SystemSimulateResult(0, 1, 2, 3))
-            .toThrowError("Number of groups should be an integer greater than or equal to 1, but is 0.");
-        expect(() => new SystemSimulateResult(1, -1, 2, 3))
-            .toThrowError("Number of particles should be an integer greater than or equal to 1, but is -1.");
-        expect(() => new SystemSimulateResult(1, 1, 0, 3))
-            .toThrowError("Number of state elements should be an integer greater than or equal to 1, but is 0.");
-        expect(() => new SystemSimulateResult(1, 1, 1))
-            .toThrowError("Number of times should be an integer greater than or equal to 1, but is undefined.");
+        expect(() => new SystemSimulateResult(0, 1, 2, 3)).toThrowError(
+            "Number of groups should be an integer greater than or equal to 1, but is 0."
+        );
+        expect(() => new SystemSimulateResult(1, -1, 2, 3)).toThrowError(
+            "Number of particles should be an integer greater than or equal to 1, but is -1."
+        );
+        expect(() => new SystemSimulateResult(1, 1, 0, 3)).toThrowError(
+            "Number of state elements should be an integer greater than or equal to 1, but is 0."
+        );
+        expect(() => new SystemSimulateResult(1, 1, 1)).toThrowError(
+            "Number of times should be an integer greater than or equal to 1, but is undefined."
+        );
     });
 
     test("setValuesForTime checks indexes", () => {
@@ -52,52 +56,64 @@ describe("SystemSimulateResult", () => {
         sut.setValuesForTime(1, 2, 4, [10, 20, 30, 40]);
         expect(arrayStateToArray(sut.getValuesForTime(1, 2, 4))).toStrictEqual([10, 20, 30, 40]);
 
-        expect(() => sut.setValuesForTime(2, 2, 4, [10, 20, 30, 40]))
-            .toThrowError("Group index should be an integer between 0 and 1, but is 2.");
-        expect(() => sut.setValuesForTime(-1, 2, 4, [10, 20, 30, 40]))
-            .toThrowError("Group index should be an integer between 0 and 1, but is -1.");
+        expect(() => sut.setValuesForTime(2, 2, 4, [10, 20, 30, 40])).toThrowError(
+            "Group index should be an integer between 0 and 1, but is 2."
+        );
+        expect(() => sut.setValuesForTime(-1, 2, 4, [10, 20, 30, 40])).toThrowError(
+            "Group index should be an integer between 0 and 1, but is -1."
+        );
 
-        expect(() => sut.setValuesForTime(0, 3, 4, [10, 20, 30, 40]))
-            .toThrowError("Particle index should be an integer between 0 and 2, but is 3.");
-        expect(() => sut.setValuesForTime(0, -1.3, 4, [10, 20, 30, 40]))
-            .toThrowError("Particle index should be an integer between 0 and 2, but is -1.3.");
+        expect(() => sut.setValuesForTime(0, 3, 4, [10, 20, 30, 40])).toThrowError(
+            "Particle index should be an integer between 0 and 2, but is 3."
+        );
+        expect(() => sut.setValuesForTime(0, -1.3, 4, [10, 20, 30, 40])).toThrowError(
+            "Particle index should be an integer between 0 and 2, but is -1.3."
+        );
 
-        expect(() => sut.setValuesForTime(0, 1, 5, [10, 20, 30, 40]))
-            .toThrowError("Time index should be an integer between 0 and 4, but is 5.");
-        expect(() => sut.setValuesForTime(0, 1, 3.9, [10, 20, 30, 40]))
-            .toThrowError("Time index should be an integer between 0 and 4, but is 3.9.");
+        expect(() => sut.setValuesForTime(0, 1, 5, [10, 20, 30, 40])).toThrowError(
+            "Time index should be an integer between 0 and 4, but is 5."
+        );
+        expect(() => sut.setValuesForTime(0, 1, 3.9, [10, 20, 30, 40])).toThrowError(
+            "Time index should be an integer between 0 and 4, but is 3.9."
+        );
     });
 
     test("setValuesForTime checks values size", () => {
         const sut = new SystemSimulateResult(2, 3, 4, 5);
-        expect(() => sut.setValuesForTime(1, 2, 4, [10, 20, 30]))
-            .toThrowError("Expected 4 state values but got 3.");
-        expect(() => sut.setValuesForTime(1, 2, 4, [10, 20, 30, 40, 50]))
-            .toThrowError("Expected 4 state values but got 5.");
+        expect(() => sut.setValuesForTime(1, 2, 4, [10, 20, 30])).toThrowError("Expected 4 state values but got 3.");
+        expect(() => sut.setValuesForTime(1, 2, 4, [10, 20, 30, 40, 50])).toThrowError(
+            "Expected 4 state values but got 5."
+        );
     });
 
     test("getValuesForTime checks indexes", () => {
         const sut = new SystemSimulateResult(2, 3, 4, 5);
-        expect(() => sut.getValuesForTime(2, 2, 2))
-            .toThrow("Group index should be an integer between 0 and 1, but is 2.");
-        expect(() => sut.getValuesForTime(1, 3, 4))
-            .toThrow("Particle index should be an integer between 0 and 2, but is 3.");
-        expect(() => sut.getValuesForTime(1, 1, 40))
-            .toThrow("Time index should be an integer between 0 and 4, but is 40.");
+        expect(() => sut.getValuesForTime(2, 2, 2)).toThrow(
+            "Group index should be an integer between 0 and 1, but is 2."
+        );
+        expect(() => sut.getValuesForTime(1, 3, 4)).toThrow(
+            "Particle index should be an integer between 0 and 2, but is 3."
+        );
+        expect(() => sut.getValuesForTime(1, 1, 40)).toThrow(
+            "Time index should be an integer between 0 and 4, but is 40."
+        );
     });
 
     test("getStateElement checks indexes", () => {
         const sut = new SystemSimulateResult(2, 3, 4, 5);
-        expect(() => sut.getStateElement(2, 2, 2))
-            .toThrow("Group index should be an integer between 0 and 1, but is 2.");
-        expect(() => sut.getStateElement(1, 3, 4))
-            .toThrow("Particle index should be an integer between 0 and 2, but is 3.");
-        expect(() => sut.getStateElement(1, 1, 40))
-            .toThrow("State Element index should be an integer between 0 and 3, but is 40.");
+        expect(() => sut.getStateElement(2, 2, 2)).toThrow(
+            "Group index should be an integer between 0 and 1, but is 2."
+        );
+        expect(() => sut.getStateElement(1, 3, 4)).toThrow(
+            "Particle index should be an integer between 0 and 2, but is 3."
+        );
+        expect(() => sut.getStateElement(1, 1, 40)).toThrow(
+            "State Element index should be an integer between 0 and 3, but is 40."
+        );
     });
 
     test("can get resultValues ndArray", () => {
         const sut = new SystemSimulateResult(2, 3, 4, 5);
-        expect(sut.resultValues().size).toBe(2*3*4*5);
+        expect(sut.resultValues().size).toBe(2 * 3 * 4 * 5);
     });
 });

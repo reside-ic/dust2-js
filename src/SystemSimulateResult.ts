@@ -25,10 +25,15 @@ export class SystemSimulateResult {
 
         // arrange the ndArray with dimensions: group, particle, stateElement * time
         const len = this._nGroups * this._nParticles * this._nStateElements * this._nTimes;
-        this._resultValues = ndarray(new Array<number>(len).fill(0), [this._nGroups, this._nParticles, this._nStateElements, this._nTimes]);
+        this._resultValues = ndarray(new Array<number>(len).fill(0), [
+            this._nGroups,
+            this._nParticles,
+            this._nStateElements,
+            this._nTimes
+        ]);
     }
 
-    public setValuesForTime(iGroup: number, iParticle: number, iTime: number, stateValues: number[]){
+    public setValuesForTime(iGroup: number, iParticle: number, iTime: number, stateValues: number[]) {
         this.checkIndexes(iGroup, iParticle, null, iTime);
         if (stateValues.length !== this._nStateElements) {
             throw RangeError(`Expected ${this._nStateElements} state values but got ${stateValues.length}.`);
@@ -60,7 +65,7 @@ export class SystemSimulateResult {
             checkIntegerInRange("State Element index", iStateElement, 0, this._nStateElements - 1);
         }
         if (iTime !== null) {
-            checkIntegerInRange("Time index", iTime, 0, this._nTimes - 1)
+            checkIntegerInRange("Time index", iTime, 0, this._nTimes - 1);
         }
     }
 }

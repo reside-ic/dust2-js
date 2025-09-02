@@ -1,4 +1,4 @@
-export const shared = [
+export const sirShared = [
     { N: 1000000, I0: 1, beta: 4, gamma: 2 },
     { N: 2000000, I0: 2, beta: 8, gamma: 4 }
 ];
