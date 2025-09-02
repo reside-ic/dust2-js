@@ -3,9 +3,10 @@ import { checkIntegerInRange, checkIndicesForMax, checkNestedArrayLengthsMatch }
 import { DustParameterError } from "./errors.ts";
 
 /**
- * Interface representing state for a particular particle, which is returned by {@link SystemState.getParticle}
+ * Interface representing array-like state, e.g. all state values for a particle, or all time values for a single state
+ * element.
  */
-export interface ParticleState {
+export interface ArrayState {
     /**
      * Get the values at index i
      * @param i
@@ -91,7 +92,7 @@ export class SystemState {
      * @param iGroup The group index to get
      * @param iParticle The particle index to get
      */
-    public getParticle(iGroup: number, iParticle: number): ParticleState {
+    public getParticle(iGroup: number, iParticle: number): ArrayState {
         this.checkIndexes(iGroup, iParticle);
         return this._state.pick(iGroup, iParticle, null);
     }

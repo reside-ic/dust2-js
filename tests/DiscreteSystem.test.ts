@@ -2,17 +2,17 @@ import { describe, test, expect, vi, afterEach } from "vitest";
 import { discreteSIR } from "./examples/discreteSIR";
 import { discreteWalk, WalkShared } from "./examples/discreteWalk.ts";
 import { DiscreteSystem } from "../src/DiscreteSystem";
-import { particleStateToArray } from "../src/utils";
+import { arrayStateToArray } from "../src/utils";
 import { SIRShared } from "./examples/discreteSIR.ts";
 import { Random, RngStateBuiltin, RngStateObserved } from "@reside-ic/random";
-import { expectedGroup1Initial, expectedGroup2Initial, shared } from "./examples/SIRTestHelpers.ts";
+import { expectedGroup1Initial, expectedGroup2Initial, sirShared } from "./examples/SIRTestHelpers.ts";
 
 const generator = discreteSIR;
 
 const createSystem = (random?: Random) =>
     new DiscreteSystem<SIRShared, null>(
         generator,
-        shared,
+        sirShared,
         5, // time
         0.5, // dt
         3, // nParticles
@@ -44,7 +44,7 @@ describe("DiscreteSystem", () => {
         expect(state["_nParticles"]).toBe(3);
         expect(state["_nStateElements"]).toBe(5);
 
-        expect(sys["_shared"]).toBe(shared);
+        expect(sys["_shared"]).toBe(sirShared);
         expect(sys["_internal"]).toStrictEqual([null, null]);
 
         expect(sys["_random"]).toBe(random);
@@ -53,7 +53,7 @@ describe("DiscreteSystem", () => {
     test("defaults to built in random", () => {
         const sys = new DiscreteSystem<SIRShared, null>(
             generator,
-            shared,
+            sirShared,
             5, // time
             0.5, // dt
             3 // nParticles
@@ -67,7 +67,7 @@ describe("DiscreteSystem", () => {
             () =>
                 new DiscreteSystem<SIRShared, null>(
                     generator,
-                    shared,
+                    sirShared,
                     5, // time
                     0.5, // dt
                     -3 // nParticles
@@ -78,7 +78,7 @@ describe("DiscreteSystem", () => {
             () =>
                 new DiscreteSystem<SIRShared, null>(
                     generator,
-                    shared,
+                    sirShared,
                     5, // time
                     0.5, // dt
                     3.1 // nParticles
@@ -94,7 +94,7 @@ describe("DiscreteSystem", () => {
     ) => {
         const state = sys.state;
         for (let i = 0; i < nParticles; i++) {
-            expect(particleStateToArray(state.getParticle(iGroup, i))).toStrictEqual(expectedValues);
+            expect(arrayStateToArray(state.getParticle(iGroup, i))).toStrictEqual(expectedValues);
         }
     };
 
@@ -111,14 +111,14 @@ describe("DiscreteSystem", () => {
         sys.setStateInitial();
         const subState = [[[17, 18]], [[27, 28]]];
         sys.setState(subState, [], [2], [3, 4]);
-        expect(particleStateToArray(sys.state.getParticle(0, 2))).toStrictEqual([
+        expect(arrayStateToArray(sys.state.getParticle(0, 2))).toStrictEqual([
             999999, // shared.N - shared.I0;
             1, // shared.I0;
             0,
             17,
             18
         ]); // expectedGroup1Initial with the updated values
-        expect(particleStateToArray(sys.state.getParticle(1, 2))).toStrictEqual([
+        expect(arrayStateToArray(sys.state.getParticle(1, 2))).toStrictEqual([
             1999998, // shared.N - shared.I0;
             2, // shared.I0;
             0,
@@ -146,13 +146,13 @@ describe("DiscreteSystem", () => {
 
         sys.setState(newState);
 
-        expect(particleStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(newGrp1Part1);
-        expect(particleStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(newGrp1Part2);
-        expect(particleStateToArray(sys.state.getParticle(0, 2))).toStrictEqual(newGrp1Part3);
+        expect(arrayStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(newGrp1Part1);
+        expect(arrayStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(newGrp1Part2);
+        expect(arrayStateToArray(sys.state.getParticle(0, 2))).toStrictEqual(newGrp1Part3);
 
-        expect(particleStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(newGrp2Part1);
-        expect(particleStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(newGrp2Part2);
-        expect(particleStateToArray(sys.state.getParticle(1, 2))).toStrictEqual(newGrp2Part3);
+        expect(arrayStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(newGrp2Part1);
+        expect(arrayStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(newGrp2Part2);
+        expect(arrayStateToArray(sys.state.getParticle(1, 2))).toStrictEqual(newGrp2Part3);
     });
 
     test("can set and get time", () => {
@@ -181,7 +181,7 @@ describe("DiscreteSystem", () => {
             const expectedT1 = [...new Array(3)].map((t) => compareRandom.randomNormal());
             const expectedT2 = expectedT1.map((t1) => t1 + compareRandom.randomNormal());
             const particle = sys.state.getParticle(0, i);
-            expect(particleStateToArray(particle)).toStrictEqual(expectedT2);
+            expect(arrayStateToArray(particle)).toStrictEqual(expectedT2);
         }
         expect(sys.time).toEqual(2);
     });
@@ -197,7 +197,7 @@ describe("DiscreteSystem", () => {
 
         const sys = new DiscreteSystem<SIRShared, null>(
             generator,
-            shared,
+            sirShared,
             start, // time
             dt, // dt
             2, // nParticles
@@ -214,7 +214,7 @@ describe("DiscreteSystem", () => {
         // 2 Groups (g) and 2 Particles (p)
 
         // Group 1
-        const g1Shared = shared[0];
+        const g1Shared = sirShared[0];
         const g1p1Step1State = newSIRState();
         generator.update(start, dt, g1StartState, g1Shared, null, g1p1Step1State, compareRandom);
         const g1p1Step2State = newSIRState();
@@ -226,7 +226,7 @@ describe("DiscreteSystem", () => {
         generator.update(step1, dt, g1p2Step1State, g1Shared, null, g1p2Step2State, compareRandom);
 
         // Group 2
-        const g2Shared = shared[1];
+        const g2Shared = sirShared[1];
         const g2p1Step1State = newSIRState();
         generator.update(start, dt, g2StartState, g2Shared, null, g2p1Step1State, compareRandom);
         const g2p1Step2State = newSIRState();
@@ -237,10 +237,10 @@ describe("DiscreteSystem", () => {
         const g2p2Step2State = new Array<number>(5);
         generator.update(step1, dt, g2p2Step1State, g2Shared, null, g2p2Step2State, compareRandom);
 
-        expect(particleStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(g1p1Step2State);
-        expect(particleStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(g1p2Step2State);
-        expect(particleStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(g2p1Step2State);
-        expect(particleStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(g2p2Step2State);
+        expect(arrayStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(g1p1Step2State);
+        expect(arrayStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(g1p2Step2State);
+        expect(arrayStateToArray(sys.state.getParticle(1, 0))).toStrictEqual(g2p1Step2State);
+        expect(arrayStateToArray(sys.state.getParticle(1, 1))).toStrictEqual(g2p2Step2State);
     });
 
     test("throws expected error if run to time which is before current time", () => {
@@ -270,5 +270,256 @@ describe("DiscreteSystem", () => {
         expect(() => sys.updateShared(newShared)).toThrowError(
             "New shared value must be same length as previous value. Expected 2 but got 1."
         );
+    });
+
+    const simulateShared = [
+        { N: 1000000, I0: 1, beta: 4, gamma: 2 },
+        { N: 2000000, I0: 2, beta: 8, gamma: 4 }
+    ];
+
+    const g1StartState = [999999, 1, 0, 0, 0];
+    const g2StartState = [1999998, 2, 0, 0, 0];
+
+    // Helper for simulate tests - manually run each of the updates called by the System, using the compareRandom to
+    // replay the same random values in order so we get the same results
+    const getNextState = (start, currentState, shared, dt, random) => {
+        const nextState = newSIRState();
+        generator.update(start, dt, currentState, shared, null, nextState, random);
+        return nextState;
+    };
+
+    test("can simulate using SIR generator", () => {
+        const rngStateObserved = new RngStateObserved(new RngStateBuiltin());
+        const random = new Random(rngStateObserved);
+        const compareRandom = new Random(rngStateObserved.replay());
+
+        const start = 5;
+        const step1 = 5.5;
+        const step2 = 6;
+        const step3 = 6.5;
+        const dt = 0.5;
+
+        const sys = new DiscreteSystem<SIRShared, null>(
+            generator,
+            simulateShared,
+            start, // time
+            dt, // dt
+            2, // nParticles
+            random
+        );
+        sys.setStateInitial();
+
+        const result = sys.simulate([6, 7], [0, 2, 4]); // 1 and 2 more than start time, should take 4 steps of 0.5
+
+        // TIME 6
+        // Group 1
+        const g1Shared = simulateShared[0];
+        const g1p1Step1State = getNextState(start, g1StartState, g1Shared, dt, compareRandom);
+        const g1p1Step2State = getNextState(step1, g1p1Step1State, g1Shared, dt, compareRandom);
+
+        const g1p2Step1State = getNextState(start, g1StartState, g1Shared, dt, compareRandom);
+        const g1p2Step2State = getNextState(step1, g1p2Step1State, g1Shared, dt, compareRandom);
+
+        // Group 2
+        const g2Shared = simulateShared[1];
+        const g2p1Step1State = getNextState(start, g2StartState, g2Shared, dt, compareRandom);
+        const g2p1Step2State = getNextState(step1, g2p1Step1State, g2Shared, dt, compareRandom);
+
+        const g2p2Step1State = getNextState(start, g2StartState, g2Shared, dt, compareRandom);
+        const g2p2Step2State = getNextState(step1, g2p2Step1State, g2Shared, dt, compareRandom);
+
+        // TIME 7
+        // Group 1
+        const g1p1Step3State = getNextState(step2, g1p1Step2State, g1Shared, dt, compareRandom);
+        const g1p1Step4State = getNextState(step3, g1p1Step3State, g1Shared, dt, compareRandom);
+
+        const g1p2Step3State = getNextState(step2, g1p2Step2State, g1Shared, dt, compareRandom);
+        const g1p2Step4State = getNextState(step3, g1p2Step3State, g1Shared, dt, compareRandom);
+
+        // Group 2
+        const g2p1Step3State = getNextState(step2, g2p1Step2State, g2Shared, dt, compareRandom);
+        const g2p1Step4State = getNextState(step3, g2p1Step3State, g2Shared, dt, compareRandom);
+
+        const g2p2Step3State = getNextState(step2, g2p2Step2State, g2Shared, dt, compareRandom);
+        const g2p2Step4State = getNextState(step3, g2p2Step3State, g2Shared, dt, compareRandom);
+
+        // Test can get expected state element values for both times
+        // State element indexes 0, 1, 2 in result should map to 0, 2, 4 in full state
+        // Group 1
+        expect(arrayStateToArray(result.getStateElement(0, 0, 0))).toStrictEqual([
+            g1p1Step2State[0],
+            g1p1Step4State[0]
+        ]);
+        expect(arrayStateToArray(result.getStateElement(0, 0, 1))).toStrictEqual([
+            g1p1Step2State[2],
+            g1p1Step4State[2]
+        ]);
+        expect(arrayStateToArray(result.getStateElement(0, 0, 2))).toStrictEqual([
+            g1p1Step2State[4],
+            g1p1Step4State[4]
+        ]);
+
+        expect(arrayStateToArray(result.getStateElement(0, 1, 0))).toStrictEqual([
+            g1p2Step2State[0],
+            g1p2Step4State[0]
+        ]);
+        expect(arrayStateToArray(result.getStateElement(0, 1, 1))).toStrictEqual([
+            g1p2Step2State[2],
+            g1p2Step4State[2]
+        ]);
+        expect(arrayStateToArray(result.getStateElement(0, 1, 2))).toStrictEqual([
+            g1p2Step2State[4],
+            g1p2Step4State[4]
+        ]);
+
+        // Group 2
+        expect(arrayStateToArray(result.getStateElement(1, 0, 0))).toStrictEqual([
+            g2p1Step2State[0],
+            g2p1Step4State[0]
+        ]);
+        expect(arrayStateToArray(result.getStateElement(1, 0, 1))).toStrictEqual([
+            g2p1Step2State[2],
+            g2p1Step4State[2]
+        ]);
+        expect(arrayStateToArray(result.getStateElement(1, 0, 2))).toStrictEqual([
+            g2p1Step2State[4],
+            g2p1Step4State[4]
+        ]);
+
+        expect(arrayStateToArray(result.getStateElement(1, 1, 0))).toStrictEqual([
+            g2p2Step2State[0],
+            g2p2Step4State[0]
+        ]);
+        expect(arrayStateToArray(result.getStateElement(1, 1, 1))).toStrictEqual([
+            g2p2Step2State[2],
+            g2p2Step4State[2]
+        ]);
+        expect(arrayStateToArray(result.getStateElement(1, 1, 2))).toStrictEqual([
+            g2p2Step2State[4],
+            g2p2Step4State[4]
+        ]);
+
+        // Test can get get all state values for a time (for a particle) - NB "iTime" param here is time index,
+        // not time value.
+        // Group 1
+        expect(arrayStateToArray(result.getValuesForTime(0, 0, 0))).toStrictEqual([
+            g1p1Step2State[0],
+            g1p1Step2State[2],
+            g1p1Step2State[4]
+        ]);
+        expect(arrayStateToArray(result.getValuesForTime(0, 0, 1))).toStrictEqual([
+            g1p1Step4State[0],
+            g1p1Step4State[2],
+            g1p1Step4State[4]
+        ]);
+        expect(arrayStateToArray(result.getValuesForTime(0, 1, 0))).toStrictEqual([
+            g1p2Step2State[0],
+            g1p2Step2State[2],
+            g1p2Step2State[4]
+        ]);
+        expect(arrayStateToArray(result.getValuesForTime(0, 1, 1))).toStrictEqual([
+            g1p2Step4State[0],
+            g1p2Step4State[2],
+            g1p2Step4State[4]
+        ]);
+        // Group 2
+        expect(arrayStateToArray(result.getValuesForTime(1, 0, 0))).toStrictEqual([
+            g2p1Step2State[0],
+            g2p1Step2State[2],
+            g2p1Step2State[4]
+        ]);
+        expect(arrayStateToArray(result.getValuesForTime(1, 0, 1))).toStrictEqual([
+            g2p1Step4State[0],
+            g2p1Step4State[2],
+            g2p1Step4State[4]
+        ]);
+        expect(arrayStateToArray(result.getValuesForTime(1, 1, 0))).toStrictEqual([
+            g2p2Step2State[0],
+            g2p2Step2State[2],
+            g2p2Step2State[4]
+        ]);
+        expect(arrayStateToArray(result.getValuesForTime(1, 1, 1))).toStrictEqual([
+            g2p2Step4State[0],
+            g2p2Step4State[2],
+            g2p2Step4State[4]
+        ]);
+    });
+
+    test("can run simulate where first time is current time", () => {
+        const rngStateObserved = new RngStateObserved(new RngStateBuiltin());
+        const random = new Random(rngStateObserved);
+        const compareRandom = new Random(rngStateObserved.replay());
+
+        const start = 5;
+        const step1 = 5.5;
+        const dt = 0.5;
+
+        const sys = new DiscreteSystem<SIRShared, null>(
+            generator,
+            simulateShared,
+            start, // time
+            dt, // dt
+            1, // nParticles
+            random
+        );
+        sys.setStateInitial();
+
+        const result = sys.simulate([5, 6]); // 0 and 1 more than start time, should take 2 steps of 0.5
+
+        // TIME 6
+        // Group 1
+        const g1Shared = simulateShared[0];
+        const g1p1Step1State = getNextState(start, g1StartState, g1Shared, dt, compareRandom);
+        const g1p1Step2State = getNextState(step1, g1p1Step1State, g1Shared, dt, compareRandom);
+
+        // Group 2
+        const g2Shared = simulateShared[1];
+        const g2p1Step1State = getNextState(start, g2StartState, g2Shared, dt, compareRandom);
+        const g2p1Step2State = getNextState(step1, g2p1Step1State, g2Shared, dt, compareRandom);
+
+        // Test can get expected state element values for both times
+
+        [...Array(5).keys()].map((stateElIdx) => {
+            // Group 1
+            expect(arrayStateToArray(result.getStateElement(0, 0, stateElIdx))).toStrictEqual([
+                g1StartState[stateElIdx],
+                g1p1Step2State[stateElIdx]
+            ]);
+            // Group 2
+            expect(arrayStateToArray(result.getStateElement(1, 0, stateElIdx))).toStrictEqual([
+                g2StartState[stateElIdx],
+                g2p1Step2State[stateElIdx]
+            ]);
+        });
+
+        // Test can get get all state values for a time (for a particle)
+        // Group 1
+        expect(arrayStateToArray(result.getValuesForTime(0, 0, 0))).toStrictEqual(g1StartState);
+        expect(arrayStateToArray(result.getValuesForTime(0, 0, 1))).toStrictEqual(g1p1Step2State);
+
+        // Group 2
+        expect(arrayStateToArray(result.getValuesForTime(1, 0, 0))).toStrictEqual(g2StartState);
+        expect(arrayStateToArray(result.getValuesForTime(1, 0, 1))).toStrictEqual(g2p1Step2State);
+    });
+
+    test("simulate throws error if times are not valid", () => {
+        const sys = createSystem();
+        expect(() => sys.simulate([0, 1])).toThrow("Times must be greater than or equal to 5, but found 0.");
+        expect(() => sys.simulate([6, 5])).toThrow("Times must be ordered with no duplicates.");
+        expect(() => sys.simulate([6, 6])).toThrow("Times must be ordered with no duplicates.");
+    });
+
+    test("simulate throws error state element indexes are not valid", () => {
+        // We currently enforce ordering and non-duplicate on state elements, which isn't
+        // strictly necessary
+        const sys = createSystem();
+        expect(() => sys.simulate([5, 6], [-1, 0])).toThrow(
+            "State Element should be an integer between 0 and 4, but is -1"
+        );
+        expect(() => sys.simulate([5, 6], [0, 6])).toThrow(
+            "State Element should be an integer between 0 and 4, but is 6"
+        );
+        expect(() => sys.simulate([5, 6], [3, 2])).toThrow("State Element indices must be ordered with no duplicates");
+        expect(() => sys.simulate([5, 6], [2, 2])).toThrow("State Element indices must be ordered with no duplicates");
     });
 });

@@ -1,6 +1,6 @@
 import ndarray from "ndarray";
-import { particleStateToArray, prod } from "./utils";
-import { ParticleState } from "./SystemState.ts";
+import { arrayStateToArray, prod } from "./utils";
+import { ArrayState } from "./SystemState.ts";
 
 /**
  * Type defining the unpacked shape for a {@link Packer} where value names are mapped to a number[] defining the size
@@ -132,7 +132,7 @@ export class Packer {
         // If this NdArray is one dimensional, call unpackArray, so we return numbers for the scalar values
         if (xShape.length === 1) {
             // Because this is a 1D NdArray we can treat it like a ParticleState, and pull its values out to an array
-            const xArray = particleStateToArray(x as ParticleState);
+            const xArray = arrayStateToArray(x as ArrayState);
             return this.unpackArray(xArray);
         }
 

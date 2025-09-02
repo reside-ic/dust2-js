@@ -1,9 +1,10 @@
 import { Random, RngStateBuiltin } from "@reside-ic/random";
-import { ParticleState, SystemState, SystemSubState } from "./SystemState";
+import { ArrayState, SystemState, SystemSubState } from "./SystemState";
+import { SystemSimulateResult } from "./SystemSimulateResult.ts";
 import { DiscreteGenerator } from "./interfaces/DiscreteGenerator.ts";
 import { Packer } from "./Packer";
 import { System } from "./interfaces/System.ts";
-import { checkIntegerInRange, particleStateToArray } from "./utils.ts";
+import { checkIntegerInRange, arrayStateToArray, checkTimes, checkIndicesForMax } from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
 
 /**
@@ -100,7 +101,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
             const shared = this._shared[iGroup];
             const internal = this._internal[iGroup];
             const state = this._state.getParticle(iGroup, iParticle);
-            const arrayState = particleStateToArray(state);
+            const arrayState = arrayStateToArray(state);
             this._generator.initial(this._time, shared, internal, arrayState, this._random);
             this._state.setParticle(iGroup, iParticle, arrayState);
         });
@@ -145,8 +146,51 @@ export class DiscreteSystem<TShared, TInternal> implements System {
         this._time = time;
     }
 
-    private runParticle(shared: TShared, internal: TInternal, particleState: ParticleState, nSteps: number): number[] {
-        let state = particleStateToArray(particleState);
+    /**
+     * Runs the system from its current time to a series of times given by the parameter times
+     * and returns state values for all particles at each of these times.
+     * @param times The times to run to and return state for. Must be in increasing order, with no value less than the
+     * curren time.
+     * @param stateElementIndices Indices of the state elements to return in the result. If an empty array is provided,
+     * all values are returned.
+     */
+    public simulate(times: number[], stateElementIndices: number[] = []): SystemSimulateResult {
+        checkTimes(times, this._time);
+        if (stateElementIndices.length) {
+            checkIndicesForMax("State Element", stateElementIndices, this._state.nStateElements - 1);
+        }
+
+        // Allow case where first time is current time - no progression needed for first result set
+        let preRunSaveValues = times[0] === this._time;
+
+        const stateIndicesToReturn = stateElementIndices.length
+            ? stateElementIndices
+            : [...Array(this._state.nStateElements).keys()];
+
+        const result = new SystemSimulateResult(
+            this._nGroups,
+            this._nParticles,
+            stateIndicesToReturn.length,
+            times.length
+        );
+        times.forEach((t, iTime) => {
+            if (preRunSaveValues) {
+                preRunSaveValues = false;
+            } else {
+                this.runToTime(t);
+            }
+
+            this.iterateParticles((iGroup: number, iParticle: number) => {
+                const particle = this._state.getParticle(iGroup, iParticle);
+                const stateValues = stateIndicesToReturn.map((index) => particle.get(index));
+                result.setValuesForTime(iGroup, iParticle, iTime, stateValues);
+            });
+        });
+        return result;
+    }
+
+    private runParticle(shared: TShared, internal: TInternal, particleState: ArrayState, nSteps: number): number[] {
+        let state = arrayStateToArray(particleState);
         let stateNext = [...state];
         let time = this._time;
         for (let i = 0; i < nSteps; i++) {

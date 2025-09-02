@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { SystemState, SystemSubState } from "../src/SystemState.ts";
-import { ndArrayFrom, particleStateToArray } from "../src/utils.ts";
+import { ndArrayFrom, arrayStateToArray } from "../src/utils.ts";
 import ndarray from "ndarray";
 
 describe("SystemState", () => {
@@ -23,8 +23,8 @@ describe("SystemState", () => {
         sut.setParticle(0, 1, [10, 20, 30, 40]);
         sut.setParticle(1, 2, [50, 60, 70, 80]);
 
-        expect(particleStateToArray(sut.getParticle(0, 1))).toStrictEqual([10, 20, 30, 40]);
-        expect(particleStateToArray(sut.getParticle(1, 2))).toStrictEqual([50, 60, 70, 80]);
+        expect(arrayStateToArray(sut.getParticle(0, 1))).toStrictEqual([10, 20, 30, 40]);
+        expect(arrayStateToArray(sut.getParticle(1, 2))).toStrictEqual([50, 60, 70, 80]);
     });
 
     test("throws error when attempt get with invalid index", () => {
@@ -86,13 +86,13 @@ describe("SystemState", () => {
         ]);
         sut.reorder(reordering);
 
-        expect(particleStateToArray(sut.getParticle(0, 0))).toStrictEqual([3, 4]);
-        expect(particleStateToArray(sut.getParticle(0, 1))).toStrictEqual([5, 6]);
-        expect(particleStateToArray(sut.getParticle(0, 2))).toStrictEqual([1, 2]);
+        expect(arrayStateToArray(sut.getParticle(0, 0))).toStrictEqual([3, 4]);
+        expect(arrayStateToArray(sut.getParticle(0, 1))).toStrictEqual([5, 6]);
+        expect(arrayStateToArray(sut.getParticle(0, 2))).toStrictEqual([1, 2]);
 
-        expect(particleStateToArray(sut.getParticle(1, 0))).toStrictEqual([50, 60]);
-        expect(particleStateToArray(sut.getParticle(1, 1))).toStrictEqual([10, 20]);
-        expect(particleStateToArray(sut.getParticle(1, 2))).toStrictEqual([30, 40]);
+        expect(arrayStateToArray(sut.getParticle(1, 0))).toStrictEqual([50, 60]);
+        expect(arrayStateToArray(sut.getParticle(1, 1))).toStrictEqual([10, 20]);
+        expect(arrayStateToArray(sut.getParticle(1, 2))).toStrictEqual([30, 40]);
 
         // Test that successive reordering work as expected
         reordering = ndArrayFrom([
@@ -100,13 +100,13 @@ describe("SystemState", () => {
             [1, 0, 2]
         ]);
         sut.reorder(reordering);
-        expect(particleStateToArray(sut.getParticle(0, 0))).toStrictEqual([1, 2]);
-        expect(particleStateToArray(sut.getParticle(0, 1))).toStrictEqual([5, 6]);
-        expect(particleStateToArray(sut.getParticle(0, 2))).toStrictEqual([3, 4]);
+        expect(arrayStateToArray(sut.getParticle(0, 0))).toStrictEqual([1, 2]);
+        expect(arrayStateToArray(sut.getParticle(0, 1))).toStrictEqual([5, 6]);
+        expect(arrayStateToArray(sut.getParticle(0, 2))).toStrictEqual([3, 4]);
 
-        expect(particleStateToArray(sut.getParticle(1, 0))).toStrictEqual([10, 20]);
-        expect(particleStateToArray(sut.getParticle(1, 1))).toStrictEqual([50, 60]);
-        expect(particleStateToArray(sut.getParticle(1, 2))).toStrictEqual([30, 40]);
+        expect(arrayStateToArray(sut.getParticle(1, 0))).toStrictEqual([10, 20]);
+        expect(arrayStateToArray(sut.getParticle(1, 1))).toStrictEqual([50, 60]);
+        expect(arrayStateToArray(sut.getParticle(1, 2))).toStrictEqual([30, 40]);
     });
 
     test("can reorder particles with filter and repetition", () => {
@@ -116,13 +116,13 @@ describe("SystemState", () => {
             [2, 0, 2]
         ]);
         sut.reorder(reordering);
-        expect(particleStateToArray(sut.getParticle(0, 0))).toStrictEqual([3, 4]);
-        expect(particleStateToArray(sut.getParticle(0, 1))).toStrictEqual([5, 6]);
-        expect(particleStateToArray(sut.getParticle(0, 2))).toStrictEqual([1, 2]);
+        expect(arrayStateToArray(sut.getParticle(0, 0))).toStrictEqual([3, 4]);
+        expect(arrayStateToArray(sut.getParticle(0, 1))).toStrictEqual([5, 6]);
+        expect(arrayStateToArray(sut.getParticle(0, 2))).toStrictEqual([1, 2]);
 
-        expect(particleStateToArray(sut.getParticle(1, 0))).toStrictEqual([50, 60]);
-        expect(particleStateToArray(sut.getParticle(1, 1))).toStrictEqual([10, 20]);
-        expect(particleStateToArray(sut.getParticle(1, 2))).toStrictEqual([50, 60]);
+        expect(arrayStateToArray(sut.getParticle(1, 0))).toStrictEqual([50, 60]);
+        expect(arrayStateToArray(sut.getParticle(1, 1))).toStrictEqual([10, 20]);
+        expect(arrayStateToArray(sut.getParticle(1, 2))).toStrictEqual([50, 60]);
     });
 
     test("throws error when attempt to reorder with unexpected reordering shape", () => {
@@ -170,13 +170,13 @@ describe("SystemState", () => {
             ]
         ];
         sut.setState(fullState);
-        expect(particleStateToArray(sut.getParticle(0, 0))).toStrictEqual([0, 1, 2, 3]);
-        expect(particleStateToArray(sut.getParticle(0, 1))).toStrictEqual([4, 5, 6, 7]);
-        expect(particleStateToArray(sut.getParticle(0, 2))).toStrictEqual([8, 9, 10, 11]);
+        expect(arrayStateToArray(sut.getParticle(0, 0))).toStrictEqual([0, 1, 2, 3]);
+        expect(arrayStateToArray(sut.getParticle(0, 1))).toStrictEqual([4, 5, 6, 7]);
+        expect(arrayStateToArray(sut.getParticle(0, 2))).toStrictEqual([8, 9, 10, 11]);
 
-        expect(particleStateToArray(sut.getParticle(1, 0))).toStrictEqual([100, 101, 102, 103]);
-        expect(particleStateToArray(sut.getParticle(1, 1))).toStrictEqual([104, 105, 106, 107]);
-        expect(particleStateToArray(sut.getParticle(1, 2))).toStrictEqual([108, 109, 110, 111]);
+        expect(arrayStateToArray(sut.getParticle(1, 0))).toStrictEqual([100, 101, 102, 103]);
+        expect(arrayStateToArray(sut.getParticle(1, 1))).toStrictEqual([104, 105, 106, 107]);
+        expect(arrayStateToArray(sut.getParticle(1, 2))).toStrictEqual([108, 109, 110, 111]);
     });
 
     test("can set substate", () => {
@@ -185,13 +185,13 @@ describe("SystemState", () => {
 
         // both groups, 2nd particle only, 2nd and 4th state elements
         sut.setState(subState, [0, 1], [1], [1, 3]);
-        expect(particleStateToArray(sut.getParticle(0, 0))).toStrictEqual([0, 0, 0, 0]);
-        expect(particleStateToArray(sut.getParticle(0, 1))).toStrictEqual([0, 98, 0, 76]);
-        expect(particleStateToArray(sut.getParticle(0, 2))).toStrictEqual([0, 0, 0, 0]);
+        expect(arrayStateToArray(sut.getParticle(0, 0))).toStrictEqual([0, 0, 0, 0]);
+        expect(arrayStateToArray(sut.getParticle(0, 1))).toStrictEqual([0, 98, 0, 76]);
+        expect(arrayStateToArray(sut.getParticle(0, 2))).toStrictEqual([0, 0, 0, 0]);
 
-        expect(particleStateToArray(sut.getParticle(1, 0))).toStrictEqual([0, 0, 0, 0]);
-        expect(particleStateToArray(sut.getParticle(1, 1))).toStrictEqual([0, 54, 0, 32]);
-        expect(particleStateToArray(sut.getParticle(1, 2))).toStrictEqual([0, 0, 0, 0]);
+        expect(arrayStateToArray(sut.getParticle(1, 0))).toStrictEqual([0, 0, 0, 0]);
+        expect(arrayStateToArray(sut.getParticle(1, 1))).toStrictEqual([0, 54, 0, 32]);
+        expect(arrayStateToArray(sut.getParticle(1, 2))).toStrictEqual([0, 0, 0, 0]);
     });
 
     test("throws expected error when full state is the wrong shape", () => {
