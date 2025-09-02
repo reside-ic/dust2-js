@@ -377,4 +377,73 @@ describe("DiscreteSystem", () => {
         expect(arrayStateToArray(result.getValuesForTime(1, 1, 0))).toStrictEqual([g2p2Step2State[0], g2p2Step2State[2], g2p2Step2State[4]]);
         expect(arrayStateToArray(result.getValuesForTime(1, 1, 1))).toStrictEqual([g2p2Step4State[0], g2p2Step4State[2], g2p2Step4State[4]]);
     });
+
+    test("can run simulate where first time is current time", () => {
+        const rngStateObserved = new RngStateObserved(new RngStateBuiltin());
+        const random = new Random(rngStateObserved);
+        const compareRandom = new Random(rngStateObserved.replay());
+
+        const start = 5;
+        const step1 = 5.5;
+        const dt = 0.5;
+
+        const simulateShared = [
+            { N: 1000000, I0: 1, beta: 4, gamma: 2 },
+            { N: 2000000, I0: 2, beta: 8, gamma: 4 }
+        ];
+
+        const g1StartState = [999999, 1, 0, 0, 0];
+        const g2StartState = [1999998, 2, 0, 0, 0];
+
+        const sys = new DiscreteSystem<SIRShared, null>(
+            generator,
+            simulateShared,
+            start, // time
+            dt, // dt
+            1, // nParticles
+            random
+        );
+        sys.setStateInitial();
+
+        const result = sys.simulate([5, 6]); // 0 and 1 more than start time, should take 2 steps of 0.5
+
+        // Manually run each of the updates called by the System, using the compareRandom to replay the
+        // same random values in order so we get the same results
+        // 2 Groups (g) and 2 Particles (p)
+
+        const getNextState = (start, currentState, shared) => {
+            const nextState = newSIRState();
+            generator.update(start, dt, currentState, shared, null, nextState, compareRandom);
+            return nextState;
+        };
+
+        // TIME 6
+        // Group 1
+        const g1Shared = simulateShared[0];
+        const g1p1Step1State = getNextState(start, g1StartState, g1Shared);
+        const g1p1Step2State = getNextState(step1, g1p1Step1State, g1Shared);
+
+        // Group 2
+        const g2Shared = simulateShared[1];
+        const g2p1Step1State = getNextState(start, g2StartState, g2Shared);
+        const g2p1Step2State = getNextState(step1, g2p1Step1State, g2Shared);
+
+        // Test can get expected state element values for both times
+
+        [...Array(5).keys()].map((stateElIdx) => {
+            // Group 1
+            expect(arrayStateToArray(result.getStateElement(0, 0, stateElIdx))).toStrictEqual([g1StartState[stateElIdx], g1p1Step2State[stateElIdx]]);
+            // Group 2
+            expect(arrayStateToArray(result.getStateElement(1, 0, stateElIdx))).toStrictEqual([g2StartState[stateElIdx], g2p1Step2State[stateElIdx]]);
+        });
+
+        // Test can get get all state values for a time (for a particle)
+        // Group 1
+        expect(arrayStateToArray(result.getValuesForTime(0, 0, 0))).toStrictEqual(g1StartState);
+        expect(arrayStateToArray(result.getValuesForTime(0, 0, 1))).toStrictEqual(g1p1Step2State);
+
+        // Group 2
+        expect(arrayStateToArray(result.getValuesForTime(1, 0, 0))).toStrictEqual(g2StartState);
+        expect(arrayStateToArray(result.getValuesForTime(1, 0, 1))).toStrictEqual(g2p1Step2State);
+    });
 });

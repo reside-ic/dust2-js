@@ -155,7 +155,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
 
         const stateIndicesToReturn = stateElementIndices.length ? stateElementIndices : [...Array(this._state.nStateElements).keys()];
 
-        const result = new SystemSimulateResult(this._nGroups, this._nParticles, stateElementIndices.length, times.length);
+        const result = new SystemSimulateResult(this._nGroups, this._nParticles, stateIndicesToReturn.length, times.length);
         times.forEach((t, iTime) => {
             if (preRunSaveValues) {
                 preRunSaveValues = false
