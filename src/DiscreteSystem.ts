@@ -4,7 +4,7 @@ import { SystemSimulateResult } from "./SystemSimulateResult.ts";
 import { DiscreteGenerator } from "./interfaces/DiscreteGenerator.ts";
 import { Packer } from "./Packer";
 import { System } from "./interfaces/System.ts";
-import { checkIntegerInRange, arrayStateToArray } from "./utils.ts";
+import { checkIntegerInRange, arrayStateToArray, checkTimes, checkIndicesForMax } from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
 
 /**
@@ -147,8 +147,10 @@ export class DiscreteSystem<TShared, TInternal> implements System {
     }
 
     public simulate(times: number[], stateElementIndices: number[] = []): SystemSimulateResult {
-        //- validate times - must be increasing, no duplicates,  must not be less than current time, must align with dt
-        //- validate stateElementIndices - can be out of order. should allow duplicates? Must be in range.
+        checkTimes(times, this._time);
+        if (stateElementIndices.length) {
+            checkIndicesForMax("State Element", stateElementIndices, this._state.nStateElements - 1);
+        }
 
         // Allow case where first time is current time - no progression needed for first result set
         let preRunSaveValues = times[0] === this._time;

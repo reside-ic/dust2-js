@@ -272,6 +272,14 @@ describe("DiscreteSystem", () => {
         );
     });
 
+    const simulateShared = [
+        { N: 1000000, I0: 1, beta: 4, gamma: 2 },
+        { N: 2000000, I0: 2, beta: 8, gamma: 4 }
+    ];
+
+    const g1StartState = [999999, 1, 0, 0, 0];
+    const g2StartState = [1999998, 2, 0, 0, 0];
+
     test("can simulate using SIR generator", () => {
         const rngStateObserved = new RngStateObserved(new RngStateBuiltin());
         const random = new Random(rngStateObserved);
@@ -282,14 +290,6 @@ describe("DiscreteSystem", () => {
         const step2 = 6;
         const step3 = 6.5;
         const dt = 0.5;
-
-        const simulateShared = [
-            { N: 1000000, I0: 1, beta: 4, gamma: 2 },
-            { N: 2000000, I0: 2, beta: 8, gamma: 4 }
-        ];
-
-        const g1StartState = [999999, 1, 0, 0, 0];
-        const g2StartState = [1999998, 2, 0, 0, 0];
 
         const sys = new DiscreteSystem<SIRShared, null>(
             generator,
@@ -387,14 +387,6 @@ describe("DiscreteSystem", () => {
         const step1 = 5.5;
         const dt = 0.5;
 
-        const simulateShared = [
-            { N: 1000000, I0: 1, beta: 4, gamma: 2 },
-            { N: 2000000, I0: 2, beta: 8, gamma: 4 }
-        ];
-
-        const g1StartState = [999999, 1, 0, 0, 0];
-        const g2StartState = [1999998, 2, 0, 0, 0];
-
         const sys = new DiscreteSystem<SIRShared, null>(
             generator,
             simulateShared,
@@ -445,5 +437,29 @@ describe("DiscreteSystem", () => {
         // Group 2
         expect(arrayStateToArray(result.getValuesForTime(1, 0, 0))).toStrictEqual(g2StartState);
         expect(arrayStateToArray(result.getValuesForTime(1, 0, 1))).toStrictEqual(g2p1Step2State);
+    });
+
+    test("simulate throws error if times are not valid", () => {
+        const sys = createSystem();
+        expect(() => sys.simulate([0, 1]))
+            .toThrow("Times must be greater than or equal to 5, but found 0.");
+        expect(() => sys.simulate([6, 5]))
+            .toThrow("Times must be ordered with no duplicates.");
+        expect(() => sys.simulate([6, 6]))
+            .toThrow("Times must be ordered with no duplicates.");
+    });
+
+    test("simulate throws error state element indexes are not valid", () => {
+        // We currently enforce ordering and non-duplicate on state elements, which isn't
+        // strictly necessary
+        const sys = createSystem();
+        expect(() => sys.simulate([5, 6], [-1, 0]))
+            .toThrow("State Element should be an integer between 0 and 4, but is -1");
+        expect(() => sys.simulate([5, 6], [0, 6]))
+            .toThrow("State Element should be an integer between 0 and 4, but is 6");
+        expect(() => sys.simulate([5, 6], [3, 2]))
+            .toThrow("State Element indices must be ordered with no duplicates");
+        expect(() => sys.simulate([5, 6], [2, 2]))
+            .toThrow("State Element indices must be ordered with no duplicates");
     });
 });
