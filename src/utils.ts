@@ -94,3 +94,11 @@ export const ndArrayFrom = (source: number[][]): ndarray.NdArray => {
     }, [] as number[]);
     return ndarray(values, [source.length, expectedLength]);
 };
+
+export const getRangeFromZero = (count: number) => [...Array(count).keys()];
+
+export const floatIsDivisibleBy = (a: number, b: number, tolerance = 1e-12) => {
+    const isAlmostZero = a % b < tolerance;
+    const isAlmostB = b - (a % b) < tolerance;
+    return isAlmostZero || isAlmostB;
+};

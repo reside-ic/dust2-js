@@ -1,5 +1,5 @@
 import ndarray from "ndarray";
-import { checkIntegerInRange, checkIndicesForMax, checkNestedArrayLengthsMatch } from "./utils.ts";
+import { checkIntegerInRange, checkIndicesForMax, checkNestedArrayLengthsMatch, getRangeFromZero } from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
 
 /**
@@ -202,14 +202,14 @@ export class SystemState {
             // Each of the index arrays provided may be empty, in which case we should iterate over all the indices
             // in the state
             // We also validate non-empty index arrays here
-            const iterateAll = !indices.length;
-            if (!iterateAll) {
+            if (indices.length) {
                 checkIndicesForMax(name, indices, stateIndexCount - 1);
+            } else {
+                indices = getRangeFromZero(stateIndexCount);
             }
-            const indexCount = iterateAll ? stateIndexCount : indices.length;
-            for (let i = 0; i < indexCount; i++) {
-                const index = iterateAll ? i : indices[i];
-                f(index, i);
+
+            for (let i = 0; i < indices.length; i++) {
+                f(indices[i], i);
             }
         };
 
