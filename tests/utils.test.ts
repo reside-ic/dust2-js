@@ -3,6 +3,7 @@ import {
     checkIndicesForMax,
     checkIntegerInRange,
     checkNestedArrayLengthsMatch,
+    getRangeFromZero,
     ndArrayFrom,
     particleStateToArray,
     prod
@@ -224,4 +225,8 @@ describe("checkNestedArrayLengthsMatch", () => {
             checkNestedArrayLengthsMatch(jaggedParticles, [2, 3, 4], expectedNames);
         }).toThrow("State Elements should have length 4 but was 2 at index 1,2");
     });
+});
+
+test("can get range from zero", () => {
+    expect(getRangeFromZero(5)).toStrictEqual([0, 1, 2, 3, 4]);
 });

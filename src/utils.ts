@@ -81,3 +81,5 @@ export const ndArrayFrom = (source: number[][]): ndarray.NdArray => {
     }, [] as number[]);
     return ndarray(values, [source.length, expectedLength]);
 };
+
+export const getRangeFromZero = (count: number) => [...Array(count).keys()];
