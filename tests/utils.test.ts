@@ -1,7 +1,15 @@
 import { describe, expect, test } from "vitest";
-import { checkIntegerInRange, ndArrayFrom, particleStateToArray, prod } from "../src/utils";
+import {
+    checkIndicesForMax,
+    checkIntegerInRange,
+    checkNestedArrayLengthsMatch,
+    getRangeFromZero,
+    ndArrayFrom,
+    particleStateToArray,
+    prod
+} from "../src/utils";
 import ndarray from "ndarray";
-import { ParticleState } from "../src/SystemState.ts";
+import { ParticleState, SystemSubState } from "../src/SystemState.ts";
 
 describe("prod", () => {
     test("returns product of all elements in array", () => {
@@ -90,4 +98,135 @@ describe("ndArrayFrom", () => {
         const result = ndArrayFrom([[], []]);
         expect(result.shape).toStrictEqual([2, 0]);
     });
+});
+
+describe("checkIndicesForMax", () => {
+    test("does not throw error for valid indices", () => {
+        checkIndicesForMax("TEST", [0, 2, 5], 5);
+    });
+
+    test("throws expected error if indices are not ordered", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [0, 3, 1], 3);
+        }).toThrow("TEST indices must be ordered with no duplicates");
+    });
+
+    test("throws expected error if indices contain duplicates", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [0, 0, 1], 3);
+        }).toThrow("TEST indices must be ordered with no duplicates");
+    });
+
+    test("throws expected error if any indices are greater than max", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [0, 1, 2, 5], 4);
+        }).toThrow("TEST should be an integer between 0 and 4, but is 5");
+    });
+
+    test("throws expected error if any indices are less than 0", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [-1, 1, 2, 3], 4);
+        }).toThrow("TEST should be an integer between 0 and 4, but is -1");
+    });
+
+    test("throws expected error if any indices are not integers", () => {
+        expect(() => {
+            checkIndicesForMax("TEST", [0, 1, 2.5, 3], 4);
+        }).toThrow("TEST should be an integer between 0 and 4, but is 2.5");
+    });
+});
+
+describe("checkNestedArrayLengthsMatch", () => {
+    const testArray: SystemSubState = [
+        // Group 1
+        [
+            // Particle 1
+            [0, 1, 2, 3],
+
+            // Particle 2
+            [4, 5, 6, 7],
+
+            // Particle 3
+            [8, 9, 10, 11]
+        ],
+        // Group 2
+        [
+            // Particle 1
+            [100, 101, 102, 103],
+
+            // Particle 2
+            [104, 105, 106, 107],
+
+            // Particle 3
+            [108, 109, 110, 111]
+        ]
+    ];
+
+    const expectedNames = ["Groups", "Particles", "State Elements"];
+
+    test("does not throw error if nested array has expected lengths", () => {
+        checkNestedArrayLengthsMatch(testArray, [2, 3, 4], expectedNames);
+    });
+
+    test("throws expected error if expectedLengths and expectedLengthNames do not match", () => {
+        expect(() => {
+            checkNestedArrayLengthsMatch(testArray, [2, 3], expectedNames);
+        }).toThrow(
+            "Unexpected parameters in checkNestedArrayLengthsMatch: " +
+                "expectedLengths and expectedLengthNames should be same length"
+        );
+    });
+
+    test("throws expected error if top level length is not expected", () => {
+        expect(() => {
+            checkNestedArrayLengthsMatch(testArray, [3, 3, 4], expectedNames);
+        }).toThrow("Groups should have length 3 but was 2");
+    });
+
+    test("throws expected error if nested length is not expected", () => {
+        expect(() => {
+            checkNestedArrayLengthsMatch(testArray, [2, 2, 4], expectedNames);
+        }).toThrow("Particles should have length 2 but was 3 at index 0");
+
+        expect(() => {
+            checkNestedArrayLengthsMatch(testArray, [2, 3, 5], expectedNames);
+        }).toThrow("State Elements should have length 5 but was 4 at index 0,0");
+    });
+
+    test("throws expected error if nested array length is not expected in jagged array", () => {
+        const jaggedGroups: SystemSubState = [
+            [
+                [0, 1, 2, 3],
+                [4, 5, 6, 7],
+                [8, 9, 10, 11]
+            ],
+            [
+                [100, 101, 102, 103],
+                [108, 109, 110, 111]
+            ]
+        ];
+        expect(() => {
+            checkNestedArrayLengthsMatch(jaggedGroups, [2, 3, 4], expectedNames);
+        }).toThrow("Particles should have length 3 but was 2 at index 1");
+
+        const jaggedParticles: SystemSubState = [
+            [
+                [0, 1, 2, 3],
+                [4, 5, 6, 7],
+                [8, 9, 10, 11]
+            ],
+            [
+                [100, 101, 102, 103],
+                [104, 105, 106, 107],
+                [108, 109]
+            ]
+        ];
+        expect(() => {
+            checkNestedArrayLengthsMatch(jaggedParticles, [2, 3, 4], expectedNames);
+        }).toThrow("State Elements should have length 4 but was 2 at index 1,2");
+    });
+});
+
+test("can get range from zero", () => {
+    expect(getRangeFromZero(5)).toStrictEqual([0, 1, 2, 3, 4]);
 });

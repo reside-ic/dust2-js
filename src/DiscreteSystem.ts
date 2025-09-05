@@ -1,5 +1,5 @@
 import { Random, RngStateBuiltin } from "@reside-ic/random";
-import { ParticleState, SystemState } from "./SystemState";
+import { ParticleState, SystemState, SystemSubState } from "./SystemState";
 import { DiscreteGenerator } from "./interfaces/DiscreteGenerator.ts";
 import { Packer } from "./Packer";
 import { System } from "./interfaces/System.ts";
@@ -107,6 +107,26 @@ export class DiscreteSystem<TShared, TInternal> implements System {
             this._generator.initial(this._time, shared, internal, arrayState, this._random);
             this._state.setParticle(iGroup, iParticle, arrayState);
         });
+    }
+
+    /**
+     * Sets new values in the system state
+     * @param newState The new state values for all or part of the state. If partial state, the shape must match the
+     * values provided in the indices parameters
+     * @param groupIndices The group indices, in order, which the first dimension of newState are setting values for.
+     * If empty, this means newState provides values for all groups.
+     * @param particleIndices The particle indices, in order, which the second dimension of newState are setting values
+     * for. If empty, this means newState provides values for all particles.
+     * @param stateElementIndices The state element indices, in order, which the second dimension of newState are
+     * setting values for. If empty, this means newState provides values for all state elements.
+     */
+    public setState(
+        newState: SystemSubState,
+        groupIndices: number[] = [],
+        particleIndices: number[] = [],
+        stateElementIndices: number[] = []
+    ) {
+        this._state.setState(newState, groupIndices, particleIndices, stateElementIndices);
     }
 
     /**

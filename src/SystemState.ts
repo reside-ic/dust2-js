@@ -1,5 +1,5 @@
 import ndarray from "ndarray";
-import { checkIntegerInRange } from "./utils.ts";
+import { checkIntegerInRange, checkIndicesForMax, checkNestedArrayLengthsMatch, getRangeFromZero } from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
 
 /**
@@ -24,6 +24,14 @@ export interface ParticleState {
      */
     size: number;
 }
+
+export type ParticleSubState = number[];
+export type GroupSubState = ParticleSubState[];
+
+/**
+ * Type used for full or partial state updates.
+ */
+export type SystemSubState = GroupSubState[];
 
 /**
  * Class representing the state of a {@link System} made up of {@link SystemState.nGroups | nGroups} groups with
@@ -155,5 +163,66 @@ export class SystemState {
         }
 
         [this._state, this._stateNext] = [this._stateNext, this._state]; // swap
+    }
+
+    /**
+     * Sets new values in the state
+     * @param newState The new state values for all of part of the state. If partial state, the shape must match the
+     * values provided in the indices parameters
+     * @param groupIndices The group indices, in order, which the first dimension of newState are setting values for.
+     * If empty, this means newState provides values for all groups.
+     * @param particleIndices The particle indices, in order, which the second dimension of newState are setting values
+     * for. If empty, this means newState provides values for all particles.
+     * @param stateElementIndices The state element indices, in order, which the second dimension of newState are
+     * setting values for. If empty, this means newState provides values for all particles.
+     */
+    public setState(
+        newState: SystemSubState,
+        groupIndices: number[] = [],
+        particleIndices: number[] = [],
+        stateElementIndices: number[] = []
+    ) {
+        // Check that the dimensions of new state actually match size of the indices arrays
+        // provided (or the relevant dimension of the whole state if not)
+        const expectedNewStateLengths = [
+            groupIndices.length || this._nGroups,
+            particleIndices.length || this._nParticles,
+            stateElementIndices.length || this._nStateElements
+        ];
+        const expectedNewStateNames = ["newState Groups", "newState Particles", "newState State Elements"];
+        checkNestedArrayLengthsMatch(newState, expectedNewStateLengths, expectedNewStateNames);
+
+        const iterateIndices = (
+            name: string,
+            indices: number[],
+            stateIndexCount: number,
+            f: (index: number, i: number) => void
+        ) => {
+            // Each of the index arrays provided may be empty, in which case we should iterate over all the indices
+            // in the state
+            // We also validate non-empty index arrays here
+            if (indices.length) {
+                checkIndicesForMax(name, indices, stateIndexCount - 1);
+            } else {
+                indices = getRangeFromZero(stateIndexCount);
+            }
+
+            for (let i = 0; i < indices.length; i++) {
+                f(indices[i], i);
+            }
+        };
+
+        iterateIndices("Group index", groupIndices, this._nGroups, (g: number, ig: number) => {
+            iterateIndices("Particle index", particleIndices, this._nParticles, (p: number, ip: number) => {
+                iterateIndices(
+                    "State Element index",
+                    stateElementIndices,
+                    this._nStateElements,
+                    (v: number, iv: number) => {
+                        this._state.set(g, p, v, newState[ig][ip][iv]);
+                    }
+                );
+            });
+        });
     }
 }
