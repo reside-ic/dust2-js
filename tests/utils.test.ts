@@ -3,6 +3,7 @@ import {
     checkIndicesForMax,
     checkIntegerInRange,
     checkNestedArrayLengthsMatch,
+    getRangeFromZero,
     ndArrayFrom,
     arrayStateToArray,
     prod,
@@ -242,4 +243,8 @@ describe("checkNestedArrayLengthsMatch", () => {
             expect(() => checkTimes([1, 2, 2, 3], 1)).toThrow("Times must be ordered with no duplicates.");
         });
     });
+});
+
+test("can get range from zero", () => {
+    expect(getRangeFromZero(5)).toStrictEqual([0, 1, 2, 3, 4]);
 });

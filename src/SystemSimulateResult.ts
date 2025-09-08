@@ -1,6 +1,6 @@
 import ndarray from "ndarray";
 import { checkIntegerInRange } from "./utils.ts";
-import { ArrayState } from "./SystemState.ts";
+import { ArrayState, ParticleState } from "./SystemState.ts";
 
 /**
  * Class which provides results of {@link System#simulate | System.simulate}, providing an underlying
@@ -69,14 +69,16 @@ export class SystemSimulateResult {
     }
 
     /**
-     * Returns all the result state values for a given time index.
+     * Returns all the result state values for a particle at a given time index. NB This returns a ParticleState
+     * but may be a a partial array of all elements in the particle, depending on the elements requested in the
+     * simulate call.
      *
      * @param iGroup Index of the group
      * @param iParticle Index of the particle
      * @param iTime Index of the time - NB not time value, but the index in the times parameter provided to
      * {@link System#simulate | System.simulate}
      */
-    public getValuesForTime(iGroup: number, iParticle: number, iTime: number): ArrayState {
+    public getValuesForTime(iGroup: number, iParticle: number, iTime: number): ParticleState {
         this.checkIndexes(iGroup, iParticle, null, iTime);
         return this._resultValues.pick(iGroup, iParticle, null, iTime);
     }
