@@ -43,25 +43,6 @@ export class SystemSimulateResult {
     }
 
     /**
-     * Sets result state values for a given particle at a given time.
-     * @param iGroup Index of the group
-     * @param iParticle Index of the particle
-     * @param iTime Index of the time - NB not time value, but the index in the times parameter provided to
-     * {@link System#simulate  | System.simulate}
-     * @param stateValues The state values to set, for all values requested in the stateElementIndices parameter
-     * provided to {@link System#simulate  | System.simulate}
-     */
-    public setValuesForTime(iGroup: number, iParticle: number, iTime: number, stateValues: number[]) {
-        this.checkIndexes(iGroup, iParticle, null, iTime);
-        if (stateValues.length !== this._nStateElements) {
-            throw RangeError(`Expected ${this._nStateElements} state values but got ${stateValues.length}.`);
-        }
-        for (let i = 0; i < stateValues.length; i++) {
-            this._resultValues.set(iGroup, iParticle, i, iTime, stateValues[i]);
-        }
-    }
-
-    /**
      * Provides the underlying {@link https://www.npmjs.com/package/ndarray | NdArray} holding all result values
      */
     public resultValues() {
@@ -84,10 +65,26 @@ export class SystemSimulateResult {
     }
 
     /**
+     * Sets result state values for a given particle at a given time.
+     *
+     * @copyDoc SystemSimulateResult.getValuesForTime
+     * @param stateValues The state values to set, for all values requested in the stateElementIndices parameter
+     * provided to {@link System#simulate  | System.simulate}
+     */
+    public setValuesForTime(iGroup: number, iParticle: number, iTime: number, stateValues: number[]) {
+        this.checkIndexes(iGroup, iParticle, null, iTime);
+        if (stateValues.length !== this._nStateElements) {
+            throw RangeError(`Expected ${this._nStateElements} state values but got ${stateValues.length}.`);
+        }
+        for (let i = 0; i < stateValues.length; i++) {
+            this._resultValues.set(iGroup, iParticle, i, iTime, stateValues[i]);
+        }
+    }
+
+    /**
      * Returns values at all time indexes, for a given state element index.
      *
-     * @param iGroup Index of the group
-     * @param iParticle Index of the particle
+     * @copyDoc SystemSimulateResult.getValuesForTime
      * @param iStateElement Index of the state element - NB not the element index within the entire System state, but
      * the index in the stateElementIndices parameter provided to {@link System#simulate | System.simulate}
      */

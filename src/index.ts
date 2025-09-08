@@ -1,11 +1,13 @@
-export type { ComparableDiscreteGenerator } from "./interfaces/ComparableDiscreteGenerator";
-export type { ComparableSystem } from "./interfaces/ComparableSystem";
-export type { DiscreteGenerator } from "./interfaces/DiscreteGenerator";
-export type { System } from "./interfaces/System";
+export type { BaseGenerator } from "./interfaces/generators/BaseGenerator.ts";
+export type { ComparableDiscreteGenerator } from "./interfaces/generators/ComparableDiscreteGenerator.ts";
+export type { ComparableSystem } from "./interfaces/systems/ComparableSystem.ts";
+export type { DiscreteGenerator } from "./interfaces/generators/DiscreteGenerator.ts";
+export type { System } from "./interfaces/systems/System.ts";
 export { ComparableDiscreteSystem } from "./ComparableDiscreteSystem";
 export { DiscreteSystem } from "./DiscreteSystem";
 export { Packer } from "./Packer";
 export type { PackerOptions, PackerShape, UnpackResult } from "./Packer";
 export { SystemState } from "./SystemState.ts";
 export { SystemSimulateResult } from "./SystemSimulateResult.ts";
-export type { ArrayState } from "./SystemState.ts";
+export type { ArrayState, SystemSubState, GroupSubState, ParticleSubState } from "./SystemState.ts";
+export type { ZeroEvery, Frequency, StateIndexForZero } from "./zero.ts";
