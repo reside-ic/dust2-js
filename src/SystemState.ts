@@ -26,6 +26,8 @@ export interface ArrayState {
     size: number;
 }
 
+export type ParticleState = ArrayState;
+
 export type ParticleSubState = number[];
 export type GroupSubState = ParticleSubState[];
 

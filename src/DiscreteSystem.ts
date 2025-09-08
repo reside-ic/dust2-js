@@ -1,14 +1,17 @@
 import { Random, RngStateBuiltin } from "@reside-ic/random";
-import { ArrayState, SystemState, SystemSubState } from "./SystemState";
+import { ParticleState, SystemState, SystemSubState } from "./SystemState";
 import { SystemSimulateResult } from "./SystemSimulateResult.ts";
 import { DiscreteGenerator } from "./interfaces/DiscreteGenerator.ts";
 import { Packer } from "./Packer";
 import { System } from "./interfaces/System.ts";
-<<<<<<< HEAD
-import { checkIntegerInRange, arrayStateToArray, checkTimes, checkIndicesForMax } from "./utils.ts";
-=======
-import { checkIntegerInRange, floatIsDivisibleBy, particleStateToArray } from "./utils.ts";
->>>>>>> main
+import {
+    checkIntegerInRange,
+    floatIsDivisibleBy,
+    particleStateToArray,
+    checkTimes,
+    checkIndicesForMax
+} from "./utils.ts";
+
 import { DustParameterError } from "./errors.ts";
 import { ZeroEvery } from "./zero.ts";
 
@@ -108,7 +111,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
             const shared = this._shared[iGroup];
             const internal = this._internal[iGroup];
             const state = this._state.getParticle(iGroup, iParticle);
-            const arrayState = arrayStateToArray(state);
+            const arrayState = particleStateToArray(state);
             this._generator.initial(this._time, shared, internal, arrayState, this._random);
             this._state.setParticle(iGroup, iParticle, arrayState);
         });
@@ -163,7 +166,7 @@ export class DiscreteSystem<TShared, TInternal> implements System {
      * Runs the system from its current time to a series of times given by the parameter times
      * and returns state values for all particles at each of these times.
      * @param times The times to run to and return state for. Must be in increasing order, with no value less than the
-     * curren time.
+     * current time.
      * @param stateElementIndices Indices of the state elements to return in the result. If an empty array is provided,
      * all values are returned.
      */

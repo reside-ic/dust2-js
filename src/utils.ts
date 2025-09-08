@@ -1,5 +1,5 @@
 import ndarray from "ndarray";
-import { ArrayState } from "./SystemState.ts";
+import { ArrayState, ParticleState } from "./SystemState.ts";
 import { DustParameterError } from "./errors.ts";
 
 // Product of all values in a number array
@@ -13,6 +13,8 @@ export const arrayStateToArray = (state: ArrayState): number[] => {
     }
     return result;
 };
+
+export const particleStateToArray = (state: ParticleState) => arrayStateToArray(state);
 
 export const checkIntegerInRange = (name: string, value: number, min: number, max?: number) => {
     if (!Number.isInteger(value) || value < min || (max !== undefined && value > max)) {

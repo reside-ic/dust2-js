@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { SystemSimulateResult } from "../src/SystemSimulateResult";
-import { arrayStateToArray } from "../src/utils";
+import { particleStateToArray, arrayStateToArray } from "../src/utils";
 
 describe("SystemSimulateResult", () => {
     test("can get values for time", () => {
@@ -10,10 +10,10 @@ describe("SystemSimulateResult", () => {
         sut.setValuesForTime(1, 2, 1, [9, 8, 7, 6]);
 
         const t0Vals = sut.getValuesForTime(0, 0, 0);
-        expect(arrayStateToArray(t0Vals)).toStrictEqual([1, 2, 3, 4]);
+        expect(particleStateToArray(t0Vals)).toStrictEqual([1, 2, 3, 4]);
 
         const t1Vals = sut.getValuesForTime(1, 2, 1);
-        expect(arrayStateToArray(t1Vals)).toStrictEqual([9, 8, 7, 6]);
+        expect(particleStateToArray(t1Vals)).toStrictEqual([9, 8, 7, 6]);
     });
 
     test("can get state element values", () => {

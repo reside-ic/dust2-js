@@ -48,7 +48,7 @@ export interface System {
      * Runs the system from its current time to a series of times given by the parameter times
      * and returns state values for all particles at each of these times.
      * @param times The times to run to and return state for. Must be in increasing order, with no value less than the
-     * curren time.
+     * current time.
      * @param stateElementIndices Indices of the state elements to return in the result. If an empty array is provided,
      * all values are returned.
      */

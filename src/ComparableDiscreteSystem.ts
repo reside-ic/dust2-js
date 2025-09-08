@@ -1,7 +1,7 @@
 import ndarray from "ndarray";
 import { DiscreteSystem } from "./DiscreteSystem.ts";
 import { ComparableSystem } from "./interfaces/ComparableSystem.ts";
-import { arrayStateToArray } from "./utils.ts";
+import { particleStateToArray } from "./utils.ts";
 import { Random } from "@reside-ic/random";
 import { ComparableDiscreteGenerator } from "./interfaces/ComparableDiscreteGenerator.ts";
 
@@ -62,7 +62,7 @@ export class ComparableDiscreteSystem<TShared, TInternal, TData>
             const internal = this._internal[iGroup];
             const comparisonValue = this._generator.compareData(
                 this._time,
-                arrayStateToArray(state),
+                particleStateToArray(state),
                 iData,
                 shared,
                 internal,
