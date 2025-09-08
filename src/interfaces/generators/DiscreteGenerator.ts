@@ -6,4 +6,4 @@ import { BaseGenerator } from "./BaseGenerator.ts";
  *
  * @copyDoc BaseGenerator
  */
-export interface DiscreteGenerator<TShared, TInternal> extends BaseGenerator<TShared, TInternal> {};
+export interface DiscreteGenerator<TShared, TInternal> extends BaseGenerator<TShared, TInternal> {}

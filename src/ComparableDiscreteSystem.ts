@@ -8,7 +8,7 @@ import { ComparableDiscreteGenerator } from "./interfaces/generators/ComparableD
 /**
  * Implementation of {@link ComparableSystem} for discrete systems, for use with generators which support comparison
  * to data.
- * 
+ *
  * @copyDoc ComparableDiscreteGenerator
  */
 export class ComparableDiscreteSystem<TShared, TInternal, TData>
