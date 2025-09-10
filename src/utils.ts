@@ -1,11 +1,11 @@
 import ndarray from "ndarray";
-import { ParticleState } from "./SystemState.ts";
+import { ArrayState, ParticleState } from "./SystemState.ts";
 import { DustParameterError } from "./errors.ts";
 
 // Product of all values in a number array
 export const prod = (array: number[]) => array.reduce((prev, current) => prev * current, 1);
 
-export const particleStateToArray = (state: ParticleState): number[] => {
+export const arrayStateToArray = (state: ArrayState): number[] => {
     const len = state.size;
     const result = new Array<number>(len);
     for (let i = 0; i < len; i++) {
@@ -13,6 +13,8 @@ export const particleStateToArray = (state: ParticleState): number[] => {
     }
     return result;
 };
+
+export const particleStateToArray = (state: ParticleState) => arrayStateToArray(state);
 
 export const checkIntegerInRange = (name: string, value: number, min: number, max?: number) => {
     if (!Number.isInteger(value) || value < min || (max !== undefined && value > max)) {
@@ -22,13 +24,26 @@ export const checkIntegerInRange = (name: string, value: number, min: number, ma
 };
 
 export const checkIndicesForMax = (name: string, indices: number[], max: number) => {
-    // Check an index array provided to setState is valid, with each value >= 0 and <= some max, and the whole list
-    // being ordered and containing no duplicates
+    // Check an index array provided to setState or simulate is valid, with each value >= 0 and <= some max, and the
+    // whole list being ordered and containing no duplicates
     for (let i = 0; i < indices.length; i++) {
         const indexValue = indices[i];
         checkIntegerInRange(name, indexValue, 0, max);
         if (i > 0 && indexValue <= indices[i - 1]) {
             throw new RangeError(`${name} indices must be ordered with no duplicates`);
+        }
+    }
+};
+
+export const checkTimes = (times: number[], min: number) => {
+    // Check a list of times is ordered, with no duplicates, with each greater than or equal to a minimum time
+    for (let i = 0; i < times.length; i++) {
+        const time = times[i];
+        if (time < min) {
+            throw new RangeError(`Times must be greater than or equal to ${min}, but found ${time}.`);
+        }
+        if (i > 0 && time <= times[i - 1]) {
+            throw new RangeError("Times must be ordered with no duplicates.");
         }
     }
 };
