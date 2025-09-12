@@ -1,5 +1,5 @@
-import { SystemState, SystemSubState } from "../SystemState.ts";
-import { SystemSimulateResult } from "../SystemSimulateResult.ts";
+import { SystemState, SystemSubState } from "../../SystemState.ts";
+import { SystemSimulateResult } from "../../SystemSimulateResult.ts";
 
 /**
  * Interface defining the basic functionality of a dust system, composed of a number of particles

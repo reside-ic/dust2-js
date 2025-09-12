@@ -169,15 +169,7 @@ export class SystemState {
     }
 
     /**
-     * Sets new values in the state
-     * @param newState The new state values for all of part of the state. If partial state, the shape must match the
-     * values provided in the indices parameters
-     * @param groupIndices The group indices, in order, which the first dimension of newState are setting values for.
-     * If empty, this means newState provides values for all groups.
-     * @param particleIndices The particle indices, in order, which the second dimension of newState are setting values
-     * for. If empty, this means newState provides values for all particles.
-     * @param stateElementIndices The state element indices, in order, which the second dimension of newState are
-     * setting values for. If empty, this means newState provides values for all particles.
+     * @copyDoc System.setState
      */
     public setState(
         newState: SystemSubState,
