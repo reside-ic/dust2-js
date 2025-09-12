@@ -21,4 +21,5 @@ export const resample = (weights: number[], u: number) => {
             cw += weights[weightIdx] / weightsSum;
         }
     }
+    return result;
 };
