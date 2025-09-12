@@ -130,6 +130,10 @@ export class System<TShared, TInternal> implements SystemInterface {
         if (time < this._time) {
             throw RangeError(`Cannot run to requested time ${time}, which is less than current time ${this._time}.`);
         }
+        if (time === this._time) {
+            // Already at the requested time - nothing to do
+            return;
+        }
         const nSteps = (time - this._time) / this._dt;
         this.iterateParticles((iGroup: number, iParticle: number) => {
             const shared = this._shared[iGroup];
@@ -155,9 +159,6 @@ export class System<TShared, TInternal> implements SystemInterface {
             checkIndicesForMax("State Element", stateElementIndices, this._state.nStateElements - 1);
         }
 
-        // Allow case where first time is current time - no progression needed for first result set
-        let preRunSaveValues = times[0] === this._time;
-
         const stateIndicesToReturn = stateElementIndices.length
             ? stateElementIndices
             : [...Array(this._state.nStateElements).keys()];
@@ -169,11 +170,7 @@ export class System<TShared, TInternal> implements SystemInterface {
             times.length
         );
         times.forEach((t, iTime) => {
-            if (preRunSaveValues) {
-                preRunSaveValues = false;
-            } else {
-                this.runToTime(t);
-            }
+            this.runToTime(t);
 
             this.iterateParticles((iGroup: number, iParticle: number) => {
                 const particle = this._state.getParticle(iGroup, iParticle);
