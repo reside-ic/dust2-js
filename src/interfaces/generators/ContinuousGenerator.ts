@@ -17,7 +17,7 @@ export type FullSolution = (t: number[]) => number[][];
 
 /**
  * This interface defines the functionality of a continuous time model without delays, which can be
- * used by ContinuousSystem to initialise and update particles.
+ * used by {@link System} to initialise and update particles.
  *
  * @copyDoc BaseGenerator
  */
@@ -47,7 +47,7 @@ export interface ContinuousGeneratorODE<TShared, TInternal> extends BaseGenerato
 
 /**
  * This interface defines the functionality of a continuous time model with delays, which can be
- * used by ContinuousSystem to initialise and update particles.
+ * used by {@link System} to initialise and update particles.
  *
  * @copyDoc BaseGenerator
  */

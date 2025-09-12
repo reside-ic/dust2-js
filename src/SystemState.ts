@@ -37,7 +37,7 @@ export type GroupSubState = ParticleSubState[];
 export type SystemSubState = GroupSubState[];
 
 /**
- * Class representing the state of a {@link System} made up of {@link SystemState.nGroups | nGroups} groups with
+ * Class representing the state of a {@link SystemInterFace} made up of {@link SystemState.nGroups | nGroups} groups with
  * {@link SystemState.nParticles | nParticles} particles in each group, where each particle contains
  * {@link SystemState.nStateElements | nStateElements} numeric values.
  */
@@ -169,7 +169,7 @@ export class SystemState {
     }
 
     /**
-     * @copyDoc System.setState
+     * @copyDoc SystemInterface.setState
      */
     public setState(
         newState: SystemSubState,

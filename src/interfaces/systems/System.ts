@@ -4,7 +4,7 @@ import { SystemSimulateResult } from "../../SystemSimulateResult.ts";
 /**
  * Interface defining the basic functionality of a dust system, composed of a number of particles
  * */
-export interface System {
+export interface SystemInterface {
     /**
      * The current time in the system
      */

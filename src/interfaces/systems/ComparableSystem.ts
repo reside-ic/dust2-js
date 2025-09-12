@@ -1,12 +1,12 @@
-import { System } from "./System";
+import { SystemInterface } from "./System";
 import { NdArray } from "ndarray";
 
 /**
  * Interface which extends {@link System} by adding functionality to compare system state with observed data.
  *
- * @copyDoc ComparableDiscreteGenerator
+ * @typeParam TData Type of each data point which will be compared with system state.
  */
-export interface ComparableSystem<TData> extends System {
+export interface ComparableSystemInterface<TData> extends SystemInterface {
     /**
      * Compares the state of all particles in the syatem with observed data, and returns an
      * {@link https://github.com/scijs/ndarray |NdArray } of log likelihoods
