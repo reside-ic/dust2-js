@@ -36,7 +36,7 @@ export const checkIndicesForMax = (name: string, indices: number[], max: number)
 };
 
 export const checkTimes = (times: number[], min: number) => {
-    // Check a list of times is ordered, with no duplicates, with each greater than a minimum time
+    // Check a list of times is ordered, with no duplicates, with each greater than or equal to a minimum time
     for (let i = 0; i < times.length; i++) {
         const time = times[i];
         if (time < min) {

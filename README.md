@@ -30,7 +30,8 @@ Build for distribution with `npm run build`.
 
 ## Documentation
 
-Docs are built with [Typedoc](https://typedoc.org). Pushes to the main  branch update a Github Pages site at https://reside-ic.github.io/dust2-js
-with the latest docs. New code which is exported should be documented with [TSDoc](https://tsdoc.org) comments.
+Docs are built with [Typedoc](https://typedoc.org) with the [copy-doc](https://www.npmjs.com/package/@reside-ic/typedoc-plugin-copy-doc) plugin.
+Pushes to the main  branch update a Github Pages site at https://reside-ic.github.io/dust2-js with the latest docs. New code which is exported
+should be documented with [TSDoc](https://tsdoc.org) comments.
 
 
