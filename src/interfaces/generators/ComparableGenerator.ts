@@ -27,4 +27,4 @@ export type ComparableGenerator<TShared, TInternal, TData> = Generator<TShared, 
         internal: TInternal,
         random: Random
     ): number;
-}
+};

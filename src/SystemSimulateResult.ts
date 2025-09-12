@@ -86,7 +86,8 @@ export class SystemSimulateResult {
      *
      * @copyDoc SystemSimulateResult.getValuesForTime
      * @param iStateElement Index of the state element - NB not the element index within the entire System state, but
-     * the index in the stateElementIndices parameter provided to {@link SystemInterface#simulate | SystemInterface.simulate}
+     * the index in the stateElementIndices parameter provided to
+     * {@link SystemInterface#simulate | SystemInterface.simulate}
      */
     public getStateElement(iGroup: number, iParticle: number, iStateElement: number): ArrayState {
         this.checkIndexes(iGroup, iParticle, iStateElement, null);

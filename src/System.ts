@@ -2,7 +2,13 @@ import { Random, RngStateBuiltin } from "@reside-ic/random";
 import { ParticleState, SystemState, SystemSubState } from "./SystemState.ts";
 import { Packer } from "./Packer.ts";
 import { SystemInterface } from "./interfaces/systems/System.ts";
-import { checkIndicesForMax, checkIntegerInRange, checkTimes, floatIsDivisibleBy, particleStateToArray } from "./utils.ts";
+import {
+    checkIndicesForMax,
+    checkIntegerInRange,
+    checkTimes,
+    floatIsDivisibleBy,
+    particleStateToArray
+} from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
 import { ZeroEvery } from "./zero.ts";
 import { SystemSimulateResult } from "./SystemSimulateResult.ts";
