@@ -1,4 +1,4 @@
-import { DiscreteGenerator } from "../../src/interfaces/DiscreteGenerator.ts";
+import { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator.ts";
 import { Random } from "@reside-ic/random";
 import { Packer } from "../../src/Packer.ts";
 

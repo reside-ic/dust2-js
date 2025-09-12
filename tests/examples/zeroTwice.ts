@@ -1,4 +1,4 @@
-import { DiscreteGenerator } from "../../src/interfaces/DiscreteGenerator";
+import { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator";
 import { Packer } from "../../src/Packer";
 
 export interface ABState {

@@ -2,14 +2,14 @@ import { describe, test, expect, vi, Mocked } from "vitest";
 import { poissonLogDensity } from "../src/density.ts";
 import { discreteSIR, SIRData, SIRShared } from "./examples/discreteSIR.ts";
 import { Random } from "@reside-ic/random";
-import { ComparableDiscreteSystem } from "../src/ComparableDiscreteSystem.ts";
+import { ComparableSystem } from "../src/ComparableSystem.ts";
 import { expectedGroup1Initial, expectedGroup2Initial, sirShared } from "./examples/SIRTestHelpers.ts";
 import ndarray from "ndarray";
 
 const generator = discreteSIR;
 
 const createSystem = (random?: Random) =>
-    new ComparableDiscreteSystem<SIRShared, null, SIRData>(
+    new ComparableSystem<SIRShared, null, SIRData>(
         generator,
         sirShared,
         5, // time

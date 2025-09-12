@@ -1,27 +1,27 @@
 import ndarray from "ndarray";
-import { DiscreteSystem } from "./DiscreteSystem.ts";
-import { ComparableSystem } from "./interfaces/systems/ComparableSystem.ts";
+import { ComparableSystemInterface } from "./interfaces/systems/ComparableSystem.ts";
 import { particleStateToArray } from "./utils.ts";
 import { Random } from "@reside-ic/random";
-import { ComparableDiscreteGenerator } from "./interfaces/generators/ComparableDiscreteGenerator.ts";
+import { ComparableGenerator } from "./interfaces/generators/ComparableGenerator.ts";
+import { System } from "./System.ts";
 
 /**
- * Implementation of {@link ComparableSystem} for discrete systems, for use with generators which support comparison
+ * Implementation of {@link ComparableSystemInterface} for any system, for use with generators which support comparison
  * to data.
  *
- * @copyDoc ComparableDiscreteGenerator
+ * @copyDoc ComparableGenerator
  */
-export class ComparableDiscreteSystem<TShared, TInternal, TData>
-    extends DiscreteSystem<TShared, TInternal>
-    implements ComparableSystem<TData>
+export class ComparableSystem<TShared, TInternal, TData>
+    extends System<TShared, TInternal>
+    implements ComparableSystemInterface<TData>
 {
-    declare protected _generator: ComparableDiscreteGenerator<TShared, TInternal, TData>;
+    declare protected _generator: ComparableGenerator<TShared, TInternal, TData>;
 
     /**
-     * @copyDoc DiscreteSystem.constructor
+     * @copyDoc System.constructor
      */
     constructor(
-        generator: ComparableDiscreteGenerator<TShared, TInternal, TData>,
+        generator: ComparableGenerator<TShared, TInternal, TData>,
         shared: TShared[],
         time: number,
         dt: number,

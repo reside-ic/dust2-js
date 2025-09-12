@@ -1,8 +1,8 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { discreteSIR } from "./examples/discreteSIR";
+import { discreteSIR } from "./examples/discreteSIR.ts";
 import { discreteWalk, WalkShared } from "./examples/discreteWalk.ts";
-import { DiscreteSystem } from "../src/DiscreteSystem";
-import { arrayStateToArray } from "../src/utils";
+import { System } from "../src/System.ts";
+import { arrayStateToArray } from "../src/utils.ts";
 import { SIRShared } from "./examples/discreteSIR.ts";
 import { Random, RngStateBuiltin, RngStateObserved } from "@reside-ic/random";
 import { expectedGroup1Initial, expectedGroup2Initial, sirShared } from "./examples/SIRTestHelpers.ts";
@@ -10,7 +10,7 @@ import { expectedGroup1Initial, expectedGroup2Initial, sirShared } from "./examp
 const generator = discreteSIR;
 
 const createSystem = (random?: Random) =>
-    new DiscreteSystem<SIRShared, null>(
+    new System<SIRShared, null>(
         generator,
         sirShared,
         5, // time
@@ -51,7 +51,7 @@ describe("DiscreteSystem", () => {
     });
 
     test("defaults to built in random", () => {
-        const sys = new DiscreteSystem<SIRShared, null>(
+        const sys = new System<SIRShared, null>(
             generator,
             sirShared,
             5, // time
@@ -65,7 +65,7 @@ describe("DiscreteSystem", () => {
     test("constructor throws error if nParticles is invalid", () => {
         expect(
             () =>
-                new DiscreteSystem<SIRShared, null>(
+                new System<SIRShared, null>(
                     generator,
                     sirShared,
                     5, // time
@@ -76,7 +76,7 @@ describe("DiscreteSystem", () => {
 
         expect(
             () =>
-                new DiscreteSystem<SIRShared, null>(
+                new System<SIRShared, null>(
                     generator,
                     sirShared,
                     5, // time
@@ -87,7 +87,7 @@ describe("DiscreteSystem", () => {
     });
 
     const expectParticleGroupState = (
-        sys: DiscreteSystem<any, any>,
+        sys: System<any, any>,
         iGroup: number,
         nParticles: number,
         expectedValues: number[]
@@ -167,7 +167,7 @@ describe("DiscreteSystem", () => {
         const compareRandom = new Random(rngStateObserved.replay());
         const np = 5;
         const walkShared = { n: 3, sd: 1 };
-        const sys = new DiscreteSystem<WalkShared, null>(
+        const sys = new System<WalkShared, null>(
             discreteWalk,
             [walkShared],
             0, // time
@@ -195,7 +195,7 @@ describe("DiscreteSystem", () => {
         const step1 = 5.5;
         const dt = 0.5;
 
-        const sys = new DiscreteSystem<SIRShared, null>(
+        const sys = new System<SIRShared, null>(
             generator,
             sirShared,
             start, // time
@@ -299,7 +299,7 @@ describe("DiscreteSystem", () => {
         const step3 = 6.5;
         const dt = 0.5;
 
-        const sys = new DiscreteSystem<SIRShared, null>(
+        const sys = new System<SIRShared, null>(
             generator,
             simulateShared,
             start, // time
@@ -454,7 +454,7 @@ describe("DiscreteSystem", () => {
         const step1 = 5.5;
         const dt = 0.5;
 
-        const sys = new DiscreteSystem<SIRShared, null>(
+        const sys = new System<SIRShared, null>(
             generator,
             simulateShared,
             start, // time

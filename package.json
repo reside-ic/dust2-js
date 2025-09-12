@@ -13,6 +13,7 @@
     },
     "dependencies": {
         "@reside-ic/random": "^1.0.0",
+        "dopri": "^0.0.13",
         "ieee745gamma": "^1.0.1",
         "ndarray": "^1.0.19"
     },
