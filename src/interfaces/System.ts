@@ -1,10 +1,11 @@
-import { SystemState, SystemSubState } from "../../SystemState.ts";
-import { SystemSimulateResult } from "../../SystemSimulateResult.ts";
+import { NdArray } from "ndarray";
+import { SystemState, SystemSubState } from "../SystemState.ts";
+import { SystemSimulateResult } from "../SystemSimulateResult.ts";
 
 /**
  * Interface defining the basic functionality of a dust system, composed of a number of particles
  * */
-export interface SystemInterface {
+export interface SystemInterface<TData> {
     /**
      * The current time in the system
      */
@@ -53,4 +54,12 @@ export interface SystemInterface {
      * all values are returned.
      */
     simulate(times: number[], stateElementIndices: number[]): SystemSimulateResult;
+
+    /**
+     * Compares the state of all particles in the syatem with observed data, and returns an
+     * {@link https://github.com/scijs/ndarray |NdArray } of log likelihoods
+     * of each particle state given the data, where the NdArray has shape [nGroups, nParticles]
+     * @param data Observed data to compare against system state
+     */
+    compareData(data: TData | TData[]): NdArray;
 }

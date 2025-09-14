@@ -1,5 +1,4 @@
 import { Random } from "@reside-ic/random";
-import { Generator } from "./Generator.ts";
 
 /**
  * Interface which extends generator by adding functionality to compare particle state with observed
@@ -8,7 +7,7 @@ import { Generator } from "./Generator.ts";
  * @copyDoc BaseGenerator
  * @typeParam TData Type of each data point which will be compared with system state.
  */
-export type ComparableGenerator<TShared, TInternal, TData> = Generator<TShared, TInternal> & {
+export type ComparableGeneratorExtension<TShared, TInternal, TData> = {
     /**
      * Compares the state of a particle with a data point, and returns the log likelihood of the state given the data.
      *

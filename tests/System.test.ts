@@ -30,7 +30,7 @@ describe("DiscreteSystem", () => {
         const random = new Random(new RngStateBuiltin());
         const sys = createSystem(random);
 
-        expect(sys["_generator"]).toBe(generator);
+        expect(sys["_generatorCfg"]).toStrictEqual({ generator, isContinuous: false, hasDelays: false });
         expect(sys["_time"]).toBe(5);
         expect(sys["_dt"]).toBe(0.5);
         expect(sys["_nParticles"]).toBe(3);

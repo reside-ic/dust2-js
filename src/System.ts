@@ -1,7 +1,8 @@
+import ndarray from "ndarray";
 import { Random, RngStateBuiltin } from "@reside-ic/random";
 import { ParticleState, SystemState, SystemSubState } from "./SystemState.ts";
 import { Packer } from "./Packer.ts";
-import { SystemInterface } from "./interfaces/systems/System.ts";
+import { SystemInterface } from "./interfaces/System.ts";
 import {
     checkIndicesForMax,
     checkIntegerInRange,
@@ -19,9 +20,10 @@ import { GeneratorConfig, Generator, getGeneratorCfg } from "./interfaces/genera
  * stateless generators.
  *
  * @copyDoc BaseGenerator
+ * @copyDoc ComparableGeneratorExtension
  */
-export class System<TShared, TInternal> implements SystemInterface {
-    protected readonly _generatorCfg: GeneratorConfig<TShared, TInternal>;
+export class System<TShared, TInternal, TData = null> implements SystemInterface<TData> {
+    protected readonly _generatorCfg: GeneratorConfig<TShared, TInternal, TData>;
     protected readonly _nParticles: number;
     protected readonly _nGroups: number;
     protected readonly _statePacker: Packer;
@@ -42,7 +44,7 @@ export class System<TShared, TInternal> implements SystemInterface {
      * @param random Random number generator which may be used by the generator
      */
     constructor(
-        generator: Generator<TShared, TInternal>,
+        generator: Generator<TShared, TInternal, TData>,
         shared: TShared[],
         time: number,
         dt: number,
@@ -225,6 +227,42 @@ export class System<TShared, TInternal> implements SystemInterface {
         }
         for (let i = 0; i < this._shared.length; i++) {
             this._generatorCfg.generator.updateShared(this._shared[i], newShared[i]);
+        }
+    }
+
+    public compareData(data: TData[] | TData) {
+        const { generator } = this._generatorCfg;
+        if ("compareData" in generator) {
+            // are we sharing data between all groups
+            const isSharedData = !Array.isArray(data) || data.length === 1;
+            let sharedData: TData;
+            if (isSharedData) {
+                sharedData = Array.isArray(data) ? data[0] : data;
+            } else {
+                if (data.length !== this._nGroups) {
+                    throw new RangeError("Expected data to have same length as groups.");
+                }
+            }
+
+            const result = ndarray(new Array(this._nGroups * this._nParticles), [this._nGroups, this._nParticles]);
+            this.iterateParticles((iGroup: number, iParticle: number) => {
+                const iData = isSharedData ? sharedData : data[iGroup];
+                const state = this._state.getParticle(iGroup, iParticle);
+                const shared = this._shared[iGroup];
+                const internal = this._internal[iGroup];
+                const comparisonValue = generator.compareData(
+                    this._time,
+                    particleStateToArray(state),
+                    iData,
+                    shared,
+                    internal,
+                    this._random
+                );
+                result.set(iGroup, iParticle, comparisonValue);
+            });
+            return result;
+        } else {
+            throw new TypeError("Generator does not specify a compareData function");
         }
     }
 }

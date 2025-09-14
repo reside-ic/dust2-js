@@ -2,14 +2,14 @@ import { describe, test, expect, vi, Mocked } from "vitest";
 import { poissonLogDensity } from "../src/density.ts";
 import { discreteSIR, SIRData, SIRShared } from "./examples/discreteSIR.ts";
 import { Random } from "@reside-ic/random";
-import { ComparableSystem } from "../src/ComparableSystem.ts";
 import { expectedGroup1Initial, expectedGroup2Initial, sirShared } from "./examples/SIRTestHelpers.ts";
 import ndarray from "ndarray";
+import { System } from "../src/System.ts";
 
 const generator = discreteSIR;
 
 const createSystem = (random?: Random) =>
-    new ComparableSystem<SIRShared, null, SIRData>(
+    new System<SIRShared, null, SIRData>(
         generator,
         sirShared,
         5, // time
@@ -24,7 +24,7 @@ describe("ComparableDiscreteSystem", () => {
         const sys = createSystem();
         sys.setStateInitial(); // compare data with initial state where grp1 I = 1, and grp2 I = 2
         const data = [{ prevalence: 2 }, { prevalence: 3 }];
-        const result = sys.compareData(data);
+        const result = sys.compareData(data)!;
         expect(result.shape).toStrictEqual([2, 3]);
         const expectedGrp1Value = poissonLogDensity(2, 1);
         expect(result.get(0, 0)).toBe(expectedGrp1Value);
@@ -77,7 +77,7 @@ describe("ComparableDiscreteSystem", () => {
         const sys = createSystem();
         sys.setStateInitial();
         const data = [{ prevalence: 2 }];
-        const result = sys.compareData(data);
+        const result = sys.compareData(data)!;
         expectSharedDataResult(result, data[0], genCompareDataSpy, sys["_random"]);
     });
 
@@ -86,7 +86,7 @@ describe("ComparableDiscreteSystem", () => {
         const sys = createSystem();
         sys.setStateInitial();
         const data = { prevalence: 2 };
-        const result = sys.compareData(data);
+        const result = sys.compareData(data)!;
         expectSharedDataResult(result, data, genCompareDataSpy, sys["_random"]);
     });
 
@@ -94,6 +94,6 @@ describe("ComparableDiscreteSystem", () => {
         const sys = createSystem();
         sys.setStateInitial();
         const data = [{ prevalence: 1 }, { prevalence: 2 }, { prevalence: 3 }];
-        expect(() => sys.compareData(data)).toThrowError("Expected data to have same length as groups.");
+        expect(() => sys.compareData(data)!).toThrowError("Expected data to have same length as groups.");
     });
 });
