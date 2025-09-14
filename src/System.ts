@@ -20,7 +20,6 @@ import { GeneratorConfig, Generator, getGeneratorCfg } from "./interfaces/genera
  * stateless generators.
  *
  * @copyDoc BaseGenerator
- * @copyDoc ComparableGeneratorExtension
  */
 export class System<TShared, TInternal, TData = null> implements SystemInterface<TData> {
     protected readonly _generatorCfg: GeneratorConfig<TShared, TInternal, TData>;
@@ -232,7 +231,9 @@ export class System<TShared, TInternal, TData = null> implements SystemInterface
 
     public compareData(data: TData[] | TData) {
         const { generator } = this._generatorCfg;
-        if ("compareData" in generator) {
+        if (generator.compareData) {
+            const { compareData } = generator;
+
             // are we sharing data between all groups
             const isSharedData = !Array.isArray(data) || data.length === 1;
             let sharedData: TData;
@@ -250,7 +251,7 @@ export class System<TShared, TInternal, TData = null> implements SystemInterface
                 const state = this._state.getParticle(iGroup, iParticle);
                 const shared = this._shared[iGroup];
                 const internal = this._internal[iGroup];
-                const comparisonValue = generator.compareData(
+                const comparisonValue = compareData(
                     this._time,
                     particleStateToArray(state),
                     iData,

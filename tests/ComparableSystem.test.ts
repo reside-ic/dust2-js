@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, Mocked } from "vitest";
+import { describe, test, expect, vi, Mocked, MockInstance } from "vitest";
 import { poissonLogDensity } from "../src/density.ts";
 import { discreteSIR, SIRData, SIRShared } from "./examples/discreteSIR.ts";
 import { Random } from "@reside-ic/random";
@@ -21,7 +21,7 @@ const createSystem = (random?: Random) =>
 
 describe("ComparableDiscreteSystem", () => {
     test("can compare data", () => {
-        const genCompareDataSpy = vi.spyOn(generator, "compareData");
+        const genCompareDataSpy = vi.spyOn(generator, "compareData") as MockInstance;
         const sys = createSystem();
         sys.setStateInitial(); // compare data with initial state where grp1 I = 1, and grp2 I = 2
         const data = [{ prevalence: 2 }, { prevalence: 3 }];

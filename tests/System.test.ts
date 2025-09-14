@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
-import { discreteSIR } from "./examples/discreteSIR.ts";
+import { discreteSIR, SIRData } from "./examples/discreteSIR.ts";
 import { discreteWalk, WalkShared } from "./examples/discreteWalk.ts";
 import { System } from "../src/System.ts";
 import { arrayStateToArray } from "../src/utils.ts";
@@ -10,7 +10,7 @@ import { expectedGroup1Initial, expectedGroup2Initial, sirShared } from "./examp
 const generator = discreteSIR;
 
 const createSystem = (random?: Random) =>
-    new System<SIRShared, null>(
+    new System<SIRShared, null, SIRData>(
         generator,
         sirShared,
         5, // time
@@ -51,7 +51,7 @@ describe("DiscreteSystem", () => {
     });
 
     test("defaults to built in random", () => {
-        const sys = new System<SIRShared, null>(
+        const sys = new System<SIRShared, null, SIRData>(
             generator,
             sirShared,
             5, // time
@@ -65,7 +65,7 @@ describe("DiscreteSystem", () => {
     test("constructor throws error if nParticles is invalid", () => {
         expect(
             () =>
-                new System<SIRShared, null>(
+                new System<SIRShared, null, SIRData>(
                     generator,
                     sirShared,
                     5, // time
@@ -76,7 +76,7 @@ describe("DiscreteSystem", () => {
 
         expect(
             () =>
-                new System<SIRShared, null>(
+                new System<SIRShared, null, SIRData>(
                     generator,
                     sirShared,
                     5, // time
@@ -87,7 +87,7 @@ describe("DiscreteSystem", () => {
     });
 
     const expectParticleGroupState = (
-        sys: System<any, any>,
+        sys: System<any, any, any>,
         iGroup: number,
         nParticles: number,
         expectedValues: number[]
@@ -195,7 +195,7 @@ describe("DiscreteSystem", () => {
         const step1 = 5.5;
         const dt = 0.5;
 
-        const sys = new System<SIRShared, null>(
+        const sys = new System<SIRShared, null, SIRData>(
             generator,
             sirShared,
             start, // time
@@ -299,7 +299,7 @@ describe("DiscreteSystem", () => {
         const step3 = 6.5;
         const dt = 0.5;
 
-        const sys = new System<SIRShared, null>(
+        const sys = new System<SIRShared, null, SIRData>(
             generator,
             simulateShared,
             start, // time
@@ -454,7 +454,7 @@ describe("DiscreteSystem", () => {
         const step1 = 5.5;
         const dt = 0.5;
 
-        const sys = new System<SIRShared, null>(
+        const sys = new System<SIRShared, null, SIRData>(
             generator,
             simulateShared,
             start, // time
