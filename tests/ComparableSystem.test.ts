@@ -5,6 +5,7 @@ import { Random } from "@reside-ic/random";
 import { expectedGroup1Initial, expectedGroup2Initial, sirShared } from "./examples/SIRTestHelpers.ts";
 import ndarray from "ndarray";
 import { System } from "../src/System.ts";
+import { ABState, zeroTwice } from "./examples/zeroTwice.ts";
 
 const generator = discreteSIR;
 
@@ -24,7 +25,7 @@ describe("ComparableDiscreteSystem", () => {
         const sys = createSystem();
         sys.setStateInitial(); // compare data with initial state where grp1 I = 1, and grp2 I = 2
         const data = [{ prevalence: 2 }, { prevalence: 3 }];
-        const result = sys.compareData(data)!;
+        const result = sys.compareData(data);
         expect(result.shape).toStrictEqual([2, 3]);
         const expectedGrp1Value = poissonLogDensity(2, 1);
         expect(result.get(0, 0)).toBe(expectedGrp1Value);
@@ -77,7 +78,7 @@ describe("ComparableDiscreteSystem", () => {
         const sys = createSystem();
         sys.setStateInitial();
         const data = [{ prevalence: 2 }];
-        const result = sys.compareData(data)!;
+        const result = sys.compareData(data);
         expectSharedDataResult(result, data[0], genCompareDataSpy, sys["_random"]);
     });
 
@@ -86,7 +87,7 @@ describe("ComparableDiscreteSystem", () => {
         const sys = createSystem();
         sys.setStateInitial();
         const data = { prevalence: 2 };
-        const result = sys.compareData(data)!;
+        const result = sys.compareData(data);
         expectSharedDataResult(result, data, genCompareDataSpy, sys["_random"]);
     });
 
@@ -94,6 +95,19 @@ describe("ComparableDiscreteSystem", () => {
         const sys = createSystem();
         sys.setStateInitial();
         const data = [{ prevalence: 1 }, { prevalence: 2 }, { prevalence: 3 }];
-        expect(() => sys.compareData(data)!).toThrowError("Expected data to have same length as groups.");
+        expect(() => sys.compareData(data)).toThrowError("Expected data to have same length as groups.");
+    });
+
+    test("compareData throws error generator doesn't specify a compareData Function", () => {
+        const sys = new System<ABState, null>(
+            zeroTwice,
+            [{ a: 5, b: 10 }],
+            5, // time
+            0.5, // dt
+            3, // nParticles
+            undefined
+        );
+        sys.setStateInitial();
+        expect(() => sys.compareData([])).toThrowError("Generator does not specify a compareData function");
     });
 });

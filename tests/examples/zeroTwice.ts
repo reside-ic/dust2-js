@@ -1,4 +1,4 @@
-import { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator";
+import { Generator } from "../../src/interfaces/generators/Generator";
 import { Packer } from "../../src/Packer";
 
 export interface ABState {
@@ -6,7 +6,7 @@ export interface ABState {
     b: number;
 }
 
-export const zeroTwice: DiscreteGenerator<ABState, null> = {
+export const zeroTwice: Generator<ABState, null> = {
     initial(_time, _shared, _internal, stateNext) {
         stateNext[0] = 0;
         stateNext[1] = 0;

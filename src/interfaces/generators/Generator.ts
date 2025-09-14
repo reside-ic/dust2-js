@@ -9,7 +9,7 @@ export type NonComparableGenerator<TShared, TInternal> =
     | ContinuousGeneratorDDE<TShared, TInternal>;
 
 // add compareData if TData is not null
-export type Generator<TShared, TInternal, TData> = TData extends null
+export type Generator<TShared, TInternal, TData = null> = TData extends null
     ? NonComparableGenerator<TShared, TInternal>
     : NonComparableGenerator<TShared, TInternal> & ComparableGeneratorExtension<TShared, TInternal, TData>;
 
