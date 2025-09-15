@@ -13,7 +13,7 @@ export const resample = (weights: number[], u: number) => {
         throw RangeError("Weights cannot be empty.");
     }
 
-    // Construct a series of increments uu, starting and u/n and separated  by 1/n, each of which has a weight
+    // Construct a series of increments uu, starting at u/n and separated  by 1/n, each of which has a weight
     // assigned to it according to which weight's region in the normalised cumulative sum of weights it
     // falls into
     const uOffset = u / n;
