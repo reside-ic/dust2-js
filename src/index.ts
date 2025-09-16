@@ -1,6 +1,4 @@
 export type { BaseGenerator } from "./interfaces/generators/BaseGenerator.ts";
-export type { ComparableDiscreteGenerator } from "./interfaces/generators/ComparableDiscreteGenerator.ts";
-export type { ComparableSystem } from "./interfaces/systems/ComparableSystem.ts";
 export type { DiscreteGenerator } from "./interfaces/generators/DiscreteGenerator.ts";
 export type {
     Solution,
@@ -8,9 +6,8 @@ export type {
     ContinuousGeneratorODE,
     ContinuousGeneratorDDE
 } from "./interfaces/generators/ContinuousGenerator.ts";
-export type { System } from "./interfaces/systems/System.ts";
-export { ComparableDiscreteSystem } from "./ComparableDiscreteSystem";
-export { DiscreteSystem } from "./DiscreteSystem";
+export type { SystemInterface } from "./interfaces/System.ts";
+export { System } from "./System.ts";
 export { Packer } from "./Packer";
 export type { PackerOptions, PackerShape, UnpackResult } from "./Packer";
 export { SystemState } from "./SystemState.ts";

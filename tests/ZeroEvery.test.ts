@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { DiscreteSystem } from "../src/DiscreteSystem";
+import { System } from "../src/System";
 import { ABState, zeroTwice } from "./examples/zeroTwice";
 
 const generator = zeroTwice;
 
 const createSystem = (shared: ABState) =>
-    new DiscreteSystem(
+    System.createDiscrete(
         generator,
         [shared],
         0, // time
