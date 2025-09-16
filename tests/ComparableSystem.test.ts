@@ -10,7 +10,7 @@ import { ABState, zeroTwice } from "./examples/zeroTwice.ts";
 const generator = discreteSIR;
 
 const createSystem = (random?: Random) =>
-    new System<SIRShared, null, SIRData>(
+    System.createDiscrete<SIRShared, null, SIRData>(
         generator,
         sirShared,
         5, // time
@@ -99,7 +99,7 @@ describe("ComparableDiscreteSystem", () => {
     });
 
     test("compareData throws error generator doesn't specify a compareData Function", () => {
-        const sys = new System<ABState, null>(
+        const sys = System.createDiscrete<ABState, null>(
             zeroTwice,
             [{ a: 5, b: 10 }],
             5, // time

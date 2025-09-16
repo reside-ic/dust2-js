@@ -1,6 +1,5 @@
 export type { BaseGenerator } from "./interfaces/generators/BaseGenerator.ts";
 export type { DiscreteGenerator } from "./interfaces/generators/DiscreteGenerator.ts";
-export type { Generator } from "./interfaces/generators/Generator.ts";
 export type {
     Solution,
     FullSolution,

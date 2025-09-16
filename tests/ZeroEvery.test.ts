@@ -5,7 +5,7 @@ import { ABState, zeroTwice } from "./examples/zeroTwice";
 const generator = zeroTwice;
 
 const createSystem = (shared: ABState) =>
-    new System(
+    System.createDiscrete(
         generator,
         [shared],
         0, // time
