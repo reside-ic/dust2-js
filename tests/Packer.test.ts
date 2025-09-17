@@ -57,13 +57,13 @@ describe("Packer class", () => {
 
         test("build expected rhsVariableLength for packer with both scalar and array values", () => {
             let sut = new Packer({ shape: mixedShape });
-            expect(sut["_rhsVariableLength"]).toBe(14);
+            expect(sut.rhsVariableLength).toBe(14);
 
             sut = new Packer({ shape: mixedShape, nRhsVariables: 2 });
-            expect(sut["_rhsVariableLength"]).toBe(4);
+            expect(sut.rhsVariableLength).toBe(4);
 
             sut = new Packer({ shape: mixedShape, nRhsVariables: 4 });
-            expect(sut["_rhsVariableLength"]).toBe(13);
+            expect(sut.rhsVariableLength).toBe(13);
         });
 
         test("throws error if nRhsVariables exceeds shape size", () => {
