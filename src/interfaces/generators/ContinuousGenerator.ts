@@ -1,3 +1,4 @@
+import { Random } from "@reside-ic/random";
 import { BaseGenerator } from "./BaseGenerator.ts";
 
 /**
@@ -16,12 +17,34 @@ export type Solution = (t: number) => number[];
 export type FullSolution = (t: number[]) => number[][];
 
 /**
+ * Base interface for {@link ContinuousGeneratorODE} and {@link ContinuousGeneratorDDE} that defines update
+ * method as optional
+ *
+ * @copyDoc BaseGenerator
+ */
+export interface ContinuousGeneratorBase<TShared, TInternal, TData> extends BaseGenerator<TShared, TInternal, TData> {
+    /**
+     * @copyDoc DiscreteGenerator.update
+     */
+    update?(
+        time: number,
+        dt: number,
+        state: number[],
+        shared: TShared,
+        internal: TInternal,
+        stateNext: number[],
+        random: Random
+    ): void;
+}
+
+/**
  * This interface defines the functionality of a continuous time model without delays, which can be
  * used by {@link System} to initialise and update particles.
  *
  * @copyDoc BaseGenerator
  */
-export interface ContinuousGeneratorODE<TShared, TInternal, TData> extends BaseGenerator<TShared, TInternal, TData> {
+export interface ContinuousGeneratorODE<TShared, TInternal, TData>
+    extends ContinuousGeneratorBase<TShared, TInternal, TData> {
     /**
      * Compute the derivatives
      *
@@ -51,7 +74,8 @@ export interface ContinuousGeneratorODE<TShared, TInternal, TData> extends BaseG
  *
  * @copyDoc BaseGenerator
  */
-export interface ContinuousGeneratorDDE<TShared, TInternal, TData> extends BaseGenerator<TShared, TInternal, TData> {
+export interface ContinuousGeneratorDDE<TShared, TInternal, TData>
+    extends ContinuousGeneratorBase<TShared, TInternal, TData> {
     /**
      * @copyDoc ContinuousGeneratorODE.rhs
      *

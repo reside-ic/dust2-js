@@ -27,27 +27,6 @@ export interface BaseGenerator<TShared, TInternal, TData> {
     initial(time: number, shared: TShared, internal: TInternal, stateNext: number[], random: Random): void;
 
     /**
-     * Updates the state of a particle from its previous state.
-     *
-     * @param time The new time to which the particle state should be updated.
-     * @param dt The time step from the current time to the new time
-     * @param state The current state of the particle
-     * @param shared The shared parameter values used by the particle's group
-     * @param internal The internal state used by the particle's group
-     * @param stateNext The array of values which should be updated by the generator with new particle state values
-     * @param random A random number generator which may be used by the generator to update values
-     */
-    update(
-        time: number,
-        dt: number,
-        state: number[],
-        shared: TShared,
-        internal: TInternal,
-        stateNext: number[],
-        random: Random
-    ): void;
-
-    /**
      * Generates initial internal state for a given shared state
      * @param shared The shared state to generate initial internal state for
      */
