@@ -93,6 +93,9 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
 
     /**
      * @param generator Continuous ODE generator (model) implementation for the System
+     * @param dt Time step to be used when updating the system. If the generator does not
+     * have an update method or a zeroEvery method then this parameter will be ignored in
+     * favour of a more optimised dt that the solver picks
      * @copyDoc System.createDiscrete
      */
     static createODE<TShared, TInternal, TData = null>(
@@ -113,7 +116,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
 
     /**
      * @param generator Continuous DDE generator (model) implementation for the System
-     * @copyDoc System.createDiscrete
+     * @copyDoc System.createODE
      */
     static createDDE<TShared, TInternal, TData = null>(
         generator: ContinuousGeneratorDDE<TShared, TInternal, TData>,
@@ -223,7 +226,8 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
                 this._zeroEvery[iGroup],
                 this._state.getParticle(iGroup, iParticle),
                 nSteps,
-                solver
+                solver,
+                time
             );
             this._state.setParticle(iGroup, iParticle, state);
         });
@@ -261,7 +265,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         return result;
     }
 
-    private runParticle(
+    private runParticleWithDt(
         shared: TShared,
         internal: TInternal,
         zeroEvery: ZeroEvery,
@@ -284,13 +288,41 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
                 const solution = solver.run(nextTime);
                 stateNext = solution([nextTime])[0];
             }
-            this._generatorCfg.generator.update(time, this._dt, state, shared, internal, stateNext, this._random);
+            const { update } = this._generatorCfg.generator;
+            if (update) {
+                update(time, this._dt, state, shared, internal, stateNext, this._random);
+            }
             time = nextTime;
             const tmp = state;
             state = stateNext;
             stateNext = tmp;
         }
         return state;
+    }
+
+    private runParticleWithSolver(particleState: ParticleState, endTime: number, solver: dopri.Dopri): number[] {
+        const state = particleStateToArray(particleState);
+        solver.initialise(this._time, state.slice(0, this._statePacker.rhsVariableLength));
+        const solution = solver.run(endTime);
+        return solution([endTime])[0];
+    }
+
+    private runParticle(
+        shared: TShared,
+        internal: TInternal,
+        zeroEvery: ZeroEvery,
+        particleState: ParticleState,
+        nSteps: number,
+        solver: dopri.Dopri | null,
+        endTime: number
+    ): number[] {
+        const { isContinuous, generator } = this._generatorCfg;
+        if (isContinuous && solver && !generator.update && !generator.getZeroEvery) {
+            // if continuous and no time specific updates like zeroEvery and update methods
+            return this.runParticleWithSolver(particleState, endTime, solver);
+        } else {
+            return this.runParticleWithDt(shared, internal, zeroEvery, particleState, nSteps, solver);
+        }
     }
 
     /**
