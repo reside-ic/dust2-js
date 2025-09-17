@@ -1,7 +1,7 @@
 import { Packer } from "../../src/Packer";
 import { Random } from "@reside-ic/random";
 import { poissonLogDensity } from "../../src/density.ts";
-import { Generator } from "../../src/interfaces/generators/Generator.ts";
+import { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator.ts";
 
 export interface SIRShared {
     N: number;
@@ -14,7 +14,7 @@ export interface SIRData {
     prevalence: number;
 }
 
-export const discreteSIR: Generator<SIRShared, null, SIRData> = {
+export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
     // it would be more js-ish if we returned an array, but that would
     // be harder once we work out how to get read-write slices from
     // ndarray.
