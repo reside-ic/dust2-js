@@ -7,9 +7,6 @@ export interface ConstantGradShared {
 }
 
 export const constantGrad: ContinuousGeneratorODE<ConstantGradShared, null, null> = {
-    // it would be more js-ish if we returned an array, but that would
-    // be harder once we work out how to get read-write slices from
-    // ndarray.
     initial(time: number, shared, internal: null, stateNext: number[]) {
         stateNext[0] = shared.y;
         stateNext[1] = shared.yAddOne;
