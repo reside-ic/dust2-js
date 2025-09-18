@@ -28,10 +28,6 @@ export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, 
         const output = Array(2);
         output[0] = y[0] * y[1] + y[2];
         const [mDelay, xDelay, cDelay] = solution(t - 1);
-        if (Math.abs(t - 8.5) < 1e-10) {
-            console.log(t - 1);
-            console.log(mDelay, xDelay, cDelay);
-        }
         output[1] = mDelay * xDelay + cDelay;
         return output;
     },
