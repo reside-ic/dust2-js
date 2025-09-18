@@ -36,7 +36,8 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
     protected readonly _zeroEvery: ZeroEvery[];
     protected readonly _random: Random;
     protected _time: number;
-    protected _solver: dopri.Dopri[][] | null[][];
+    protected _solver: dopri.Dopri[][] | dopri.DDE[][] | null[][];
+    protected _history: dopri.History[][];
 
     private constructor(
         generatorCfg: GeneratorConfig<TShared, TInternal, TData>,
@@ -63,6 +64,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this._internal = shared.map(generator.internal);
         this._zeroEvery = generator.getZeroEvery ? shared.map(generator.getZeroEvery) : shared.map(() => []);
         this._solver = shared.map(() => Array(nParticles).fill(null));
+        this._history = shared.map(() => Array(nParticles).fill([]));
 
         this._random = random ? random : new Random(new RngStateBuiltin());
     }
@@ -177,13 +179,22 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             const arrayState = particleStateToArray(state);
             const { generator, isContinuous, hasDelays } = this._generatorCfg;
             generator.initial(this._time, shared, internal, arrayState, this._random);
-            if (isContinuous && !hasDelays) {
-                this._solver[iGroup][iParticle] = new dopri.Dopri(
-                    generator.rhs,
-                    this._statePacker.rhsVariableLength,
-                    {},
-                    generator.output
-                );
+            if (isContinuous) {
+                if (hasDelays) {
+                    this._solver[iGroup][iParticle] = new dopri.DDE(
+                        generator.rhs,
+                        this._statePacker.rhsVariableLength,
+                        {},
+                        generator.output
+                    );
+                } else {
+                    this._solver[iGroup][iParticle] = new dopri.Dopri(
+                        generator.rhs,
+                        this._statePacker.rhsVariableLength,
+                        {},
+                        generator.output
+                    );
+                }
             }
             this._state.setParticle(iGroup, iParticle, arrayState);
         });
@@ -227,7 +238,9 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
                 this._state.getParticle(iGroup, iParticle),
                 nSteps,
                 solver,
-                time
+                time,
+                iGroup,
+                iParticle
             );
             this._state.setParticle(iGroup, iParticle, state);
         });
@@ -271,7 +284,9 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         zeroEvery: ZeroEvery,
         particleState: ParticleState,
         nSteps: number,
-        solver: dopri.Dopri | null
+        solver: dopri.Dopri | dopri.DDE | null,
+        iGroup: number,
+        iParticle: number
     ): number[] {
         let state = particleStateToArray(particleState);
         let stateNext = [...state];
@@ -284,9 +299,15 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             });
             const nextTime = time + this._dt;
             if (solver) {
-                solver.initialise(time, state.slice(0, this._statePacker.rhsVariableLength));
+                const history = this._history[iGroup][iParticle];
+                if (this._generatorCfg.hasDelays) {
+                    solver.initialise(time, state.slice(0, this._statePacker.rhsVariableLength), history);
+                } else {
+                    solver.initialise(time, state.slice(0, this._statePacker.rhsVariableLength));
+                }
                 const solution = solver.run(nextTime);
                 stateNext = solution([nextTime])[0];
+                this._history[iGroup][iParticle] = history.concat(solver.getHistory());
             }
             const { update } = this._generatorCfg.generator;
             if (update) {
@@ -300,7 +321,11 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         return state;
     }
 
-    private runParticleWithSolver(particleState: ParticleState, endTime: number, solver: dopri.Dopri): number[] {
+    private runParticleWithSolver(
+        particleState: ParticleState,
+        endTime: number,
+        solver: dopri.Dopri | dopri.DDE
+    ): number[] {
         const state = particleStateToArray(particleState);
         solver.initialise(this._time, state.slice(0, this._statePacker.rhsVariableLength));
         const solution = solver.run(endTime);
@@ -313,15 +338,26 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         zeroEvery: ZeroEvery,
         particleState: ParticleState,
         nSteps: number,
-        solver: dopri.Dopri | null,
-        endTime: number
+        solver: dopri.Dopri | dopri.DDE | null,
+        endTime: number,
+        iGroup: number,
+        iParticle: number
     ): number[] {
         const { isContinuous, generator } = this._generatorCfg;
         if (isContinuous && solver && !generator.update && !generator.getZeroEvery) {
             // if continuous and no time specific updates like zeroEvery and update methods
             return this.runParticleWithSolver(particleState, endTime, solver);
         } else {
-            return this.runParticleWithDt(shared, internal, zeroEvery, particleState, nSteps, solver);
+            return this.runParticleWithDt(
+                shared,
+                internal,
+                zeroEvery,
+                particleState,
+                nSteps,
+                solver,
+                iGroup,
+                iParticle
+            );
         }
     }
 
