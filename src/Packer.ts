@@ -57,6 +57,7 @@ export class Packer {
     private readonly _length: number; // Total number of values
     private readonly _idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
     private readonly _shape: PackerShape;
+    private readonly _nVariables: number;
 
     /**
      *
@@ -65,6 +66,7 @@ export class Packer {
     constructor(options: PackerOptions) {
         this._idx = {};
         this._shape = options.shape;
+        this._nVariables = options.shape.size;
         this._length = 0;
         for (const [name, value] of this._shape) {
             validateShape(name, value);
@@ -88,8 +90,32 @@ export class Packer {
         return this._length;
     }
 
+    /**
+     * Returns the number of variables in the shape used to initialise this Packer.
+     */
+    public get nVariables() {
+        return this._nVariables;
+    }
+
     private isScalar(name: string) {
         return this._shape.get(name)?.length === 0;
+    }
+
+    /**
+     * Calculates the length of array required to contain the first n variables from the
+     * start of the shape this Packer was initialised with.
+     * @param nVariables Number of variables
+     */
+    public flatLengthFromStart(nVariables: number) {
+        if (nVariables > this._shape.size) {
+            throw Error(
+                `nVariables (${nVariables}) cannot be larger than total number of ` + `variables ${this._shape.size}.`
+            );
+        }
+
+        const key = Array.from(this._shape.keys())[nVariables - 1];
+        const { start, length } = this._idx[key];
+        return start + length;
     }
 
     /**
