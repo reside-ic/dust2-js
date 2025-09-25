@@ -57,6 +57,7 @@ export class Packer {
     private readonly _length: number; // Total number of values
     private readonly _idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
     private readonly _shape: PackerShape;
+    private readonly _nVariables: number;
 
     /**
      *
@@ -65,6 +66,7 @@ export class Packer {
     constructor(options: PackerOptions) {
         this._idx = {};
         this._shape = options.shape;
+        this._nVariables = options.shape.size;
         this._length = 0;
         for (const [name, value] of this._shape) {
             validateShape(name, value);
@@ -86,6 +88,13 @@ export class Packer {
      */
     public get length() {
         return this._length;
+    }
+
+    /**
+     * Returns the number of variables in the shape used to initialise this Packer.
+     */
+    public get nVariables() {
+        return this._nVariables;
     }
 
     private isScalar(name: string) {
