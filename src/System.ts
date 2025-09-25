@@ -1,5 +1,5 @@
 import ndarray from "ndarray";
-import * as dopri from "dopri";
+import * as dopri from "@reside-ic/dopri";
 import { Random, RngStateBuiltin } from "@reside-ic/random";
 import { ParticleState, SystemState, SystemSubState } from "./SystemState.ts";
 import { Packer } from "./Packer.ts";

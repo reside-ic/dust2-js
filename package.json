@@ -12,8 +12,8 @@
         "docs": "typedoc"
     },
     "dependencies": {
+        "@reside-ic/dopri": "^1.0.1",
         "@reside-ic/random": "^1.0.0",
-        "dopri": "file:../dopri-js/",
         "ieee745gamma": "^1.0.1",
         "ndarray": "^1.0.19"
     },
