@@ -54,7 +54,7 @@ export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, 
             ["Y", []],
             ["Y delayed by 1", []]
         ]);
-        return new Packer({ shape, nRhsVariables: 3 });
+        return new Packer({ shape });
     },
 
     updateShared(shared, newShared) {

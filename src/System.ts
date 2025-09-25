@@ -9,6 +9,7 @@ import {
     checkIntegerInRange,
     checkTimes,
     floatIsDivisibleBy,
+    isPositiveFinite,
     particleStateToArray
 } from "./utils.ts";
 import { DustParameterError } from "./errors.ts";
@@ -36,7 +37,8 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
     protected readonly _zeroEvery: ZeroEvery[];
     protected readonly _random: Random;
     protected _time: number;
-    protected _solver: dopri.Dopri[][] | dopri.DDE[][] | null[][];
+    protected _solvers: dopri.Dopri[][] | dopri.DDE[][] | null[][];
+    protected _rhsVariablesLength: number;
     protected _history: dopri.History[][];
 
     private constructor(
@@ -45,15 +47,25 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         checkIntegerInRange("Number of particles", nParticles, 1);
 
         this._generatorCfg = generatorCfg;
-        const { generator } = generatorCfg;
+        const { generator, isContinuous } = generatorCfg;
+
+        if (!isContinuous) {
+            if (!isPositiveFinite(dt)) {
+                throw Error(`dt provided, ${dt}, must be positive and finite`);
+            }
+            this._dt = dt;
+        } else {
+            // value of 0 for _dt means we let solver pick dt and use runParticleWithSolver
+            this._dt = isPositiveFinite(dt) ? dt : 0;
+        }
 
         this._time = time;
-        this._dt = dt;
         this._nParticles = nParticles; // number of particles per parameter set
         this._nGroups = shared.length; // number of parameter sets
         this._statePacker = generator.packingState(shared[0]);
@@ -63,9 +75,11 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this._shared = shared;
         this._internal = shared.map(generator.internal);
         this._zeroEvery = generator.getZeroEvery ? shared.map(generator.getZeroEvery) : shared.map(() => []);
-        this._solver = shared.map(() => Array(nParticles).fill(null));
+        this._solvers = shared.map(() => Array(nParticles).fill(null));
         this._history = shared.map(() => Array(nParticles).fill([]));
 
+        const nVariables = this._statePacker.nVariables;
+        this._rhsVariablesLength = this._statePacker.flatLengthFromStart(nRhsVariables ?? nVariables);
         this._random = random ? random : new Random(new RngStateBuiltin());
     }
 
@@ -73,8 +87,11 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
      * @param generator Discrete generator (model) implementation for the System
      * @param shared Array of TShared, each representing the parameters for a group of particles
      * @param time Initial time for the system
-     * @param dt Time step to be used when updating the system
+     * @param dt Time step to be used when updating the system, will error if dt <= 0 or dt is Infinity
      * @param nParticles Number of particles per group
+     * @param nRhsVariables Number of variables to feed into the rhs function of the generator. This
+     * may be less than the number of variables of the system if some variables are calculated from
+     * the output function of the generator
      * @param random Random number generator which may be used by the generator
      */
     static createDiscrete<TShared, TInternal, TData = null>(
@@ -83,6 +100,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         const generatorCfg: GeneratorConfig<TShared, TInternal, TData> = {
@@ -90,14 +108,16 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             isContinuous: false,
             hasDelays: false
         };
-        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, random);
+        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, nRhsVariables, random);
     }
 
     /**
      * @param generator Continuous ODE generator (model) implementation for the System
      * @param dt Time step to be used when updating the system. If the generator does not
      * have an update method or a zeroEvery method then this parameter will be ignored in
-     * favour of a more optimised dt that the solver picks
+     * favour of a more optimised dt that the solver picks. Additionally, if dt <= 0 or dt
+     * is Infinity the solver will ignore any update or zeroEvery method on the generator
+     * and let the solver run the continuous system.
      * @copyDoc System.createDiscrete
      */
     static createODE<TShared, TInternal, TData = null>(
@@ -106,6 +126,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         const generatorCfg: GeneratorConfig<TShared, TInternal, TData> = {
@@ -113,7 +134,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             isContinuous: true,
             hasDelays: false
         };
-        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, random);
+        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, nRhsVariables, random);
     }
 
     /**
@@ -126,6 +147,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         const generatorCfg: GeneratorConfig<TShared, TInternal, TData> = {
@@ -133,7 +155,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             isContinuous: true,
             hasDelays: true
         };
-        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, random);
+        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, nRhsVariables, random);
     }
 
     /**
@@ -181,16 +203,18 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             generator.initial(this._time, shared, internal, arrayState, this._random);
             if (isContinuous) {
                 if (hasDelays) {
-                    this._solver[iGroup][iParticle] = new dopri.DDE(
+                    this._solvers[iGroup][iParticle] = new dopri.DDE(
                         generator.rhs,
-                        this._statePacker.rhsVariableLength,
+                        this._rhsVariablesLength,
+                        // these are the control params which will be added in a future ticket: mrc-6742
+                        // https://mrc-ide.github.io/dopri-js/interfaces/DopriControlParam.html
                         {},
                         generator.output
                     );
                 } else {
-                    this._solver[iGroup][iParticle] = new dopri.Dopri(
+                    this._solvers[iGroup][iParticle] = new dopri.Dopri(
                         generator.rhs,
-                        this._statePacker.rhsVariableLength,
+                        this._rhsVariablesLength,
                         {},
                         generator.output
                     );
@@ -230,7 +254,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this.iterateParticles((iGroup: number, iParticle: number) => {
             const shared = this._shared[iGroup];
             const internal = this._internal[iGroup];
-            const solver = this._solver[iGroup][iParticle];
+            const solver = this._solvers[iGroup][iParticle];
             const state = this.runParticle(
                 shared,
                 internal,
@@ -301,12 +325,13 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             if (solver) {
                 const history = this._history[iGroup][iParticle];
                 if (this._generatorCfg.hasDelays) {
-                    solver.initialise(time, state.slice(0, this._statePacker.rhsVariableLength), history);
+                    solver.initialise(time, state.slice(0, this._rhsVariablesLength), history);
                 } else {
-                    solver.initialise(time, state.slice(0, this._statePacker.rhsVariableLength));
+                    solver.initialise(time, state.slice(0, this._rhsVariablesLength));
                 }
                 const solution = solver.run(nextTime);
-                stateNext = solution([nextTime])[0];
+                state = solution([nextTime])[0];
+                stateNext = [...state];
                 this._history[iGroup][iParticle] = history.concat(solver.getHistory());
             }
             const { update } = this._generatorCfg.generator;
@@ -327,7 +352,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         solver: dopri.Dopri | dopri.DDE
     ): number[] {
         const state = particleStateToArray(particleState);
-        solver.initialise(this._time, state.slice(0, this._statePacker.rhsVariableLength));
+        solver.initialise(this._time, state.slice(0, this._rhsVariablesLength));
         const solution = solver.run(endTime);
         return solution([endTime])[0];
     }
@@ -344,8 +369,9 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         iParticle: number
     ): number[] {
         const { isContinuous, generator } = this._generatorCfg;
-        if (isContinuous && solver && !generator.update && !generator.getZeroEvery) {
-            // if continuous and no time specific updates like zeroEvery and update methods
+        const noUpdateOrZeroEvery = isContinuous && solver && !generator.update && !generator.getZeroEvery;
+        const invalidDt = isContinuous && solver && this._dt === 0;
+        if (noUpdateOrZeroEvery || invalidDt) {
             return this.runParticleWithSolver(particleState, endTime, solver);
         } else {
             return this.runParticleWithDt(

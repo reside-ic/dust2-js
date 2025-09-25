@@ -16,6 +16,7 @@ const createSystem = (random?: Random) =>
         5, // time
         0.5, // dt
         3, // nParticles
+        undefined, // nRhsVariables
         random
     );
 
@@ -82,6 +83,28 @@ describe("DiscreteSystem", () => {
                 3.1 // nParticles
             )
         ).toThrowError("Number of particles should be an integer greater than or equal to 1, but is 3.1.");
+    });
+
+    test("throws expected error dt <= 0 or dt is Infinity", () => {
+        expect(() =>
+            System.createDiscrete<SIRShared, null, SIRData>(
+                generator,
+                sirShared,
+                5, // time
+                -1, // dt
+                3 // nParticles
+            )
+        ).toThrowError("dt provided, -1, must be positive and finite");
+
+        expect(() =>
+            System.createDiscrete<SIRShared, null, SIRData>(
+                generator,
+                sirShared,
+                5, // time
+                Infinity, // dt
+                3 // nParticles
+            )
+        ).toThrowError("dt provided, Infinity, must be positive and finite");
     });
 
     const expectParticleGroupState = (
@@ -171,6 +194,7 @@ describe("DiscreteSystem", () => {
             0, // time
             1, // dt
             np, // nParticles
+            undefined, // nRhsVariables
             random
         );
         sys.runToTime(2);
@@ -199,6 +223,7 @@ describe("DiscreteSystem", () => {
             start, // time
             dt, // dt
             2, // nParticles
+            undefined, // nRhsVariables
             random
         );
         sys.setStateInitial();
@@ -303,6 +328,7 @@ describe("DiscreteSystem", () => {
             start, // time
             dt, // dt
             2, // nParticles
+            undefined, // nRhsVariables
             random
         );
         sys.setStateInitial();
@@ -458,6 +484,7 @@ describe("DiscreteSystem", () => {
             start, // time
             dt, // dt
             1, // nParticles
+            undefined, // nRhsVariables
             random
         );
         sys.setStateInitial();
