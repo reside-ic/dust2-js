@@ -24,13 +24,6 @@ export interface PackerOptions {
      * empty array.
      */
     shape: PackerShape;
-
-    /**
-     * Number of variables (from the start of the packer shape) that are fed into the rhs of the generator. This may
-     * be lower than the number of variables defined in the shape as some of these variables might come from the
-     * output of the generator.
-     */
-    nRhsVariables?: number;
 }
 
 const validateShape = (name: string, shape: number[]) => {
@@ -64,7 +57,6 @@ export class Packer {
     private readonly _length: number; // Total number of values
     private readonly _idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
     private readonly _shape: PackerShape;
-    private readonly _rhsVariableLength: number; // length of subarray of variables that are fed into ODE/DDE solver
 
     /**
      *
@@ -87,28 +79,6 @@ export class Packer {
                     "which implies generating from a zero-length parameter vector."
             );
         }
-
-        if (options.nRhsVariables === undefined) {
-            this._rhsVariableLength = this._length;
-        } else {
-            if (options.nRhsVariables > options.shape.size) {
-                throw Error(
-                    `nRhsVariables (${options.nRhsVariables}) cannot be larger than total number of ` +
-                        `variables ${options.shape.size}.`
-                );
-            }
-
-            const key = Array.from(this._shape.keys())[options.nRhsVariables - 1];
-            const { start, length } = this._idx[key];
-            this._rhsVariableLength = start + length;
-        }
-    }
-
-    /**
-     * Returns the length of subarray of variables that are fed into ODE/DDE solver.
-     */
-    public get rhsVariableLength() {
-        return this._rhsVariableLength;
     }
 
     /**
@@ -120,6 +90,30 @@ export class Packer {
 
     private isScalar(name: string) {
         return this._shape.get(name)?.length === 0;
+    }
+
+    /**
+     * Slices array based on numbers of variables while respecting the the length of each variables.
+     * @param x A number array corresponding to the shape this class was initialised with.
+     * @param nVariables Number of variables to include in the slice
+     */
+    public sliceArray(x: Array<number>, nVariables: number) {
+        if (x.length > this.length) {
+            throw Error(
+                `The given array's length ${x.length} is larger than max size of flat array ` +
+                    `this packer supports (${this.length}).`
+            );
+        }
+        if (nVariables > this._shape.size) {
+            throw Error(
+                `nVariables (${nVariables}) cannot be larger than total number of ` + `variables ${this._shape.size}.`
+            );
+        }
+
+        const key = Array.from(this._shape.keys())[nVariables - 1];
+        const { start, length } = this._idx[key];
+        const sliceEnd = start + length;
+        return x.slice(0, sliceEnd);
     }
 
     /**
