@@ -11,7 +11,7 @@ const createSystem = (shared: ConstantGradShared) =>
         5, // time
         0.001, // dt
         1, // nParticles
-        undefined
+        1 // nRhsVariables
     );
 
 describe("ContinuousSystem", () => {
