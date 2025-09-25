@@ -55,13 +55,13 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         const { generator, isContinuous } = generatorCfg;
 
         if (!isContinuous) {
-          if (!isPositiveFinite(dt)) {
-            throw Error(`dt provided, ${dt}, must be positive and finite`);
-          }
-          this._dt = dt;
+            if (!isPositiveFinite(dt)) {
+                throw Error(`dt provided, ${dt}, must be positive and finite`);
+            }
+            this._dt = dt;
         } else {
-          // value of 0 for _dt means we let solver pick dt and use runParticleWithSolver
-          this._dt = isPositiveFinite(dt) ? dt : 0;
+            // value of 0 for _dt means we let solver pick dt and use runParticleWithSolver
+            this._dt = isPositiveFinite(dt) ? dt : 0;
         }
 
         this._time = time;

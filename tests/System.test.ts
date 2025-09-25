@@ -85,7 +85,6 @@ describe("DiscreteSystem", () => {
         ).toThrowError("Number of particles should be an integer greater than or equal to 1, but is 3.1.");
     });
 
-
     test("throws expected error dt <= 0 or dt is Infinity", () => {
         expect(() =>
             System.createDiscrete<SIRShared, null, SIRData>(
@@ -93,7 +92,7 @@ describe("DiscreteSystem", () => {
                 sirShared,
                 5, // time
                 -1, // dt
-                3, // nParticles
+                3 // nParticles
             )
         ).toThrowError("dt provided, -1, must be positive and finite");
 
@@ -103,7 +102,7 @@ describe("DiscreteSystem", () => {
                 sirShared,
                 5, // time
                 Infinity, // dt
-                3, // nParticles
+                3 // nParticles
             )
         ).toThrowError("dt provided, Infinity, must be positive and finite");
     });

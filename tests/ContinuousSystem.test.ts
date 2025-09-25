@@ -24,9 +24,9 @@ const createSystemNoUpdate = (shared: ConstantGradNoUpdateShared) =>
     );
 
 type ExpectedResult = {
-    y: number[],
-    yAddOne: number[],
-}
+    y: number[];
+    yAddOne: number[];
+};
 
 const expectResult = (sys: System<any, any, any>, expectedResult: ExpectedResult) => {
     sys.setStateInitial();
@@ -56,7 +56,7 @@ describe("ContinuousSystem", () => {
         const sys = createSystem({ y: 1, yAddOne: 2 });
         expectResult(sys, {
             y: [2, 3, 4, 101, 102],
-            yAddOne: [3, 4, 5, 102, 103],
+            yAddOne: [3, 4, 5, 102, 103]
         });
     });
 
@@ -64,19 +64,19 @@ describe("ContinuousSystem", () => {
         let sys = createSystem({ y: 1, yAddOne: 2 }, -1);
         expectResult(sys, {
             y: [2, 3, 4, 5, 6],
-            yAddOne: [3, 4, 5, 6, 7],
+            yAddOne: [3, 4, 5, 6, 7]
         });
 
         sys = createSystem({ y: 1, yAddOne: 2 }, 0);
         expectResult(sys, {
             y: [2, 3, 4, 5, 6],
-            yAddOne: [3, 4, 5, 6, 7],
+            yAddOne: [3, 4, 5, 6, 7]
         });
 
         sys = createSystem({ y: 1, yAddOne: 2 }, Infinity);
         expectResult(sys, {
             y: [2, 3, 4, 5, 6],
-            yAddOne: [3, 4, 5, 6, 7],
+            yAddOne: [3, 4, 5, 6, 7]
         });
     });
 
@@ -84,7 +84,7 @@ describe("ContinuousSystem", () => {
         const sys = createSystemNoUpdate({ y: 1, yAddOne: 2 });
         expectResult(sys, {
             y: [2, 3, 4, 5, 6],
-            yAddOne: [3, 4, 5, 6, 7],
+            yAddOne: [3, 4, 5, 6, 7]
         });
     });
 });
