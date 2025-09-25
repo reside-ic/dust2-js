@@ -36,7 +36,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
     protected readonly _zeroEvery: ZeroEvery[];
     protected readonly _random: Random;
     protected _time: number;
-    protected _solver: dopri.Dopri[][] | null[][];
+    protected _solvers: dopri.Dopri[][] | null[][];
 
     private constructor(
         generatorCfg: GeneratorConfig<TShared, TInternal, TData>,
@@ -62,7 +62,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this._shared = shared;
         this._internal = shared.map(generator.internal);
         this._zeroEvery = generator.getZeroEvery ? shared.map(generator.getZeroEvery) : shared.map(() => []);
-        this._solver = shared.map(() => Array(nParticles).fill(null));
+        this._solvers = shared.map(() => Array(nParticles).fill(null));
 
         this._random = random ? random : new Random(new RngStateBuiltin());
     }
@@ -175,9 +175,11 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             const { generator, isContinuous, hasDelays } = this._generatorCfg;
             generator.initial(this._time, shared, internal, arrayState, this._random);
             if (isContinuous && !hasDelays) {
-                this._solver[iGroup][iParticle] = new dopri.Dopri(
+                this._solvers[iGroup][iParticle] = new dopri.Dopri(
                     generator.rhs,
                     this._statePacker.rhsVariableLength,
+                    // these are the control params which will be added in a future ticket: mrc-6742
+                    // https://mrc-ide.github.io/dopri-js/interfaces/DopriControlParam.html
                     {},
                     generator.output
                 );
@@ -216,7 +218,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this.iterateParticles((iGroup: number, iParticle: number) => {
             const shared = this._shared[iGroup];
             const internal = this._internal[iGroup];
-            const solver = this._solver[iGroup][iParticle];
+            const solver = this._solvers[iGroup][iParticle];
             const state = this.runParticle(
                 shared,
                 internal,
@@ -282,7 +284,8 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             if (solver) {
                 solver.initialise(time, state.slice(0, this._statePacker.rhsVariableLength));
                 const solution = solver.run(nextTime);
-                stateNext = solution([nextTime])[0];
+                state = solution([nextTime])[0];
+                stateNext = [...state];
             }
             this._generatorCfg.generator.update(time, this._dt, state, shared, internal, stateNext, this._random);
             time = nextTime;
