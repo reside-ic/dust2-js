@@ -55,6 +55,17 @@ describe("Packer class", () => {
             expect(sut["_shape"]).toBe(mixedShape);
         });
 
+        test("can get correct nVariables", () => {
+            let sut = new Packer({ shape: scalarShape });
+            expect(sut.nVariables).toBe(3);
+
+            sut = new Packer({ shape: arrayShape });
+            expect(sut.nVariables).toBe(2);
+
+            sut = new Packer({ shape: mixedShape });
+            expect(sut.nVariables).toBe(5);
+        });
+
         test("build expected array slice for packer with both scalar and array values", () => {
             const sut = new Packer({ shape: mixedShape });
             const stateArray = Array(sut.length).fill(0);
