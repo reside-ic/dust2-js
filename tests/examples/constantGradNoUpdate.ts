@@ -31,7 +31,7 @@ export const constantGradNoUpdate: ContinuousGeneratorODE<ConstantGradNoUpdateSh
             ["Y", []],
             ["Y + 1", []]
         ]);
-        return new Packer({ shape, nRhsVariables: 1 });
+        return new Packer({ shape });
     },
 
     updateShared(shared, newShared) {
