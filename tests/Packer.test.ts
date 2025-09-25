@@ -68,27 +68,15 @@ describe("Packer class", () => {
 
         test("build expected array slice for packer with both scalar and array values", () => {
             const sut = new Packer({ shape: mixedShape });
-            const stateArray = Array(sut.length).fill(0);
 
-            expect(sut.sliceArray(stateArray, 2).length).toBe(4);
-            expect(sut.sliceArray(stateArray, 4).length).toBe(13);
-        });
-
-        test("slice array throws error if stateArray exceeds packer length", () => {
-            expect(() => {
-                const sut = new Packer({ shape: mixedShape });
-                const stateArray = Array(sut.length + 1).fill(0);
-                sut.sliceArray(stateArray, 4);
-            }).toThrowError(
-                "The given array's length 15 is larger than max size of flat array this packer supports (14)"
-            );
+            expect(sut.flatLengthFromStart(2)).toBe(4);
+            expect(sut.flatLengthFromStart(4)).toBe(13);
         });
 
         test("slice array throws error if nVariables exceeds shape size", () => {
             expect(() => {
                 const sut = new Packer({ shape: mixedShape });
-                const stateArray = Array(sut.length).fill(0);
-                sut.sliceArray(stateArray, 6);
+                sut.flatLengthFromStart(6);
             }).toThrowError("nVariables (6) cannot be larger than total number of variables 5.");
         });
 

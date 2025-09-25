@@ -102,17 +102,11 @@ export class Packer {
     }
 
     /**
-     * Slices array based on numbers of variables while respecting the the length of each variables.
-     * @param x A number array corresponding to the shape this class was initialised with.
-     * @param nVariables Number of variables to include in the slice
+     * Calculates the length of array required to contain the first n variables from the
+     * start of the shape this Packer was initialised with.
+     * @param nVariables Number of variables
      */
-    public sliceArray(x: Array<number>, nVariables: number) {
-        if (x.length > this.length) {
-            throw Error(
-                `The given array's length ${x.length} is larger than max size of flat array ` +
-                    `this packer supports (${this.length}).`
-            );
-        }
+    public flatLengthFromStart(nVariables: number) {
         if (nVariables > this._shape.size) {
             throw Error(
                 `nVariables (${nVariables}) cannot be larger than total number of ` + `variables ${this._shape.size}.`
@@ -121,8 +115,7 @@ export class Packer {
 
         const key = Array.from(this._shape.keys())[nVariables - 1];
         const { start, length } = this._idx[key];
-        const sliceEnd = start + length;
-        return x.slice(0, sliceEnd);
+        return start + length;
     }
 
     /**
