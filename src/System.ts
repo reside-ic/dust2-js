@@ -1,4 +1,5 @@
 import ndarray from "ndarray";
+import * as dopri from "dopri";
 import { Random, RngStateBuiltin } from "@reside-ic/random";
 import { ParticleState, SystemState, SystemSubState } from "./SystemState.ts";
 import { Packer } from "./Packer.ts";
@@ -35,6 +36,8 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
     protected readonly _zeroEvery: ZeroEvery[];
     protected readonly _random: Random;
     protected _time: number;
+    protected _solvers: dopri.Dopri[][] | null[][];
+    protected _rhsVariablesLength: number;
 
     private constructor(
         generatorCfg: GeneratorConfig<TShared, TInternal, TData>,
@@ -42,6 +45,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         checkIntegerInRange("Number of particles", nParticles, 1);
@@ -60,7 +64,10 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this._shared = shared;
         this._internal = shared.map(generator.internal);
         this._zeroEvery = generator.getZeroEvery ? shared.map(generator.getZeroEvery) : shared.map(() => []);
+        this._solvers = shared.map(() => Array(nParticles).fill(null));
 
+        const nVariables = this._statePacker.nVariables;
+        this._rhsVariablesLength = this._statePacker.flatLengthFromStart(nRhsVariables ?? nVariables);
         this._random = random ? random : new Random(new RngStateBuiltin());
     }
 
@@ -70,6 +77,9 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
      * @param time Initial time for the system
      * @param dt Time step to be used when updating the system
      * @param nParticles Number of particles per group
+     * @param nRhsVariables Number of variables to feed into the rhs function of the generator. This
+     * may be less than the number of variables of the system if some variables are calculated from
+     * the output function of the generator
      * @param random Random number generator which may be used by the generator
      */
     static createDiscrete<TShared, TInternal, TData = null>(
@@ -78,6 +88,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         const generatorCfg: GeneratorConfig<TShared, TInternal, TData> = {
@@ -85,7 +96,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             isContinuous: false,
             hasDelays: false
         };
-        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, random);
+        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, nRhsVariables, random);
     }
 
     /**
@@ -98,6 +109,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         const generatorCfg: GeneratorConfig<TShared, TInternal, TData> = {
@@ -105,7 +117,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             isContinuous: true,
             hasDelays: false
         };
-        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, random);
+        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, nRhsVariables, random);
     }
 
     /**
@@ -118,6 +130,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         const generatorCfg: GeneratorConfig<TShared, TInternal, TData> = {
@@ -125,7 +138,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             isContinuous: true,
             hasDelays: true
         };
-        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, random);
+        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, nRhsVariables, random);
     }
 
     /**
@@ -169,8 +182,18 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             const internal = this._internal[iGroup];
             const state = this._state.getParticle(iGroup, iParticle);
             const arrayState = particleStateToArray(state);
-            const { generator } = this._generatorCfg;
+            const { generator, isContinuous, hasDelays } = this._generatorCfg;
             generator.initial(this._time, shared, internal, arrayState, this._random);
+            if (isContinuous && !hasDelays) {
+                this._solvers[iGroup][iParticle] = new dopri.Dopri(
+                    generator.rhs,
+                    this._rhsVariablesLength,
+                    // these are the control params which will be added in a future ticket: mrc-6742
+                    // https://mrc-ide.github.io/dopri-js/interfaces/DopriControlParam.html
+                    {},
+                    generator.output
+                );
+            }
             this._state.setParticle(iGroup, iParticle, arrayState);
         });
     }
@@ -205,12 +228,14 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this.iterateParticles((iGroup: number, iParticle: number) => {
             const shared = this._shared[iGroup];
             const internal = this._internal[iGroup];
+            const solver = this._solvers[iGroup][iParticle];
             const state = this.runParticle(
                 shared,
                 internal,
                 this._zeroEvery[iGroup],
                 this._state.getParticle(iGroup, iParticle),
-                nSteps
+                nSteps,
+                solver
             );
             this._state.setParticle(iGroup, iParticle, state);
         });
@@ -253,7 +278,8 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         internal: TInternal,
         zeroEvery: ZeroEvery,
         particleState: ParticleState,
-        nSteps: number
+        nSteps: number,
+        solver: dopri.Dopri | null
     ): number[] {
         let state = particleStateToArray(particleState);
         let stateNext = [...state];
@@ -264,8 +290,15 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
                     indicesToReset.forEach((idx) => (state[idx] = 0));
                 }
             });
+            const nextTime = time + this._dt;
+            if (solver) {
+                solver.initialise(time, state.slice(0, this._rhsVariablesLength));
+                const solution = solver.run(nextTime);
+                state = solution([nextTime])[0];
+                stateNext = [...state];
+            }
             this._generatorCfg.generator.update(time, this._dt, state, shared, internal, stateNext, this._random);
-            time += this._dt;
+            time = nextTime;
             const tmp = state;
             state = stateNext;
             stateNext = tmp;
