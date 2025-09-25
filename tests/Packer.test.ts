@@ -55,21 +55,29 @@ describe("Packer class", () => {
             expect(sut["_shape"]).toBe(mixedShape);
         });
 
-        test("build expected rhsVariableLength for packer with both scalar and array values", () => {
-            let sut = new Packer({ shape: mixedShape });
-            expect(sut.rhsVariableLength).toBe(14);
+        test("can get correct nVariables", () => {
+            let sut = new Packer({ shape: scalarShape });
+            expect(sut.nVariables).toBe(3);
 
-            sut = new Packer({ shape: mixedShape, nRhsVariables: 2 });
-            expect(sut.rhsVariableLength).toBe(4);
+            sut = new Packer({ shape: arrayShape });
+            expect(sut.nVariables).toBe(2);
 
-            sut = new Packer({ shape: mixedShape, nRhsVariables: 4 });
-            expect(sut.rhsVariableLength).toBe(13);
+            sut = new Packer({ shape: mixedShape });
+            expect(sut.nVariables).toBe(5);
         });
 
-        test("throws error if nRhsVariables exceeds shape size", () => {
+        test("build expected array slice for packer with both scalar and array values", () => {
+            const sut = new Packer({ shape: mixedShape });
+
+            expect(sut.flatLengthFromStart(2)).toBe(4);
+            expect(sut.flatLengthFromStart(4)).toBe(13);
+        });
+
+        test("slice array throws error if nVariables exceeds shape size", () => {
             expect(() => {
-                new Packer({ shape: mixedShape, nRhsVariables: 6 });
-            }).toThrowError("nRhsVariables (6) cannot be larger than total number of variables 5.");
+                const sut = new Packer({ shape: mixedShape });
+                sut.flatLengthFromStart(6);
+            }).toThrowError("nVariables (6) cannot be larger than total number of variables 5.");
         });
 
         test("throws error if empty shape", () => {

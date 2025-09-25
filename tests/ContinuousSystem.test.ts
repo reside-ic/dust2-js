@@ -20,7 +20,7 @@ const createSystemNoUpdate = (shared: ConstantGradNoUpdateShared) =>
         5, // time
         0.001, // dt
         1, // nParticles
-        undefined
+        1 // nRhsVariables
     );
 
 describe("ContinuousSystem", () => {

@@ -36,7 +36,8 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
     protected readonly _zeroEvery: ZeroEvery[];
     protected readonly _random: Random;
     protected _time: number;
-    protected _solver: dopri.Dopri[][] | null[][];
+    protected _solvers: dopri.Dopri[][] | null[][];
+    protected _rhsVariablesLength: number;
 
     private constructor(
         generatorCfg: GeneratorConfig<TShared, TInternal, TData>,
@@ -44,6 +45,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         checkIntegerInRange("Number of particles", nParticles, 1);
@@ -62,8 +64,10 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this._shared = shared;
         this._internal = shared.map(generator.internal);
         this._zeroEvery = generator.getZeroEvery ? shared.map(generator.getZeroEvery) : shared.map(() => []);
-        this._solver = shared.map(() => Array(nParticles).fill(null));
+        this._solvers = shared.map(() => Array(nParticles).fill(null));
 
+        const nVariables = this._statePacker.nVariables;
+        this._rhsVariablesLength = this._statePacker.flatLengthFromStart(nRhsVariables ?? nVariables);
         this._random = random ? random : new Random(new RngStateBuiltin());
     }
 
@@ -73,6 +77,9 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
      * @param time Initial time for the system
      * @param dt Time step to be used when updating the system
      * @param nParticles Number of particles per group
+     * @param nRhsVariables Number of variables to feed into the rhs function of the generator. This
+     * may be less than the number of variables of the system if some variables are calculated from
+     * the output function of the generator
      * @param random Random number generator which may be used by the generator
      */
     static createDiscrete<TShared, TInternal, TData = null>(
@@ -81,6 +88,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         const generatorCfg: GeneratorConfig<TShared, TInternal, TData> = {
@@ -88,7 +96,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             isContinuous: false,
             hasDelays: false
         };
-        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, random);
+        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, nRhsVariables, random);
     }
 
     /**
@@ -104,6 +112,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         const generatorCfg: GeneratorConfig<TShared, TInternal, TData> = {
@@ -111,7 +120,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             isContinuous: true,
             hasDelays: false
         };
-        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, random);
+        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, nRhsVariables, random);
     }
 
     /**
@@ -124,6 +133,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         time: number,
         dt: number,
         nParticles: number,
+        nRhsVariables?: number,
         random?: Random
     ) {
         const generatorCfg: GeneratorConfig<TShared, TInternal, TData> = {
@@ -131,7 +141,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             isContinuous: true,
             hasDelays: true
         };
-        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, random);
+        return new System<TShared, TInternal, TData>(generatorCfg, shared, time, dt, nParticles, nRhsVariables, random);
     }
 
     /**
@@ -178,9 +188,11 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             const { generator, isContinuous, hasDelays } = this._generatorCfg;
             generator.initial(this._time, shared, internal, arrayState, this._random);
             if (isContinuous && !hasDelays) {
-                this._solver[iGroup][iParticle] = new dopri.Dopri(
+                this._solvers[iGroup][iParticle] = new dopri.Dopri(
                     generator.rhs,
-                    this._statePacker.rhsVariableLength,
+                    this._rhsVariablesLength,
+                    // these are the control params which will be added in a future ticket: mrc-6742
+                    // https://mrc-ide.github.io/dopri-js/interfaces/DopriControlParam.html
                     {},
                     generator.output
                 );
@@ -219,7 +231,7 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this.iterateParticles((iGroup: number, iParticle: number) => {
             const shared = this._shared[iGroup];
             const internal = this._internal[iGroup];
-            const solver = this._solver[iGroup][iParticle];
+            const solver = this._solvers[iGroup][iParticle];
             const state = this.runParticle(
                 shared,
                 internal,
@@ -284,9 +296,10 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
             });
             const nextTime = time + this._dt;
             if (solver) {
-                solver.initialise(time, state.slice(0, this._statePacker.rhsVariableLength));
+                solver.initialise(time, state.slice(0, this._rhsVariablesLength));
                 const solution = solver.run(nextTime);
-                stateNext = solution([nextTime])[0];
+                state = solution([nextTime])[0];
+                stateNext = [...state];
             }
             const { update } = this._generatorCfg.generator;
             if (update) {

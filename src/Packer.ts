@@ -24,13 +24,6 @@ export interface PackerOptions {
      * empty array.
      */
     shape: PackerShape;
-
-    /**
-     * Number of variables (from the start of the packer shape) that are fed into the rhs of the generator. This may
-     * be lower than the number of variables defined in the shape as some of these variables might come from the
-     * output of the generator.
-     */
-    nRhsVariables?: number;
 }
 
 const validateShape = (name: string, shape: number[]) => {
@@ -64,7 +57,7 @@ export class Packer {
     private readonly _length: number; // Total number of values
     private readonly _idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
     private readonly _shape: PackerShape;
-    private readonly _rhsVariableLength: number; // length of subarray of variables that are fed into ODE/DDE solver
+    private readonly _nVariables: number;
 
     /**
      *
@@ -73,6 +66,7 @@ export class Packer {
     constructor(options: PackerOptions) {
         this._idx = {};
         this._shape = options.shape;
+        this._nVariables = options.shape.size;
         this._length = 0;
         for (const [name, value] of this._shape) {
             validateShape(name, value);
@@ -87,28 +81,6 @@ export class Packer {
                     "which implies generating from a zero-length parameter vector."
             );
         }
-
-        if (options.nRhsVariables === undefined) {
-            this._rhsVariableLength = this._length;
-        } else {
-            if (options.nRhsVariables > options.shape.size) {
-                throw Error(
-                    `nRhsVariables (${options.nRhsVariables}) cannot be larger than total number of ` +
-                        `variables ${options.shape.size}.`
-                );
-            }
-
-            const key = Array.from(this._shape.keys())[options.nRhsVariables - 1];
-            const { start, length } = this._idx[key];
-            this._rhsVariableLength = start + length;
-        }
-    }
-
-    /**
-     * Returns the length of subarray of variables that are fed into ODE/DDE solver.
-     */
-    public get rhsVariableLength() {
-        return this._rhsVariableLength;
     }
 
     /**
@@ -118,8 +90,32 @@ export class Packer {
         return this._length;
     }
 
+    /**
+     * Returns the number of variables in the shape used to initialise this Packer.
+     */
+    public get nVariables() {
+        return this._nVariables;
+    }
+
     private isScalar(name: string) {
         return this._shape.get(name)?.length === 0;
+    }
+
+    /**
+     * Calculates the length of array required to contain the first n variables from the
+     * start of the shape this Packer was initialised with.
+     * @param nVariables Number of variables
+     */
+    public flatLengthFromStart(nVariables: number) {
+        if (nVariables > this._shape.size) {
+            throw Error(
+                `nVariables (${nVariables}) cannot be larger than total number of ` + `variables ${this._shape.size}.`
+            );
+        }
+
+        const key = Array.from(this._shape.keys())[nVariables - 1];
+        const { start, length } = this._idx[key];
+        return start + length;
     }
 
     /**
