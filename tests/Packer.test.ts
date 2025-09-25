@@ -55,21 +55,30 @@ describe("Packer class", () => {
             expect(sut["_shape"]).toBe(mixedShape);
         });
 
-        test("build expected rhsVariableLength for packer with both scalar and array values", () => {
-            let sut = new Packer({ shape: mixedShape });
-            expect(sut.rhsVariableLength).toBe(14);
+        test("build expected array slice for packer with both scalar and array values", () => {
+            const sut = new Packer({ shape: mixedShape });
+            const stateArray = Array(sut.length).fill(0);
 
-            sut = new Packer({ shape: mixedShape, nRhsVariables: 2 });
-            expect(sut.rhsVariableLength).toBe(4);
-
-            sut = new Packer({ shape: mixedShape, nRhsVariables: 4 });
-            expect(sut.rhsVariableLength).toBe(13);
+            expect(sut.sliceArray(stateArray, 2).length).toBe(4);
+            expect(sut.sliceArray(stateArray, 4).length).toBe(13);
         });
 
-        test("throws error if nRhsVariables exceeds shape size", () => {
+        test("slice array throws error if stateArray exceeds packer length", () => {
             expect(() => {
-                new Packer({ shape: mixedShape, nRhsVariables: 6 });
-            }).toThrowError("nRhsVariables (6) cannot be larger than total number of variables 5.");
+                const sut = new Packer({ shape: mixedShape });
+                const stateArray = Array(sut.length + 1).fill(0);
+                sut.sliceArray(stateArray, 4);
+            }).toThrowError(
+                "The given array's length 15 is larger than max size of flat array this packer supports (14)"
+            );
+        });
+
+        test("slice array throws error if nVariables exceeds shape size", () => {
+            expect(() => {
+                const sut = new Packer({ shape: mixedShape });
+                const stateArray = Array(sut.length).fill(0);
+                sut.sliceArray(stateArray, 6);
+            }).toThrowError("nVariables (6) cannot be larger than total number of variables 5.");
         });
 
         test("throws error if empty shape", () => {
