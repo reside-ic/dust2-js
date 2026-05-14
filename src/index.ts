@@ -3,6 +3,7 @@ export type { DiscreteGenerator } from "./interfaces/generators/DiscreteGenerato
 export type {
     Solution,
     FullSolution,
+    ContinuousGeneratorBase,
     ContinuousGeneratorODE,
     ContinuousGeneratorDDE
 } from "./interfaces/generators/ContinuousGenerator.ts";

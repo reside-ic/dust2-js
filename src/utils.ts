@@ -104,3 +104,5 @@ export const floatIsDivisibleBy = (a: number, b: number, tolerance = 1e-12) => {
     const isAlmostB = b - (a % b) < tolerance;
     return isAlmostZero || isAlmostB;
 };
+
+export const isPositiveFinite = (x: number) => x > 0 && Number.isFinite(x);
