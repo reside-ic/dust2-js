@@ -67,7 +67,8 @@ export class System<TShared, TInternal, TData> implements SystemInterface<TData>
         this._solvers = shared.map(() => Array(nParticles).fill(null));
 
         const nVariables = this._statePacker.nVariables;
-        this._rhsVariablesLength = this._statePacker.flatLengthFromStart(nRhsVariables ?? nVariables);
+        const cleanNRhsVariables = nRhsVariables ?? nVariables;
+        this._rhsVariablesLength = this._statePacker.flatLengthBetweenVariables(0, cleanNRhsVariables - 1);
         this._random = random ? random : new Random(new RngStateBuiltin());
     }
 
