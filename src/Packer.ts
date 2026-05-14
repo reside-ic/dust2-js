@@ -104,18 +104,33 @@ export class Packer {
     /**
      * Calculates the length of array required to contain the first n variables from the
      * start of the shape this Packer was initialised with.
-     * @param nVariables Number of variables
+     * @param firstVariablePosition Index of start variable (inclusive)
+     * @param lastVariablePosition Index of final variable (not inclusive)
      */
-    public flatLengthFromStart(nVariables: number) {
-        if (nVariables > this._shape.size) {
+    public flatLengthBetweenVariables(firstVariablePosition: number, lastVariablePosition: number) {
+        if (firstVariablePosition > lastVariablePosition) {
             throw Error(
-                `nVariables (${nVariables}) cannot be larger than total number of ` + `variables ${this._shape.size}.`
+                `firstVariablePosition (${firstVariablePosition}) cannot be larger ` +
+                    `than lastVariablePosition (${lastVariablePosition}).`
             );
         }
 
-        const key = Array.from(this._shape.keys())[nVariables - 1];
-        const { start, length } = this._idx[key];
-        return start + length;
+        if (lastVariablePosition > this._shape.size - 1) {
+            throw Error(
+                `lastVariablePosition (${lastVariablePosition}) cannot ` +
+                    `be larger than largest index of variables ${this._shape.size - 1}.`
+            );
+        }
+
+        const keys = Array.from(this._shape.keys());
+
+        const firstKey = keys[firstVariablePosition];
+        const { start: firstStart } = this._idx[firstKey];
+
+        const lastKey = keys[lastVariablePosition];
+        const { start: lastStart } = this._idx[lastKey];
+
+        return lastStart - firstStart;
     }
 
     /**
