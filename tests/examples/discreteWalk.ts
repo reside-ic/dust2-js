@@ -1,6 +1,6 @@
-import { Generator } from "../../src/interfaces/generators/Generator.ts";
 import { Random } from "@reside-ic/random";
 import { Packer } from "../../src/Packer.ts";
+import { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator.ts";
 
 export interface WalkShared {
     n: number;
@@ -13,7 +13,7 @@ const checkStateRange = (state: number[], shared: WalkShared) => {
     }
 };
 
-export const discreteWalk: Generator<WalkShared, null> = {
+export const discreteWalk: DiscreteGenerator<WalkShared, null, null> = {
     initial(time: number, shared: WalkShared, internal: null, stateNext: number[]) {
         checkStateRange(stateNext, shared);
         for (let i = 0; i < shared.n; i++) {

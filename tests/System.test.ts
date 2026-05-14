@@ -16,6 +16,7 @@ const createSystem = (random?: Random) =>
         5, // time
         0.5, // dt
         3, // nParticles
+        undefined, // nRhsVariables
         random
     );
 
@@ -171,6 +172,7 @@ describe("DiscreteSystem", () => {
             0, // time
             1, // dt
             np, // nParticles
+            undefined, // nRhsVariables
             random
         );
         sys.runToTime(2);
@@ -199,6 +201,7 @@ describe("DiscreteSystem", () => {
             start, // time
             dt, // dt
             2, // nParticles
+            undefined, // nRhsVariables
             random
         );
         sys.setStateInitial();
@@ -303,6 +306,7 @@ describe("DiscreteSystem", () => {
             start, // time
             dt, // dt
             2, // nParticles
+            undefined, // nRhsVariables
             random
         );
         sys.setStateInitial();
@@ -458,6 +462,7 @@ describe("DiscreteSystem", () => {
             start, // time
             dt, // dt
             1, // nParticles
+            undefined, // nRhsVariables
             random
         );
         sys.setStateInitial();
