@@ -1,9 +1,24 @@
 {
-    "name": "dust2",
-    "version": "0.0.1",
+    "name": "@reside-ic/dust2",
+    "version": "1.0.0",
     "type": "module",
+    "files": [
+        "dist"
+    ],
+    "main": "./dist/dust2.umd.cjs",
+    "module": "./dist/dust2.js",
+    "types": "./dist/dust2.d.ts",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/dust2.d.ts",
+                "default": "./dist/dust2.js"
+            },
+            "require": "./dist/dust2.umd.cjs"
+        }
+    },
     "scripts": {
-        "build": "tsc && vite build",
+        "build": "tsc && vite build && tsx scripts/renameModuleDeclaration.ts",
         "lint": "eslint",
         "format-check": "npx prettier . --check",
         "format-write": "npx prettier . --write",
@@ -21,10 +36,12 @@
         "@eslint/js": "^9.15.0",
         "@reside-ic/typedoc-plugin-copy-doc": "^1.1.2",
         "@types/ndarray": "^1.0.14",
+        "@types/node": "^25.7.0",
         "@vitest/coverage-istanbul": "^2.1.8",
         "eslint": "^9.15.0",
         "globals": "^15.12.0",
         "prettier": "^3.4.2",
+        "tsx": "^4.22.0",
         "typedoc": "^0.27.9",
         "typescript": "~5.6.2",
         "typescript-eslint": "^8.16.0",
