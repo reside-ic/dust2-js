@@ -1,5 +1,4 @@
-import { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator";
-import { Packer } from "../../src/Packer";
+import type { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator";
 
 export interface ABState {
     a: number;
@@ -7,25 +6,25 @@ export interface ABState {
 }
 
 export const zeroTwice: DiscreteGenerator<ABState, null, null> = {
-    initial(_time, _shared, _internal, stateNext) {
+    initial(_imports, _time, _shared, _internal, stateNext) {
         stateNext[0] = 0;
         stateNext[1] = 0;
     },
 
-    update(_time, _dt, state, _shared, _internal, stateNext) {
+    update(_imports, _time, _dt, state, _shared, _internal, stateNext) {
         stateNext[0] = state[0] + 1;
         stateNext[1] = state[1] + 1;
     },
 
-    packingState() {
+    packingState(imports) {
         const shape = new Map<string, number[]>([
             ["x", []],
             ["y", []]
         ]);
-        return new Packer({ shape });
+        return new imports.Packer({ shape });
     },
 
-    getZeroEvery(shared) {
+    getZeroEvery(_imports, shared) {
         return [
             [shared.a, [0]],
             [shared.b, [1]]
