@@ -57,6 +57,7 @@ export class Packer {
     private readonly _length: number; // Total number of values
     private readonly _idx: Record<string, IndexValues>; // Maps value names to starting index and length in packed data
     private readonly _shape: PackerShape;
+    private readonly _nVariables: number;
 
     /**
      *
@@ -65,6 +66,7 @@ export class Packer {
     constructor(options: PackerOptions) {
         this._idx = {};
         this._shape = options.shape;
+        this._nVariables = options.shape.size;
         this._length = 0;
         for (const [name, value] of this._shape) {
             validateShape(name, value);
@@ -88,8 +90,47 @@ export class Packer {
         return this._length;
     }
 
+    /**
+     * Returns the number of variables in the shape used to initialise this Packer.
+     */
+    public get nVariables() {
+        return this._nVariables;
+    }
+
     private isScalar(name: string) {
         return this._shape.get(name)?.length === 0;
+    }
+
+    /**
+     * Calculates the length of array required to contain the first n variables from the
+     * start of the shape this Packer was initialised with.
+     * @param firstVariablePosition Index of start variable (inclusive)
+     * @param lastVariablePosition Index of final variable (not inclusive)
+     */
+    public flatLengthBetweenVariables(firstVariablePosition: number, lastVariablePosition: number) {
+        if (firstVariablePosition > lastVariablePosition) {
+            throw Error(
+                `firstVariablePosition (${firstVariablePosition}) cannot be larger ` +
+                    `than lastVariablePosition (${lastVariablePosition}).`
+            );
+        }
+
+        if (lastVariablePosition > this._shape.size - 1) {
+            throw Error(
+                `lastVariablePosition (${lastVariablePosition}) cannot ` +
+                    `be larger than largest index of variables ${this._shape.size - 1}.`
+            );
+        }
+
+        const keys = Array.from(this._shape.keys());
+
+        const firstKey = keys[firstVariablePosition];
+        const { start: firstStart } = this._idx[firstKey];
+
+        const lastKey = keys[lastVariablePosition];
+        const { start: lastStart } = this._idx[lastKey];
+
+        return lastStart - firstStart;
     }
 
     /**
