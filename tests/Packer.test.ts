@@ -69,9 +69,10 @@ describe("Packer class", () => {
         test("build expected array slice for packer with both scalar and array values", () => {
             const sut = new Packer({ shape: mixedShape });
 
-            expect(sut.flatLengthBetweenVariables(0, 2)).toBe(4);
-            expect(sut.flatLengthBetweenVariables(0, 4)).toBe(13);
-            expect(sut.flatLengthBetweenVariables(2, 4)).toBe(9);
+            expect(sut.flatLengthBetweenVariables(0, 2)).toBe(5);
+            expect(sut.flatLengthBetweenVariables(0, 4)).toBe(14);
+            expect(sut.flatLengthBetweenVariables(2, 3)).toBe(9);
+            expect(sut.flatLengthBetweenVariables(1, 4)).toBe(13);
         });
 
         test("slice array throws error if start variable position exceeds end position", () => {

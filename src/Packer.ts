@@ -105,7 +105,7 @@ export class Packer {
      * Calculates the length of array required to contain the first n variables from the
      * start of the shape this Packer was initialised with.
      * @param firstVariablePosition Index of start variable (inclusive)
-     * @param lastVariablePosition Index of final variable (not inclusive)
+     * @param lastVariablePosition Index of final variable (inclusive)
      */
     public flatLengthBetweenVariables(firstVariablePosition: number, lastVariablePosition: number) {
         if (firstVariablePosition > lastVariablePosition) {
@@ -128,9 +128,9 @@ export class Packer {
         const { start: firstStart } = this._idx[firstKey];
 
         const lastKey = keys[lastVariablePosition];
-        const { start: lastStart } = this._idx[lastKey];
+        const { start: lastStart, length: lastLength } = this._idx[lastKey];
 
-        return lastStart - firstStart;
+        return lastStart + lastLength - firstStart;
     }
 
     /**
