@@ -110,20 +110,20 @@ export class Packer {
     public flatLengthBetweenVariables(firstVariablePosition: number, lastVariablePosition: number) {
         if (firstVariablePosition > lastVariablePosition) {
             throw Error(
-                `firstVariablePosition (${firstVariablePosition}) cannot be larger `
-                + `than lastVariablePosition (${lastVariablePosition}).`
-            )
+                `firstVariablePosition (${firstVariablePosition}) cannot be larger ` +
+                    `than lastVariablePosition (${lastVariablePosition}).`
+            );
         }
 
         if (lastVariablePosition > this._shape.size - 1) {
             throw Error(
-                `lastVariablePosition (${lastVariablePosition}) cannot `
-                + `be larger than largest index of variables ${this._shape.size - 1}.`
+                `lastVariablePosition (${lastVariablePosition}) cannot ` +
+                    `be larger than largest index of variables ${this._shape.size - 1}.`
             );
         }
 
         const keys = Array.from(this._shape.keys());
-        
+
         const firstKey = keys[firstVariablePosition];
         const { start: firstStart } = this._idx[firstKey];
 

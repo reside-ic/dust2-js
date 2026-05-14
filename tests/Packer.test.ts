@@ -78,20 +78,14 @@ describe("Packer class", () => {
             expect(() => {
                 const sut = new Packer({ shape: mixedShape });
                 sut.flatLengthBetweenVariables(3, 2);
-            }).toThrowError(
-                "firstVariablePosition (3) cannot be larger than "
-                + "lastVariablePosition (2)."
-            );
+            }).toThrowError("firstVariablePosition (3) cannot be larger than " + "lastVariablePosition (2).");
         });
 
         test("slice array throws error if end variable position exceeds shape size - 1", () => {
             expect(() => {
                 const sut = new Packer({ shape: mixedShape });
                 sut.flatLengthBetweenVariables(0, 5);
-            }).toThrowError(
-                "lastVariablePosition (5) cannot be larger than largest "
-                + "index of variables 4."
-            );
+            }).toThrowError("lastVariablePosition (5) cannot be larger than largest " + "index of variables 4.");
         });
 
         test("throws error if empty shape", () => {
