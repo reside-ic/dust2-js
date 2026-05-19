@@ -1,5 +1,4 @@
-import { ContinuousGeneratorODE } from "../../src/interfaces/generators/ContinuousGenerator.ts";
-import { Packer } from "../../src/Packer.ts";
+import type { ContinuousGeneratorODE } from "../../src/interfaces/generators/ContinuousGenerator.ts";
 
 export interface ConstantGradShared {
     y: number;
@@ -7,22 +6,22 @@ export interface ConstantGradShared {
 }
 
 export const constantGrad: ContinuousGeneratorODE<ConstantGradShared, null, null> = {
-    initial(time: number, shared, internal: null, stateNext: number[]) {
+    initial(_imports, time: number, shared, internal: null, stateNext: number[]) {
         stateNext[0] = shared.y;
         stateNext[1] = shared.yAddOne;
     },
 
-    rhs(t, y, dydt) {
+    rhs(_imports, t, y, dydt) {
         dydt[0] = 1;
     },
 
-    output(t, y) {
+    output(_imports, t, y) {
         const output = Array(1);
         output[0] = y[0] + 1;
         return output;
     },
 
-    update(time: number, dt: number, state: number[], shared, internal: null, stateNext: number[]) {
+    update(_imports, time: number, dt: number, state: number[], shared, internal: null, stateNext: number[]) {
         // tests end at time = 10
         if (time === 8) {
             stateNext[0] = 100;
@@ -33,15 +32,15 @@ export const constantGrad: ContinuousGeneratorODE<ConstantGradShared, null, null
         return null;
     },
 
-    packingState(): Packer {
+    packingState(imports) {
         const shape = new Map<string, number[]>([
             ["Y", []],
             ["Y + 1", []]
         ]);
-        return new Packer({ shape });
+        return new imports.Packer({ shape });
     },
 
-    updateShared(shared, newShared) {
+    updateShared(_imports, shared, newShared) {
         shared.y = newShared.y;
         shared.yAddOne = newShared.yAddOne;
     }

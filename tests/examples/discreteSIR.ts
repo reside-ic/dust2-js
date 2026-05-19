@@ -1,7 +1,5 @@
-import { Packer } from "../../src/Packer";
-import { Random } from "@reside-ic/random";
-import { poissonLogDensity } from "../../src/density.ts";
-import { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator.ts";
+import type { Random } from "@reside-ic/random";
+import type { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator.ts";
 
 export interface SIRShared {
     N: number;
@@ -18,7 +16,7 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
     // it would be more js-ish if we returned an array, but that would
     // be harder once we work out how to get read-write slices from
     // ndarray.
-    initial(time: number, shared: SIRShared, internal: null, stateNext: number[]) {
+    initial(_imports, time: number, shared: SIRShared, internal: null, stateNext: number[]) {
         stateNext[0] = shared.N - shared.I0;
         stateNext[1] = shared.I0;
         stateNext[2] = 0;
@@ -27,6 +25,7 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
     },
 
     update(
+        _imports,
         time: number,
         dt: number,
         state: number[],
@@ -52,12 +51,12 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
     },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    internal(shared: SIRShared): null {
+    internal(_imports, shared: SIRShared): null {
         return null;
     },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    packingState(shared: SIRShared): Packer {
+    packingState(imports, shared: SIRShared) {
         const shape = new Map<string, number[]>([
             ["S", []],
             ["I", []],
@@ -65,10 +64,11 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
             ["casesCumul", []],
             ["casesInc", []]
         ]);
-        return new Packer({ shape });
+        return new imports.Packer({ shape });
     },
 
     compareData(
+        imports,
         time: number,
         state: number[],
         data: SIRData,
@@ -78,10 +78,10 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
     ): number {
         const observedPrevalence = data.prevalence;
         const modelledPrevalence = state[1];
-        return poissonLogDensity(observedPrevalence, modelledPrevalence);
+        return imports.math.poissonLogDensity(observedPrevalence, modelledPrevalence);
     },
 
-    updateShared(shared: SIRShared, newShared: SIRShared) {
+    updateShared(_imports, shared: SIRShared, newShared: SIRShared) {
         // does not update N
         shared.I0 = newShared.I0;
         shared.beta = newShared.beta;

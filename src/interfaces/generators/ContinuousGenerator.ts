@@ -1,5 +1,6 @@
 import { Random } from "@reside-ic/random";
 import { BaseGenerator } from "./BaseGenerator.ts";
+import { Imports } from "./Imports.ts";
 
 /**
  * Interpolated solution to the system of differential equations
@@ -27,6 +28,7 @@ export interface ContinuousGeneratorBase<TShared, TInternal, TData> extends Base
      * @copyDoc DiscreteGenerator.update
      */
     update?(
+        imports: Imports,
         time: number,
         dt: number,
         state: number[],
@@ -48,6 +50,8 @@ export interface ContinuousGeneratorODE<TShared, TInternal, TData>
     /**
      * Compute the derivatives
      *
+     * @param imports Object containing useful classes/utilities from this package the class may need
+     *
      * @param t The time to compute initial conditions at
      *
      * @param y The value of the variables
@@ -55,7 +59,7 @@ export interface ContinuousGeneratorODE<TShared, TInternal, TData>
      * @param dydt An array *that will be written into*, will hold
      * derivatives on exit. Must be the same length as `y`
      */
-    rhs(t: number, y: number[], dydt: number[]): void;
+    rhs(imports: Imports, t: number, y: number[], dydt: number[]): void;
 
     /**
      * Compute additional quantities that are derived from the
@@ -65,7 +69,7 @@ export interface ContinuousGeneratorODE<TShared, TInternal, TData>
      *
      * @copyDoc ContinuousGeneratorODE.rhs
      */
-    output?(t: number, y: number[]): number[];
+    output?(imports: Imports, t: number, y: number[]): number[];
 }
 
 /**
@@ -82,11 +86,11 @@ export interface ContinuousGeneratorDDE<TShared, TInternal, TData>
      * @param solution The interpolated solution, which is used to
      * compute delayed versions of variables
      */
-    rhs(t: number, y: number[], dydt: number[], solution: Solution): void;
+    rhs(imports: Imports, t: number, y: number[], dydt: number[], solution: Solution): void;
 
     /**
      * @copyDoc ContinuousGeneratorODE.output
      * @copyDoc ContinuousGeneratorDDE.rhs
      */
-    output?(t: number, y: number[], solution: Solution): number[];
+    output?(imports: Imports, t: number, y: number[], solution: Solution): number[];
 }

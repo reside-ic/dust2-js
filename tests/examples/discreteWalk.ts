@@ -1,6 +1,5 @@
-import { Random } from "@reside-ic/random";
-import { Packer } from "../../src/Packer.ts";
-import { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator.ts";
+import type { Random } from "@reside-ic/random";
+import type { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator.ts";
 
 export interface WalkShared {
     n: number;
@@ -14,7 +13,7 @@ const checkStateRange = (state: number[], shared: WalkShared) => {
 };
 
 export const discreteWalk: DiscreteGenerator<WalkShared, null, null> = {
-    initial(time: number, shared: WalkShared, internal: null, stateNext: number[]) {
+    initial(_imports, time: number, shared: WalkShared, internal: null, stateNext: number[]) {
         checkStateRange(stateNext, shared);
         for (let i = 0; i < shared.n; i++) {
             stateNext[i] = time;
@@ -22,6 +21,7 @@ export const discreteWalk: DiscreteGenerator<WalkShared, null, null> = {
     },
 
     update(
+        _imports,
         time: number,
         dt: number,
         state: number[],
@@ -38,16 +38,16 @@ export const discreteWalk: DiscreteGenerator<WalkShared, null, null> = {
     },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    internal(shared: WalkShared): null {
+    internal(_imports, shared: WalkShared): null {
         return null;
     },
 
-    packingState(shared: WalkShared): Packer {
+    packingState(imports, shared: WalkShared) {
         const shape = new Map<string, number[]>([["values", [shared.n]]]);
-        return new Packer({ shape });
+        return new imports.Packer({ shape });
     },
 
-    updateShared(shared: WalkShared, newShared: WalkShared) {
+    updateShared(_imports, shared: WalkShared, newShared: WalkShared) {
         shared.n = newShared.n;
         shared.sd = newShared.sd;
     }

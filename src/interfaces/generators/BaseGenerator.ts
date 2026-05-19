@@ -1,6 +1,7 @@
 import { Random } from "@reside-ic/random";
 import { Packer } from "../../Packer.ts";
 import { ZeroEvery } from "../../zero.ts";
+import { Imports } from "./Imports.ts";
 
 /**
  * Interface defining the functionality of a general odin model. Generators are stateless and are always provided
@@ -18,44 +19,57 @@ export interface BaseGenerator<TShared, TInternal, TData> {
     /**
      * Sets the initial state of a particle.
      *
+     * @param imports Object containing useful classes/utilities from this package the class may need
      * @param time The current time at which to initialise particle state
      * @param shared The shared parameter values used by the particle's group
      * @param internal The internal state used by the particle's group
      * @param stateNext The array of values which should be updated by the generator with initial particle state values
      * @param random A random number generator which may be used by the generator to initialise values
      */
-    initial(time: number, shared: TShared, internal: TInternal, stateNext: number[], random: Random): void;
+    initial(
+        imports: Imports,
+        time: number,
+        shared: TShared,
+        internal: TInternal,
+        stateNext: number[],
+        random: Random
+    ): void;
 
     /**
      * Generates initial internal state for a given shared state
+     * @param imports Object containing useful classes/utilities from this package the class may need
      * @param shared The shared state to generate initial internal state for
      */
-    internal(shared: TShared): TInternal;
+    internal(imports: Imports, shared: TShared): TInternal;
 
     /**
      * Gets a {@link Packer} which can pack shared state values into a one dimensional array
+     * @param imports Object containing useful classes/utilities from this package the class may need
      * @param shared The shared state which the result should pack
      */
-    packingState(shared: TShared): Packer;
+    packingState(imports: Imports, shared: TShared): Packer;
 
     /**
      * Updates values in a system parameter set from a new parameter set. A generator may
      * do custom updating of some values.
+     * @param imports Object containing useful classes/utilities from this package the class may need
      * @param shared The shared parameter set to update
      * @param newShared The parameter set to update from
      */
-    updateShared(shared: TShared, newShared: TShared): void;
+    updateShared(imports: Imports, shared: TShared, newShared: TShared): void;
 
     /**
      * Gets a {@link ZeroEvery} vector used to reset certain indices of state to 0 at a
      * given frequency
+     * @param imports Object containing useful classes/utilities from this package the class may need
      * @param shared The shared parameter set to update
      */
-    getZeroEvery?(shared: TShared): ZeroEvery;
+    getZeroEvery?(imports: Imports, shared: TShared): ZeroEvery;
 
     /**
      * Compares the state of a particle with a data point, and returns the log likelihood of the state given the data.
      *
+     * @param imports Object containing useful classes/utilities from this package the class may need
      * @param time The new time to which the particle state should be updated.
      * @param state The current state of the particle
      * @param shared The shared parameter values used by the particle's group
@@ -64,6 +78,7 @@ export interface BaseGenerator<TShared, TInternal, TData> {
      * @param data The data point
      */
     compareData?(
+        imports: Imports,
         time: number,
         state: number[],
         data: TData,

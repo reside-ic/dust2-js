@@ -1,5 +1,4 @@
-import { ContinuousGeneratorDDE } from "../../src/interfaces/generators/ContinuousGenerator.ts";
-import { Packer } from "../../src/Packer.ts";
+import type { ContinuousGeneratorDDE } from "../../src/interfaces/generators/ContinuousGenerator.ts";
 
 export interface ConstantGradDelayShared {
     m: number;
@@ -10,7 +9,7 @@ export interface ConstantGradDelayShared {
 }
 
 export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, null, null> = {
-    initial(time: number, shared, internal: null, stateNext: number[]) {
+    initial(_imports, time: number, shared, internal: null, stateNext: number[]) {
         stateNext[0] = shared.m;
         stateNext[1] = shared.x;
         stateNext[2] = shared.c;
@@ -18,13 +17,13 @@ export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, 
         stateNext[4] = shared.yDelay1;
     },
 
-    rhs(t, y, dydt) {
+    rhs(_imports, t, y, dydt) {
         dydt[0] = 0;
         dydt[1] = 1;
         dydt[2] = 1;
     },
 
-    output(t, y, solution) {
+    output(_imports, t, y, solution) {
         const output = Array(2);
         output[0] = y[0] * y[1] + y[2];
         const [mDelay, xDelay, cDelay] = solution(t - 1);
@@ -32,7 +31,7 @@ export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, 
         return output;
     },
 
-    update(time: number, dt: number, state: number[], shared, internal: null, stateNext: number[]) {
+    update(_imports, time: number, dt: number, state: number[], shared, internal: null, stateNext: number[]) {
         if (Math.abs(time - 8) < 1e-10) {
             stateNext[0] = 100;
         }
@@ -46,7 +45,7 @@ export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, 
         return null;
     },
 
-    packingState(): Packer {
+    packingState(imports) {
         const shape = new Map<string, number[]>([
             ["gradient", []],
             ["X", []],
@@ -54,10 +53,10 @@ export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, 
             ["Y", []],
             ["Y delayed by 1", []]
         ]);
-        return new Packer({ shape });
+        return new imports.Packer({ shape });
     },
 
-    updateShared(shared, newShared) {
+    updateShared(_imports, shared, newShared) {
         shared.m = newShared.m;
         shared.x = newShared.x;
         shared.c = newShared.c;

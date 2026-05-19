@@ -1,5 +1,4 @@
-import { ContinuousGeneratorODE } from "../../src/interfaces/generators/ContinuousGenerator.ts";
-import { Packer } from "../../src/Packer.ts";
+import type { ContinuousGeneratorODE } from "../../src/interfaces/generators/ContinuousGenerator.ts";
 
 export interface ConstantGradNoUpdateShared {
     y: number;
@@ -7,16 +6,16 @@ export interface ConstantGradNoUpdateShared {
 }
 
 export const constantGradNoUpdate: ContinuousGeneratorODE<ConstantGradNoUpdateShared, null, null> = {
-    initial(time: number, shared, internal: null, stateNext: number[]) {
+    initial(_imports, time: number, shared, internal: null, stateNext: number[]) {
         stateNext[0] = shared.y;
         stateNext[1] = shared.yAddOne;
     },
 
-    rhs(t, y, dydt) {
+    rhs(_imports, t, y, dydt) {
         dydt[0] = 1;
     },
 
-    output(t, y) {
+    output(_imports, t, y) {
         const output = Array(1);
         output[0] = y[0] + 1;
         return output;
@@ -26,15 +25,15 @@ export const constantGradNoUpdate: ContinuousGeneratorODE<ConstantGradNoUpdateSh
         return null;
     },
 
-    packingState(): Packer {
+    packingState(imports) {
         const shape = new Map<string, number[]>([
             ["Y", []],
             ["Y + 1", []]
         ]);
-        return new Packer({ shape });
+        return new imports.Packer({ shape });
     },
 
-    updateShared(shared, newShared) {
+    updateShared(_imports, shared, newShared) {
         shared.y = newShared.y;
         shared.yAddOne = newShared.yAddOne;
     }

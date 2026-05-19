@@ -6,6 +6,7 @@ import { arrayStateToArray } from "../src/utils.ts";
 import { SIRShared } from "./examples/discreteSIR.ts";
 import { Random, RngStateBuiltin, RngStateObserved } from "@reside-ic/random";
 import { expectedGroup1Initial, expectedGroup2Initial, sirShared } from "./examples/SIRTestHelpers.ts";
+import { imports } from "../src/interfaces/generators/Imports.ts";
 
 const generator = discreteSIR;
 
@@ -239,26 +240,26 @@ describe("DiscreteSystem", () => {
         // Group 1
         const g1Shared = sirShared[0];
         const g1p1Step1State = newSIRState();
-        generator.update(start, dt, g1StartState, g1Shared, null, g1p1Step1State, compareRandom);
+        generator.update(imports, start, dt, g1StartState, g1Shared, null, g1p1Step1State, compareRandom);
         const g1p1Step2State = newSIRState();
-        generator.update(step1, dt, g1p1Step1State, g1Shared, null, g1p1Step2State, compareRandom);
+        generator.update(imports, step1, dt, g1p1Step1State, g1Shared, null, g1p1Step2State, compareRandom);
 
         const g1p2Step1State = newSIRState();
-        generator.update(start, dt, g1StartState, g1Shared, null, g1p2Step1State, compareRandom);
+        generator.update(imports, start, dt, g1StartState, g1Shared, null, g1p2Step1State, compareRandom);
         const g1p2Step2State = newSIRState();
-        generator.update(step1, dt, g1p2Step1State, g1Shared, null, g1p2Step2State, compareRandom);
+        generator.update(imports, step1, dt, g1p2Step1State, g1Shared, null, g1p2Step2State, compareRandom);
 
         // Group 2
         const g2Shared = sirShared[1];
         const g2p1Step1State = newSIRState();
-        generator.update(start, dt, g2StartState, g2Shared, null, g2p1Step1State, compareRandom);
+        generator.update(imports, start, dt, g2StartState, g2Shared, null, g2p1Step1State, compareRandom);
         const g2p1Step2State = newSIRState();
-        generator.update(step1, dt, g2p1Step1State, g2Shared, null, g2p1Step2State, compareRandom);
+        generator.update(imports, step1, dt, g2p1Step1State, g2Shared, null, g2p1Step2State, compareRandom);
 
         const g2p2Step1State = newSIRState();
-        generator.update(start, dt, g2StartState, g2Shared, null, g2p2Step1State, compareRandom);
+        generator.update(imports, start, dt, g2StartState, g2Shared, null, g2p2Step1State, compareRandom);
         const g2p2Step2State = new Array<number>(5);
-        generator.update(step1, dt, g2p2Step1State, g2Shared, null, g2p2Step2State, compareRandom);
+        generator.update(imports, step1, dt, g2p2Step1State, g2Shared, null, g2p2Step2State, compareRandom);
 
         expect(arrayStateToArray(sys.state.getParticle(0, 0))).toStrictEqual(g1p1Step2State);
         expect(arrayStateToArray(sys.state.getParticle(0, 1))).toStrictEqual(g1p2Step2State);
@@ -307,7 +308,7 @@ describe("DiscreteSystem", () => {
     // replay the same random values in order so we get the same results
     const getNextState = (start, currentState, shared, dt, random) => {
         const nextState = newSIRState();
-        generator.update(start, dt, currentState, shared, null, nextState, random);
+        generator.update(imports, start, dt, currentState, shared, null, nextState, random);
         return nextState;
     };
 
