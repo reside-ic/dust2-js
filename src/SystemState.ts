@@ -29,33 +29,28 @@ export interface ArrayState {
 export type ParticleState = ArrayState;
 
 export type ParticleSubState = number[];
-export type GroupSubState = ParticleSubState[];
 
 /**
  * Type used for full or partial state updates.
  */
-export type SystemSubState = GroupSubState[];
+export type SystemSubState = ParticleSubState[];
 
 /**
- * Class representing the state of a {@link SystemInterface} made up of {@link SystemState.nGroups | nGroups} groups
- * with {@link SystemState.nParticles | nParticles} particles in each group, where each particle contains
- * {@link SystemState.nStateElements | nStateElements} numeric values.
+ * Class representing the state of a {@link SystemInterface} made up of {@link SystemState.nParticles | nParticles}
+ * particles, where each particle contains {@link SystemState.nStateElements | nStateElements} numeric values.
  */
 export class SystemState {
     private _state: ndarray.NdArray;
     private _stateNext: ndarray.NdArray; // a working area for building next state value before swapping into _state
-    private readonly _nGroups: number;
     private readonly _nParticles: number;
     private readonly _nStateElements: number;
 
     /**
      *
-     * @param nGroups The number of groups in the state where each group shares model parameter values
-     * @param nParticles The number of particles in each group
+     * @param nParticles The number of particles
      * @param nStateElements The number of numeric state values in each particle
      */
-    constructor(nGroups: number, nParticles: number, nStateElements: number) {
-        this._nGroups = nGroups;
+    constructor(nParticles: number, nStateElements: number) {
         this._nParticles = nParticles;
         this._nStateElements = nStateElements;
         this._state = this.newState();
@@ -63,20 +58,13 @@ export class SystemState {
     }
 
     private newState() {
-        // arrange the ndArray with dimensions: group, particle, stateElement
-        const len = this._nGroups * this._nParticles * this._nStateElements;
-        return ndarray(new Array<number>(len).fill(0), [this._nGroups, this._nParticles, this._nStateElements]);
+        // arrange the ndArray with dimensions: particle, stateElement
+        const len = this._nParticles * this._nStateElements;
+        return ndarray(new Array<number>(len).fill(0), [this._nParticles, this._nStateElements]);
     }
 
     /**
-     * The number of groups in the system
-     */
-    public get nGroups(): number {
-        return this._nGroups;
-    }
-
-    /**
-     * The number of particles per group in the system
+     * The number of particles in the system
      */
     public get nParticles(): number {
         return this._nParticles;
@@ -90,64 +78,51 @@ export class SystemState {
     }
 
     /**
-     * Returns a slice of the underlying state which is a view of a particular group and particle
-     * @param iGroup The group index to get
+     * Returns a slice of the underlying state which is a view of a particular particle
      * @param iParticle The particle index to get
      */
-    public getParticle(iGroup: number, iParticle: number): ArrayState {
-        this.checkIndexes(iGroup, iParticle);
-        return this._state.pick(iGroup, iParticle, null);
+    public getParticle(iParticle: number): ArrayState {
+        this.checkIndex(iParticle);
+        return this._state.pick(iParticle, null);
     }
 
     /**
      * Updates the underlying state with the given values for a particular particle
-     * @param iGroup The group index to set values for
      * @param iParticle The particle index to set values for
      * @param values The values to set in the underlying state
      */
-    public setParticle(iGroup: number, iParticle: number, values: number[]): void {
-        this.checkIndexes(iGroup, iParticle);
+    public setParticle(iParticle: number, values: number[]): void {
+        this.checkIndex(iParticle);
         if (values.length !== this._nStateElements) {
             throw new RangeError(`Particle state array must be of length ${this._nStateElements}.`);
         }
         for (let i = 0; i < values.length; i++) {
-            this._state.set(iGroup, iParticle, i, values[i]);
+            this._state.set(iParticle, i, values[i]);
         }
     }
 
-    private checkIndexes(iGroup: number, iParticle: number) {
-        checkIntegerInRange("Group index", iGroup, 0, this._nGroups - 1);
+    private checkIndex(iParticle: number) {
         checkIntegerInRange("Particle index", iParticle, 0, this._nParticles - 1);
     }
 
     /**
-     * Apply a reordering to the particles in every group according to a reordering parameter which defines
-     * a new order for each group.
-     * @param reordering {@link https://github.com/scijs/ndarray | NdArray } whose first dimension defines group index
-     * and whose second dimension defines a new order of particles for each group. For example, if this state has three
-     * particles per group, a reordering of `[2, 0, 1]` for any group would imply that its current third particle should
-     * be reordered to the first position, its current first particle to the second position, and its current second
-     * particle to the third position. Reordering can also perform filtering and duplication i.e. indexes between 0
-     * and {@link nParticles} - 1 may be repeated or omitted in the reordering.
+     * Apply a reordering to every particle according to a reordering parameter which defines a new order.
+     * @param reordering {@link https://github.com/scijs/ndarray | NdArray } whose first dimension defines a new order
+     * of particles. For example, if this state has three particles, a reordering of `[2, 0, 1]` would imply that its
+     * current third particle should be reordered to the first position, its current first particle to the second
+     * position, and its current second particle to the third position. Reordering can also perform filtering and
+     * duplication i.e. indexes between 0 and {@link nParticles} - 1 may be repeated or omitted in the reordering.
      */
     public reorder(reordering: ndarray.NdArray) {
         const shape = reordering.shape;
-        if (shape.length !== 2 || shape[0] !== this._nGroups || shape[1] !== this._nParticles) {
+        if (shape.length !== 1 || shape[0] !== this._nParticles) {
             throw new DustParameterError(
-                "Unexpected reordering shape. " +
-                    `Expected [${this._nGroups},${this._nParticles}] but got ${JSON.stringify(shape)}.`
+                "Unexpected reordering shape. " + `Expected [${this._nParticles}] but got ${JSON.stringify(shape)}.`
             );
         }
         // Check that each reordering contains expected values
-        for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
-            for (let newParticleIndex = 0; newParticleIndex < this._nParticles; newParticleIndex++) {
-                checkIntegerInRange(
-                    "Reordering index",
-                    reordering.get(iGroup, newParticleIndex),
-                    0,
-                    this._nParticles - 1
-                );
-            }
+        for (let newParticleIndex = 0; newParticleIndex < this._nParticles; newParticleIndex++) {
+            checkIntegerInRange("Reordering index", reordering.get(newParticleIndex), 0, this._nParticles - 1);
         }
 
         this.reorderNoCheck(reordering);
@@ -155,13 +130,11 @@ export class SystemState {
 
     // We'll use this eventually when we want to generate our own indexes internal to the package
     private reorderNoCheck(reordering: ndarray.NdArray) {
-        for (let iGroup = 0; iGroup < this._nGroups; iGroup++) {
-            for (let newParticleIndex = 0; newParticleIndex < this._nParticles; newParticleIndex++) {
-                const oldParticleIndex = reordering.get(iGroup, newParticleIndex);
-                const particleValues = this.getParticle(iGroup, oldParticleIndex);
-                for (let iStateElement = 0; iStateElement < this._nStateElements; iStateElement++) {
-                    this._stateNext.set(iGroup, newParticleIndex, iStateElement, particleValues.get(iStateElement));
-                }
+        for (let newParticleIndex = 0; newParticleIndex < this._nParticles; newParticleIndex++) {
+            const oldParticleIndex = reordering.get(newParticleIndex);
+            const particleValues = this.getParticle(oldParticleIndex);
+            for (let iStateElement = 0; iStateElement < this._nStateElements; iStateElement++) {
+                this._stateNext.set(newParticleIndex, iStateElement, particleValues.get(iStateElement));
             }
         }
 
@@ -171,20 +144,14 @@ export class SystemState {
     /**
      * @copyDoc SystemInterface.setState
      */
-    public setState(
-        newState: SystemSubState,
-        groupIndices: number[] = [],
-        particleIndices: number[] = [],
-        stateElementIndices: number[] = []
-    ) {
+    public setState(newState: SystemSubState, particleIndices: number[] = [], stateElementIndices: number[] = []) {
         // Check that the dimensions of new state actually match size of the indices arrays
         // provided (or the relevant dimension of the whole state if not)
         const expectedNewStateLengths = [
-            groupIndices.length || this._nGroups,
             particleIndices.length || this._nParticles,
             stateElementIndices.length || this._nStateElements
         ];
-        const expectedNewStateNames = ["newState Groups", "newState Particles", "newState State Elements"];
+        const expectedNewStateNames = ["newState Particles", "newState State Elements"];
         checkNestedArrayLengthsMatch(newState, expectedNewStateLengths, expectedNewStateNames);
 
         const iterateIndices = (
@@ -207,17 +174,15 @@ export class SystemState {
             }
         };
 
-        iterateIndices("Group index", groupIndices, this._nGroups, (g: number, ig: number) => {
-            iterateIndices("Particle index", particleIndices, this._nParticles, (p: number, ip: number) => {
-                iterateIndices(
-                    "State Element index",
-                    stateElementIndices,
-                    this._nStateElements,
-                    (v: number, iv: number) => {
-                        this._state.set(g, p, v, newState[ig][ip][iv]);
-                    }
-                );
-            });
+        iterateIndices("Particle index", particleIndices, this._nParticles, (p: number, ip: number) => {
+            iterateIndices(
+                "State Element index",
+                stateElementIndices,
+                this._nStateElements,
+                (v: number, iv: number) => {
+                    this._state.set(p, v, newState[ip][iv]);
+                }
+            );
         });
     }
 }

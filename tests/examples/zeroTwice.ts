@@ -6,12 +6,12 @@ export interface ABState {
 }
 
 export const zeroTwice: DiscreteGenerator<ABState, null, null> = {
-    initial(_imports, _time, _shared, _internal, stateNext) {
+    initial(_imports, _time, _params, _internal, stateNext) {
         stateNext[0] = 0;
         stateNext[1] = 0;
     },
 
-    update(_imports, _time, _dt, state, _shared, _internal, stateNext) {
+    update(_imports, _time, _dt, state, _params, _internal, stateNext) {
         stateNext[0] = state[0] + 1;
         stateNext[1] = state[1] + 1;
     },
@@ -24,10 +24,10 @@ export const zeroTwice: DiscreteGenerator<ABState, null, null> = {
         return new imports.Packer({ shape });
     },
 
-    getZeroEvery(_imports, shared) {
+    getZeroEvery(_imports, params) {
         return [
-            [shared.a, [0]],
-            [shared.b, [1]]
+            [params.a, [0]],
+            [params.b, [1]]
         ];
     },
 
@@ -35,5 +35,5 @@ export const zeroTwice: DiscreteGenerator<ABState, null, null> = {
         return null;
     },
 
-    updateShared() {}
+    updateParams() {}
 };

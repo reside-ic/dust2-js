@@ -8,7 +8,6 @@ import { ArrayState, ParticleState } from "./SystemState.ts";
  * get state values by element index or time index.
  */
 export class SystemSimulateResult {
-    private _nGroups: number;
     private readonly _nParticles: number;
     private readonly _nStateElements: number;
     private readonly _nTimes: number;
@@ -16,26 +15,22 @@ export class SystemSimulateResult {
 
     /**
      *
-     * @param nGroups The number of groups in the {@link SystemInterface}
-     * @param nParticles The number of particles per group
+     * @param nParticles The number of particles
      * @param nStateElements The number of state elements for which this object holds state values
      * @param nTimes The number of times for which this object holds state values
      */
-    constructor(nGroups: number, nParticles: number, nStateElements: number, nTimes: number) {
-        checkIntegerInRange("Number of groups", nGroups, 1);
+    constructor(nParticles: number, nStateElements: number, nTimes: number) {
         checkIntegerInRange("Number of particles", nParticles, 1);
         checkIntegerInRange("Number of state elements", nStateElements, 1);
         checkIntegerInRange("Number of times", nTimes, 1);
 
-        this._nGroups = nGroups;
         this._nParticles = nParticles;
         this._nStateElements = nStateElements;
         this._nTimes = nTimes;
 
         // arrange the ndArray with dimensions: group, particle, stateElement * time
-        const len = this._nGroups * this._nParticles * this._nStateElements * this._nTimes;
+        const len = this._nParticles * this._nStateElements * this._nTimes;
         this._resultValues = ndarray(new Array<number>(len).fill(0), [
-            this._nGroups,
             this._nParticles,
             this._nStateElements,
             this._nTimes
@@ -54,14 +49,13 @@ export class SystemSimulateResult {
      * but may be a a partial array of all elements in the particle, depending on the elements requested in the
      * simulate call.
      *
-     * @param iGroup Index of the group
      * @param iParticle Index of the particle
      * @param iTime Index of the time - NB not time value, but the index in the times parameter provided to
      * {@link SystemInterface#simulate | SystemInterface.simulate}
      */
-    public getValuesForTime(iGroup: number, iParticle: number, iTime: number): ParticleState {
-        this.checkIndexes(iGroup, iParticle, null, iTime);
-        return this._resultValues.pick(iGroup, iParticle, null, iTime);
+    public getValuesForTime(iParticle: number, iTime: number): ParticleState {
+        this.checkIndexes(iParticle, null, iTime);
+        return this._resultValues.pick(iParticle, null, iTime);
     }
 
     /**
@@ -71,13 +65,13 @@ export class SystemSimulateResult {
      * @param stateValues The state values to set, for all values requested in the stateElementIndices parameter
      * provided to {@link SystemInterface#simulate  | SystemInterface.simulate}
      */
-    public setValuesForTime(iGroup: number, iParticle: number, iTime: number, stateValues: number[]) {
-        this.checkIndexes(iGroup, iParticle, null, iTime);
+    public setValuesForTime(iParticle: number, iTime: number, stateValues: number[]) {
+        this.checkIndexes(iParticle, null, iTime);
         if (stateValues.length !== this._nStateElements) {
             throw RangeError(`Expected ${this._nStateElements} state values but got ${stateValues.length}.`);
         }
         for (let i = 0; i < stateValues.length; i++) {
-            this._resultValues.set(iGroup, iParticle, i, iTime, stateValues[i]);
+            this._resultValues.set(iParticle, i, iTime, stateValues[i]);
         }
     }
 
@@ -89,13 +83,12 @@ export class SystemSimulateResult {
      * the index in the stateElementIndices parameter provided to
      * {@link SystemInterface#simulate | SystemInterface.simulate}
      */
-    public getStateElement(iGroup: number, iParticle: number, iStateElement: number): ArrayState {
-        this.checkIndexes(iGroup, iParticle, iStateElement, null);
-        return this._resultValues.pick(iGroup, iParticle, iStateElement, null);
+    public getStateElement(iParticle: number, iStateElement: number): ArrayState {
+        this.checkIndexes(iParticle, iStateElement, null);
+        return this._resultValues.pick(iParticle, iStateElement, null);
     }
 
-    private checkIndexes(iGroup: number, iParticle: number, iStateElement: number | null, iTime: number | null) {
-        checkIntegerInRange("Group index", iGroup, 0, this._nGroups - 1);
+    private checkIndexes(iParticle: number, iStateElement: number | null, iTime: number | null) {
         checkIntegerInRange("Particle index", iParticle, 0, this._nParticles - 1);
         if (iStateElement !== null) {
             checkIntegerInRange("State Element index", iStateElement, 0, this._nStateElements - 1);

@@ -25,19 +25,12 @@ export interface SystemInterface<TData> {
      * Sets new values in the system state
      * @param newState The new state values for all or part of the state. If partial state, the shape must match the
      * values provided in the indices parameters
-     * @param groupIndices The group indices, in order, which the first dimension of newState are setting values for.
-     * If empty, this means newState provides values for all groups.
      * @param particleIndices The particle indices, in order, which the second dimension of newState are setting values
      * for. If empty, this means newState provides values for all particles.
      * @param stateElementIndices The state element indices, in order, which the second dimension of newState are
      * setting values for. If empty, this means newState provides values for all state elements.
      */
-    setState(
-        newState: SystemSubState,
-        groupIndices: number[],
-        particleIndices: number[],
-        stateElementIndices: number[]
-    ): void;
+    setState(newState: SystemSubState, particleIndices: number[], stateElementIndices: number[]): void;
 
     /**
      * Runs the system from its current time to the given time, causing its state to be updated
@@ -58,7 +51,7 @@ export interface SystemInterface<TData> {
     /**
      * Compares the state of all particles in the syatem with observed data, and returns an
      * {@link https://github.com/scijs/ndarray |NdArray } of log likelihoods
-     * of each particle state given the data, where the NdArray has shape [nGroups, nParticles]
+     * of each particle state given the data, where the NdArray has shape [nParticles]
      * @param data Observed data to compare against system state
      */
     compareData(data: TData | TData[]): NdArray;

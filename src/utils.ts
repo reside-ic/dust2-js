@@ -81,20 +81,11 @@ export const checkNestedArrayLengthsMatch = (
 };
 
 // Convert an array of arrays into an NdArray
-export const ndArrayFrom = (source: number[][]): ndarray.NdArray => {
+export const ndArrayFrom = (source: number[]): ndarray.NdArray => {
     if (source.length === 0) {
         throw new DustParameterError("Cannot convert from empty source");
     }
-    const expectedLength = source[0].length;
-    if (source.some((arr) => arr.length !== expectedLength)) {
-        throw new DustParameterError("Source arrays must all be the same length");
-    }
-
-    const values = source.reduce((acc, current) => {
-        acc.push(...current);
-        return acc;
-    }, [] as number[]);
-    return ndarray(values, [source.length, expectedLength]);
+    return ndarray(source, [source.length]);
 };
 
 export const getRangeFromZero = (count: number) => [...Array(count).keys()];

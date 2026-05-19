@@ -1,7 +1,7 @@
 import type { Random } from "@reside-ic/random";
 import type { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator.ts";
 
-export interface SIRShared {
+export interface SIRParams {
     N: number;
     I0: number;
     beta: number;
@@ -12,13 +12,13 @@ export interface SIRData {
     prevalence: number;
 }
 
-export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
+export const discreteSIR: DiscreteGenerator<SIRParams, null, SIRData> = {
     // it would be more js-ish if we returned an array, but that would
     // be harder once we work out how to get read-write slices from
     // ndarray.
-    initial(_imports, time: number, shared: SIRShared, internal: null, stateNext: number[]) {
-        stateNext[0] = shared.N - shared.I0;
-        stateNext[1] = shared.I0;
+    initial(_imports, time: number, params: SIRParams, internal: null, stateNext: number[]) {
+        stateNext[0] = params.N - params.I0;
+        stateNext[1] = params.I0;
         stateNext[2] = 0;
         stateNext[3] = 0;
         stateNext[4] = 0;
@@ -29,7 +29,7 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
         time: number,
         dt: number,
         state: number[],
-        shared: SIRShared,
+        params: SIRParams,
         internal: null,
         stateNext: number[],
         random: Random
@@ -39,8 +39,8 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
         const R = state[2];
         const cases_cumul = state[3];
         const cases_inc = state[4];
-        const p_SI = 1 - Math.exp(((-shared.beta * I) / shared.N) * dt);
-        const p_IR = 1 - Math.exp(-shared.gamma * dt);
+        const p_SI = 1 - Math.exp(((-params.beta * I) / params.N) * dt);
+        const p_IR = 1 - Math.exp(-params.gamma * dt);
         const n_SI = random.binomial(S, p_SI);
         const n_IR = random.binomial(I, p_IR);
         stateNext[0] = S - n_SI;
@@ -51,12 +51,12 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
     },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    internal(_imports, shared: SIRShared): null {
+    internal(_imports, params: SIRParams): null {
         return null;
     },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    packingState(imports, shared: SIRShared) {
+    packingState(imports, params: SIRParams) {
         const shape = new Map<string, number[]>([
             ["S", []],
             ["I", []],
@@ -72,7 +72,7 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
         time: number,
         state: number[],
         data: SIRData,
-        shared: SIRShared, // eslint-disable-line @typescript-eslint/no-unused-vars
+        params: SIRParams, // eslint-disable-line @typescript-eslint/no-unused-vars
         internal: null, // eslint-disable-line @typescript-eslint/no-unused-vars
         random: Random // eslint-disable-line @typescript-eslint/no-unused-vars
     ): number {
@@ -81,10 +81,10 @@ export const discreteSIR: DiscreteGenerator<SIRShared, null, SIRData> = {
         return imports.math.poissonLogDensity(observedPrevalence, modelledPrevalence);
     },
 
-    updateShared(_imports, shared: SIRShared, newShared: SIRShared) {
+    updateParams(_imports, params: SIRParams, newParams: SIRParams) {
         // does not update N
-        shared.I0 = newShared.I0;
-        shared.beta = newShared.beta;
-        shared.gamma = newShared.gamma;
+        params.I0 = newParams.I0;
+        params.beta = newParams.beta;
+        params.gamma = newParams.gamma;
     }
 };

@@ -2,19 +2,19 @@ import { ContinuousGeneratorDDE, ContinuousGeneratorODE } from "./ContinuousGene
 import { DiscreteGenerator } from "./DiscreteGenerator";
 
 // discriminated union so type system can work out what type of generator we are using
-export type GeneratorConfig<TShared, TInternal, TData> =
+export type GeneratorConfig<TParams, TInternal, TData> =
     | {
-          generator: DiscreteGenerator<TShared, TInternal, TData>;
+          generator: DiscreteGenerator<TParams, TInternal, TData>;
           isContinuous: false;
           hasDelays: false;
       }
     | {
-          generator: ContinuousGeneratorODE<TShared, TInternal, TData>;
+          generator: ContinuousGeneratorODE<TParams, TInternal, TData>;
           isContinuous: true;
           hasDelays: false;
       }
     | {
-          generator: ContinuousGeneratorDDE<TShared, TInternal, TData>;
+          generator: ContinuousGeneratorDDE<TParams, TInternal, TData>;
           isContinuous: true;
           hasDelays: true;
       };

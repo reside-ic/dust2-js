@@ -7,7 +7,7 @@ const generator = zeroTwice;
 const createSystem = (shared: ABState) =>
     System.createDiscrete(
         generator,
-        [shared],
+        shared,
         0, // time
         1, // dt
         1 // nParticles
@@ -21,8 +21,8 @@ const simulateToTime = (shared: ABState, time: number) => {
     sys.setStateInitial();
     for (let i = 1; i < time + 1; i++) {
         sys.runToTime(i);
-        ret.a.push(sys.state.getParticle(0, 0).get(0));
-        ret.b.push(sys.state.getParticle(0, 0).get(1));
+        ret.a.push(sys.state.getParticle(0).get(0));
+        ret.b.push(sys.state.getParticle(0).get(1));
     }
     return ret;
 };

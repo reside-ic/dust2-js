@@ -1,6 +1,6 @@
 import type { ContinuousGeneratorDDE } from "../../src/interfaces/generators/ContinuousGenerator.ts";
 
-export interface ConstantGradDelayShared {
+export interface ConstantGradDelayParams {
     m: number;
     x: number;
     c: number;
@@ -8,13 +8,13 @@ export interface ConstantGradDelayShared {
     yDelay1: number;
 }
 
-export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, null, null> = {
-    initial(_imports, time: number, shared, internal: null, stateNext: number[]) {
-        stateNext[0] = shared.m;
-        stateNext[1] = shared.x;
-        stateNext[2] = shared.c;
-        stateNext[3] = shared.y;
-        stateNext[4] = shared.yDelay1;
+export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayParams, null, null> = {
+    initial(_imports, time: number, params, internal: null, stateNext: number[]) {
+        stateNext[0] = params.m;
+        stateNext[1] = params.x;
+        stateNext[2] = params.c;
+        stateNext[3] = params.y;
+        stateNext[4] = params.yDelay1;
     },
 
     rhs(_imports, t, y, dydt) {
@@ -31,7 +31,7 @@ export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, 
         return output;
     },
 
-    update(_imports, time: number, dt: number, state: number[], shared, internal: null, stateNext: number[]) {
+    update(_imports, time: number, dt: number, state: number[], params, internal: null, stateNext: number[]) {
         if (Math.abs(time - 8) < 1e-10) {
             stateNext[0] = 100;
         }
@@ -56,11 +56,11 @@ export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayShared, 
         return new imports.Packer({ shape });
     },
 
-    updateShared(_imports, shared, newShared) {
-        shared.m = newShared.m;
-        shared.x = newShared.x;
-        shared.c = newShared.c;
-        shared.y = newShared.y;
-        shared.yDelay1 = newShared.yDelay1;
+    updateParams(_imports, params, newParams) {
+        params.m = newParams.m;
+        params.x = newParams.x;
+        params.c = newParams.c;
+        params.y = newParams.y;
+        params.yDelay1 = newParams.yDelay1;
     }
 };

@@ -23,7 +23,7 @@ export type FullSolution = (t: number[]) => number[][];
  *
  * @copyDoc BaseGenerator
  */
-export interface ContinuousGeneratorBase<TShared, TInternal, TData> extends BaseGenerator<TShared, TInternal, TData> {
+export interface ContinuousGeneratorBase<TParams, TInternal, TData> extends BaseGenerator<TParams, TInternal, TData> {
     /**
      * @copyDoc DiscreteGenerator.update
      */
@@ -32,7 +32,7 @@ export interface ContinuousGeneratorBase<TShared, TInternal, TData> extends Base
         time: number,
         dt: number,
         state: number[],
-        shared: TShared,
+        params: TParams,
         internal: TInternal,
         stateNext: number[],
         random: Random
@@ -45,8 +45,8 @@ export interface ContinuousGeneratorBase<TShared, TInternal, TData> extends Base
  *
  * @copyDoc BaseGenerator
  */
-export interface ContinuousGeneratorODE<TShared, TInternal, TData>
-    extends ContinuousGeneratorBase<TShared, TInternal, TData> {
+export interface ContinuousGeneratorODE<TParams, TInternal, TData>
+    extends ContinuousGeneratorBase<TParams, TInternal, TData> {
     /**
      * Compute the derivatives
      *
@@ -78,8 +78,8 @@ export interface ContinuousGeneratorODE<TShared, TInternal, TData>
  *
  * @copyDoc BaseGenerator
  */
-export interface ContinuousGeneratorDDE<TShared, TInternal, TData>
-    extends ContinuousGeneratorBase<TShared, TInternal, TData> {
+export interface ContinuousGeneratorDDE<TParams, TInternal, TData>
+    extends ContinuousGeneratorBase<TParams, TInternal, TData> {
     /**
      * @copyDoc ContinuousGeneratorODE.rhs
      *
