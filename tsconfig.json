@@ -6,14 +6,16 @@
         "lib": ["ESNext", "ESNext.Array"],
         "skipLibCheck": true,
         "declaration": true,
-        "outDir": "./lib",
+        "emitDeclarationOnly": true,
+        "outDir": "./dist",
+        "outFile": "./dist/dust2",
+        "types": ["node"],
 
         /* Bundler mode */
         "moduleResolution": "Bundler",
         "allowImportingTsExtensions": true,
-        "isolatedModules": true,
         "moduleDetection": "force",
-        "noEmit": true,
+        "noEmit": false,
 
         /* Linting */
         "strict": true,
@@ -22,5 +24,6 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true
     },
-    "include": ["src"]
+    "include": ["src"],
+    "files": ["src/index.ts"]
 }
