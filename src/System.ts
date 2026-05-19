@@ -36,7 +36,7 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
     protected readonly _zeroEvery: ZeroEvery;
     protected readonly _random: Random;
     protected _time: number;
-    protected _solvers: dopri.Dopri[] | dopri.DDE[] | null[];
+    protected _solver: dopri.Dopri | dopri.DDE | null = null;
     protected _rhsVariablesLength: number;
     protected _history: dopri.History[];
 
@@ -73,7 +73,6 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
         this._params = params;
         this._internal = generator.internal(imports, params);
         this._zeroEvery = generator.getZeroEvery ? generator.getZeroEvery!(imports, params) : [];
-        this._solvers = Array(nParticles).fill(null);
         this._history = Array(nParticles).fill([]);
 
         const nVariables = this._statePacker.nVariables;
@@ -191,34 +190,30 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
      * Dopri solvers if this is a continuous system.
      */
     public setStateInitial(): void {
+        const { generator, isContinuous, hasDelays } = this._generatorCfg;
+        if (isContinuous) {
+            if (hasDelays) {
+                const generatorRhs = generator.rhs.bind(null, imports);
+                const generatorOutput = generator.output?.bind(null, imports);
+                this._solver = new dopri.DDE(
+                    generatorRhs,
+                    this._rhsVariablesLength,
+                    // these are the control params which will be added in a future ticket: mrc-6742
+                    // https://mrc-ide.github.io/dopri-js/interfaces/DopriControlParam.html
+                    {},
+                    generatorOutput
+                );
+            } else {
+                const generatorRhs = generator.rhs.bind(null, imports);
+                const generatorOutput = generator.output?.bind(null, imports);
+                this._solver = new dopri.Dopri(generatorRhs, this._rhsVariablesLength, {}, generatorOutput);
+            }
+        }
+
         this.iterateParticles((iParticle) => {
             const state = this._state.getParticle(iParticle);
             const arrayState = particleStateToArray(state);
-            const { generator, isContinuous, hasDelays } = this._generatorCfg;
             generator.initial(imports, this._time, this._params, this._internal, arrayState, this._random);
-            if (isContinuous) {
-                if (hasDelays) {
-                    const generatorRhs = generator.rhs.bind(null, imports);
-                    const generatorOutput = generator.output?.bind(null, imports);
-                    this._solvers[iParticle] = new dopri.DDE(
-                        generatorRhs,
-                        this._rhsVariablesLength,
-                        // these are the control params which will be added in a future ticket: mrc-6742
-                        // https://mrc-ide.github.io/dopri-js/interfaces/DopriControlParam.html
-                        {},
-                        generatorOutput
-                    );
-                } else {
-                    const generatorRhs = generator.rhs.bind(null, imports);
-                    const generatorOutput = generator.output?.bind(null, imports);
-                    this._solvers[iParticle] = new dopri.Dopri(
-                        generatorRhs,
-                        this._rhsVariablesLength,
-                        {},
-                        generatorOutput
-                    );
-                }
-            }
             this._state.setParticle(iParticle, arrayState);
         });
     }
@@ -246,8 +241,7 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
         }
         const nSteps = (time - this._time) / this._dt;
         this.iterateParticles((iParticle) => {
-            const solver = this._solvers[iParticle];
-            const state = this.runParticle(this._state.getParticle(iParticle), nSteps, solver, time, iParticle);
+            const state = this.runParticle(this._state.getParticle(iParticle), nSteps, time, iParticle);
             this._state.setParticle(iParticle, state);
         });
         this._time = time;
@@ -279,12 +273,7 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
         return result;
     }
 
-    private runParticleWithDt(
-        particleState: ParticleState,
-        nSteps: number,
-        solver: dopri.Dopri | dopri.DDE | null,
-        iParticle: number
-    ): number[] {
+    private runParticleWithDt(particleState: ParticleState, nSteps: number, iParticle: number): number[] {
         let state = particleStateToArray(particleState);
         let stateNext = [...state];
         let time = this._time;
@@ -295,17 +284,17 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
                 }
             });
             const nextTime = time + this._dt;
-            if (solver) {
+            if (this._solver) {
                 const history = this._history[iParticle];
                 if (this._generatorCfg.hasDelays) {
-                    solver.initialise(time, state.slice(0, this._rhsVariablesLength), history);
+                    this._solver.initialise(time, state.slice(0, this._rhsVariablesLength), history);
                 } else {
-                    solver.initialise(time, state.slice(0, this._rhsVariablesLength));
+                    this._solver.initialise(time, state.slice(0, this._rhsVariablesLength));
                 }
-                const solution = solver.run(nextTime);
+                const solution = this._solver.run(nextTime);
                 state = solution([nextTime])[0];
                 stateNext = [...state];
-                this._history[iParticle] = history.concat(solver.getHistory());
+                this._history[iParticle] = history.concat(this._solver.getHistory());
             }
             const { update } = this._generatorCfg.generator;
             if (update) {
@@ -319,31 +308,23 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
         return state;
     }
 
-    private runParticleWithSolver(
-        particleState: ParticleState,
-        endTime: number,
-        solver: dopri.Dopri | dopri.DDE
-    ): number[] {
+    private runParticleWithSolver(particleState: ParticleState, endTime: number): number[] {
+        if (!this._solver) return [];
         const state = particleStateToArray(particleState);
-        solver.initialise(this._time, state.slice(0, this._rhsVariablesLength));
-        const solution = solver.run(endTime);
+        this._solver.initialise(this._time, state.slice(0, this._rhsVariablesLength));
+        const solution = this._solver.run(endTime);
         return solution([endTime])[0];
     }
 
-    private runParticle(
-        particleState: ParticleState,
-        nSteps: number,
-        solver: dopri.Dopri | dopri.DDE | null,
-        endTime: number,
-        iParticle: number
-    ): number[] {
+    private runParticle(particleState: ParticleState, nSteps: number, endTime: number, iParticle: number): number[] {
         const { isContinuous, generator } = this._generatorCfg;
-        const noUpdateOrZeroEvery = isContinuous && solver && !generator.update && !generator.getZeroEvery;
-        const invalidDt = isContinuous && solver && this._dt === 0;
+        const isContinuousSolver = isContinuous && this._solver;
+        const noUpdateOrZeroEvery = isContinuousSolver && !generator.update && !generator.getZeroEvery;
+        const invalidDt = isContinuousSolver && this._dt === 0;
         if (noUpdateOrZeroEvery || invalidDt) {
-            return this.runParticleWithSolver(particleState, endTime, solver);
+            return this.runParticleWithSolver(particleState, endTime);
         } else {
-            return this.runParticleWithDt(particleState, nSteps, solver, iParticle);
+            return this.runParticleWithDt(particleState, nSteps, iParticle);
         }
     }
 
