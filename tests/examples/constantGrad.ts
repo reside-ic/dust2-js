@@ -32,12 +32,11 @@ export const constantGrad: ContinuousGeneratorODE<ConstantGradParams, null, null
         return null;
     },
 
-    packingState(imports) {
-        const shape = new Map<string, number[]>([
-            ["Y", []],
-            ["Y + 1", []]
-        ]);
-        return new imports.Packer({ shape });
+    buildParams(imports, params) {
+        const shape = new Map<string, number[]>();
+        shape.set("Y", []);
+        shape.set("Y + 1", []);
+        return { ...params, dim: { shape } };
     },
 
     updateParams(_imports, params, newParams) {

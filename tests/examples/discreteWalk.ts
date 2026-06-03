@@ -42,9 +42,10 @@ export const discreteWalk: DiscreteGenerator<WalkParams, null, null> = {
         return null;
     },
 
-    packingState(imports, params: WalkParams) {
-        const shape = new Map<string, number[]>([["values", [params.n]]]);
-        return new imports.Packer({ shape });
+    buildParams(imports, params) {
+        const shape = new Map<string, number[]>();
+        shape.set("values", [params.n]);
+        return { ...params, dim: { shape } };
     },
 
     updateParams(_imports, params: WalkParams, newParams: WalkParams) {

@@ -16,12 +16,11 @@ export const zeroTwice: DiscreteGenerator<ABState, null, null> = {
         stateNext[1] = state[1] + 1;
     },
 
-    packingState(imports) {
-        const shape = new Map<string, number[]>([
-            ["x", []],
-            ["y", []]
-        ]);
-        return new imports.Packer({ shape });
+    buildParams(imports, params) {
+        const shape = new Map<string, number[]>();
+        shape.set("x", []);
+        shape.set("y", []);
+        return { ...params, dim: { shape } };
     },
 
     getZeroEvery(_imports, params) {

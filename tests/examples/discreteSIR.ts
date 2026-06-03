@@ -56,15 +56,14 @@ export const discreteSIR: DiscreteGenerator<SIRParams, null, SIRData> = {
     },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    packingState(imports, params: SIRParams) {
-        const shape = new Map<string, number[]>([
-            ["S", []],
-            ["I", []],
-            ["R", []],
-            ["casesCumul", []],
-            ["casesInc", []]
-        ]);
-        return new imports.Packer({ shape });
+    buildParams(imports, params) {
+        const shape = new Map<string, number[]>();
+        shape.set("S", []);
+        shape.set("I", []);
+        shape.set("R", []);
+        shape.set("casesCumul", []);
+        shape.set("casesInc", []);
+        return { ...params, dim: { shape } };
     },
 
     compareData(

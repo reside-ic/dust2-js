@@ -1,3 +1,3 @@
-import { lngamma } from "ieee745gamma";
+// import { lngamma } from "ieee745gamma";
 
-export const poissonLogDensity = (x: number, lambda: number) => x * Math.log(lambda) - lambda - lngamma(x + 1);
+export const poissonLogDensity = (x: number, lambda: number) => x * Math.log(lambda) - lambda - (x + 1);

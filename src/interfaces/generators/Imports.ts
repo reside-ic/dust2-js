@@ -1,13 +1,16 @@
-import { poissonLogDensity } from "../../density.ts";
 import { Packer } from "../../Packer.ts";
+import { array } from "./imports/array.ts";
+import { interpolate } from "./imports/interpolate.ts";
+import { io } from "./imports/io.ts";
+import { math } from "./imports/math.ts";
 
-const math = {
-    poissonLogDensity
-};
 
 export const imports = {
     Packer,
-    math
+    math,
+    array,
+    interpolate,
+    io,
 };
 
 export type Imports = typeof imports;

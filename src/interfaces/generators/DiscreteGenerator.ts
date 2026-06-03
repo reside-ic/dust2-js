@@ -1,5 +1,5 @@
 import { Random } from "@reside-ic/random";
-import { BaseGenerator } from "./BaseGenerator.ts";
+import { BaseGenerator, WithOdinDim } from "./BaseGenerator.ts";
 import { Imports } from "./Imports.ts";
 
 /**
@@ -26,7 +26,7 @@ export interface DiscreteGenerator<TParams, TInternal, TData> extends BaseGenera
         time: number,
         dt: number,
         state: number[],
-        params: TParams,
+        params: WithOdinDim<TParams>,
         internal: TInternal,
         stateNext: number[],
         random: Random

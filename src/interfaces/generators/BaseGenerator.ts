@@ -2,6 +2,12 @@ import { Random } from "@reside-ic/random";
 import { Packer } from "../../Packer.ts";
 import { ZeroEvery } from "../../zero.ts";
 import { Imports } from "./Imports.ts";
+import { DimUtils } from "./imports/array.ts";
+
+export type WithOdinDim<T> = T & {
+    dim: Record<string, DimUtils>,
+    odin: { packing: Packer }
+}
 
 /**
  * Interface defining the functionality of a general odin model. Generators are stateless and are always provided
@@ -29,7 +35,7 @@ export interface BaseGenerator<TParams, TInternal, TData> {
     initial(
         imports: Imports,
         time: number,
-        params: TParams,
+        params: WithOdinDim<TParams>,
         internal: TInternal,
         stateNext: number[],
         random: Random
@@ -40,14 +46,16 @@ export interface BaseGenerator<TParams, TInternal, TData> {
      * @param imports Object containing useful classes/utilities from this package the class may need
      * @param params The shared parameter values used by the particle
      */
-    internal(imports: Imports, params: TParams): TInternal;
+    buildInternal(imports: Imports, params: WithOdinDim<TParams>): TInternal;
 
     /**
-     * Gets a {@link Packer} which can pack params state values into a one dimensional array
+     * Builds parameters with defaults and does min and max checks on them. Additionally it adds the
+     * "dim" property which contains the dim equation information and "odin.packing" information which
+     * contains a {@line Packer}.
      * @param imports Object containing useful classes/utilities from this package the class may need
      * @param params The shared parameter values used by the particle
      */
-    packingState(imports: Imports, params: TParams): Packer;
+    buildParams(imports: Imports, params: TParams): WithOdinDim<TParams>
 
     /**
      * Updates values in a system parameter set from a new parameter set. A generator may
@@ -64,7 +72,7 @@ export interface BaseGenerator<TParams, TInternal, TData> {
      * @param imports Object containing useful classes/utilities from this package the class may need
      * @param params The parameter set to update
      */
-    getZeroEvery?(imports: Imports, params: TParams): ZeroEvery;
+    getZeroEvery?(imports: Imports, params: WithOdinDim<TParams>): ZeroEvery;
 
     /**
      * Compares the state of a particle with a data point, and returns the log likelihood of the state given the data.
@@ -82,7 +90,7 @@ export interface BaseGenerator<TParams, TInternal, TData> {
         time: number,
         state: number[],
         data: TData,
-        params: TParams,
+        params: WithOdinDim<TParams>,
         internal: TInternal,
         random: Random
     ): number;

@@ -45,15 +45,14 @@ export const constantGradDelay: ContinuousGeneratorDDE<ConstantGradDelayParams, 
         return null;
     },
 
-    packingState(imports) {
-        const shape = new Map<string, number[]>([
-            ["gradient", []],
-            ["X", []],
-            ["intercept", []],
-            ["Y", []],
-            ["Y delayed by 1", []]
-        ]);
-        return new imports.Packer({ shape });
+    buildParams(imports, params) {
+        const shape = new Map<string, number[]>();
+        shape.set("gradient", []);
+        shape.set("X", []);
+        shape.set("intercept", []);
+        shape.set("Y", []);
+        shape.set("Y delayed by 1", []);
+        return { ...params, dim: { shape }};
     },
 
     updateParams(_imports, params, newParams) {
