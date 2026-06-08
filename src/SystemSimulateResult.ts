@@ -28,7 +28,7 @@ export class SystemSimulateResult {
         this._nStateElements = nStateElements;
         this._nTimes = nTimes;
 
-        // arrange the ndArray with dimensions: group, particle, stateElement * time
+        // arrange the ndArray with dimensions: particle, stateElement * time
         const len = this._nParticles * this._nStateElements * this._nTimes;
         this._resultValues = ndarray(new Array<number>(len).fill(0), [
             this._nParticles,
