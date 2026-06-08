@@ -38,7 +38,7 @@ export interface BaseGenerator<TParams, TInternal, TData> {
     /**
      * Generates initial internal state for a given parameter state
      * @param imports Object containing useful classes/utilities from this package the class may need
-     * @param params The shared parameter values used by the particle
+     * @param params The parameter values used by the particle
      */
     internal(imports: Imports, params: TParams): TInternal;
 
