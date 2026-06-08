@@ -45,7 +45,7 @@ export interface BaseGenerator<TParams, TInternal, TData> {
     /**
      * Gets a {@link Packer} which can pack params state values into a one dimensional array
      * @param imports Object containing useful classes/utilities from this package the class may need
-     * @param params The shared parameter values used by the particle
+     * @param params The parameter values used by the particle
      */
     packingState(imports: Imports, params: TParams): Packer;
 
