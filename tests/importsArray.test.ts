@@ -96,4 +96,12 @@ describe("array", () => {
         dimObj.x = [5, 4, 3, 2];
         expect(dimObj.x).toStrictEqual(dim4d);
     });
+
+    test("dim object proxy works as expected for scalar dim", () => {
+        const dimObj = array.getDimObj();
+        // @ts-expect-error typescript doesn't seem to respect
+        // proxies
+        dimObj.x = [];
+        expect(dimObj.x).toStrictEqual({ dim: [], size: 1, mult: [] });
+    });
 });
