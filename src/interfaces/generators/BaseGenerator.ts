@@ -21,7 +21,7 @@ export interface BaseGenerator<TParams, TInternal, TData> {
      *
      * @param imports Object containing useful classes/utilities from this package the class may need
      * @param time The current time at which to initialise particle state
-     * @param params The shared parameter values used by the particle
+     * @param params The parameter values used by the particle
      * @param internal The internal state used by the particle
      * @param stateNext The array of values which should be updated by the generator with initial particle state values
      * @param random A random number generator which may be used by the generator to initialise values
