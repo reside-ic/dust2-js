@@ -7,7 +7,7 @@ export const imports = {
     Packer,
     math,
     array,
-    interpolate,
+    interpolate
 };
 
 export type Imports = typeof imports;
