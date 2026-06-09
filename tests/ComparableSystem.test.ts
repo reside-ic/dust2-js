@@ -35,7 +35,7 @@ describe("ComparableDiscreteSystem", () => {
         expect(result.get(2)).toBe(expectedValue);
 
         expect(genCompareDataSpy).toHaveBeenCalledTimes(3);
-        const expectedParams = [imports, 5, expectedInitial, data, sirParams, null, sys["_random"]];
+        const expectedParams = [imports, 5, expectedInitial, data, sys["_params"], null, sys["_random"]];
         expect(genCompareDataSpy.mock.calls[0]).toStrictEqual(expectedParams);
         expect(genCompareDataSpy.mock.calls[1]).toStrictEqual(expectedParams);
         expect(genCompareDataSpy.mock.calls[2]).toStrictEqual(expectedParams);
@@ -45,7 +45,8 @@ describe("ComparableDiscreteSystem", () => {
         result: ndarray.NdArray,
         data: SIRData,
         genCompareDataSpy: Mocked<any>,
-        random: Random
+        random: Random,
+        params: any
     ) => {
         const expectedValue = poissonLogDensity(2, 1);
         expect(result.get(0)).toBe(expectedValue);
@@ -53,7 +54,7 @@ describe("ComparableDiscreteSystem", () => {
         expect(result.get(2)).toBe(expectedValue);
 
         expect(genCompareDataSpy).toHaveBeenCalledTimes(3);
-        const expectedParams = [imports, 5, expectedInitial, data, sirParams, null, random];
+        const expectedParams = [imports, 5, expectedInitial, data, params, null, random];
         expect(genCompareDataSpy.mock.calls[0]).toStrictEqual(expectedParams);
         expect(genCompareDataSpy.mock.calls[1]).toStrictEqual(expectedParams);
         expect(genCompareDataSpy.mock.calls[2]).toStrictEqual(expectedParams);
@@ -65,7 +66,7 @@ describe("ComparableDiscreteSystem", () => {
         sys.setStateInitial();
         const data = { prevalence: 2 };
         const result = sys.compareData(data);
-        expectSharedDataResult(result, data, genCompareDataSpy, sys["_random"]);
+        expectSharedDataResult(result, data, genCompareDataSpy, sys["_random"], sys["_params"]);
     });
 
     test("compareData throws error generator doesn't specify a compareData Function", () => {

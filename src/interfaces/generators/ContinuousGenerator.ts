@@ -1,5 +1,5 @@
 import { Random } from "@reside-ic/random";
-import { BaseGenerator } from "./BaseGenerator.ts";
+import { BaseGenerator, WithOdinDim } from "./BaseGenerator.ts";
 import { Imports } from "./Imports.ts";
 
 /**
@@ -32,7 +32,7 @@ export interface ContinuousGeneratorBase<TParams, TInternal, TData> extends Base
         time: number,
         dt: number,
         state: number[],
-        params: TParams,
+        params: WithOdinDim<TParams>,
         internal: TInternal,
         stateNext: number[],
         random: Random
@@ -51,15 +51,21 @@ export interface ContinuousGeneratorODE<TParams, TInternal, TData>
      * Compute the derivatives
      *
      * @param imports Object containing useful classes/utilities from this package the class may need
-     *
+     * @param params The parameter values used by the particle
+     * @param internal The internal state used by the particle
      * @param t The time to compute initial conditions at
-     *
-     * @param y The value of the variables
-     *
-     * @param dydt An array *that will be written into*, will hold
+     * @param state The flat state of the particle
+     * @param stateDeriv An array *that will be written into*, will hold
      * derivatives on exit. Must be the same length as `y`
      */
-    rhs(imports: Imports, t: number, y: number[], dydt: number[]): void;
+    rhs(
+        imports: Imports,
+        params: WithOdinDim<TParams>,
+        internal: TInternal,
+        t: number,
+        state: number[],
+        stateDeriv: number[]
+    ): void;
 
     /**
      * Compute additional quantities that are derived from the
@@ -69,7 +75,7 @@ export interface ContinuousGeneratorODE<TParams, TInternal, TData>
      *
      * @copyDoc ContinuousGeneratorODE.rhs
      */
-    output?(imports: Imports, t: number, y: number[]): number[];
+    output?(imports: Imports, params: WithOdinDim<TParams>, internal: TInternal, t: number, state: number[]): number[];
 }
 
 /**
@@ -86,11 +92,26 @@ export interface ContinuousGeneratorDDE<TParams, TInternal, TData>
      * @param solution The interpolated solution, which is used to
      * compute delayed versions of variables
      */
-    rhs(imports: Imports, t: number, y: number[], dydt: number[], solution: Solution): void;
+    rhs(
+        imports: Imports,
+        params: WithOdinDim<TParams>,
+        internal: TInternal,
+        t: number,
+        state: number[],
+        stateDeriv: number[],
+        solution: Solution
+    ): void;
 
     /**
      * @copyDoc ContinuousGeneratorODE.output
      * @copyDoc ContinuousGeneratorDDE.rhs
      */
-    output?(imports: Imports, t: number, y: number[], solution: Solution): number[];
+    output?(
+        imports: Imports,
+        params: WithOdinDim<TParams>,
+        internal: TInternal,
+        t: number,
+        state: number[],
+        solution: Solution
+    ): number[];
 }
