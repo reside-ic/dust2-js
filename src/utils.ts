@@ -1,6 +1,7 @@
 import ndarray from "ndarray";
 import { ArrayState, ParticleState } from "./SystemState.ts";
 import { DustParameterError } from "./errors.ts";
+import { Packer } from "./Packer";
 
 // Product of all values in a number array
 export const prod = (array: number[]) => array.reduce((prev, current) => prev * current, 1);
@@ -31,6 +32,16 @@ export const checkIndicesForMax = (name: string, indices: number[], max: number)
         checkIntegerInRange(name, indexValue, 0, max);
         if (i > 0 && indexValue <= indices[i - 1]) {
             throw new RangeError(`${name} indices must be ordered with no duplicates`);
+        }
+    }
+};
+
+export const checkNamesInPacker = (names: string[], packer: Packer) => {
+    const { idx } = packer;
+    for (let i = 0; i < names.length; i++) {
+        const name = names[i];
+        if (!(name in idx)) {
+            throw new Error(`Name: '${name}' is not a variable of this system`);
         }
     }
 };

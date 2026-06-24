@@ -97,6 +97,13 @@ export class Packer {
         return this._nVariables;
     }
 
+    /**
+     * Returns index information about variables
+     */
+    public get idx() {
+        return this._idx;
+    }
+
     private isScalar(name: string) {
         return this._shape.get(name)?.length === 0;
     }
@@ -151,6 +158,29 @@ export class Packer {
             } else {
                 const values = x.slice(start, start + length);
                 result.set(name, ndarray(values, currentShape));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Unpacks a one-dimensional array to the shapes defined by this Packer.
+     * @param x A standard number array
+     */
+    public unpackArrayNoCopy(x: Array<number>) {
+        if (x.length !== this._length) {
+            throw Error(`Incorrect length input; expected ${this._length} but given ${x.length}.`);
+        }
+
+        // Return a map of names to values in the format described by shape
+        const result = new Map<string, number | number[]>();
+        for (const [name, _currentShape] of this._shape) {
+            const { start } = this._idx[name];
+            if (this.isScalar(name)) {
+                result.set(name, x[start]);
+            } else {
+                const vals = new Proxy(x, { get: (target: number[], idx: number) => target[start + idx] } as any);
+                result.set(name, vals);
             }
         }
         return result;

@@ -2,6 +2,9 @@ import { NdArray } from "ndarray";
 import { SystemState, SystemSubState } from "../SystemState.ts";
 import { SystemSimulateResult } from "../SystemSimulateResult.ts";
 
+type Value = (number[] | number)[]
+export type NamedResult = { times: number[], values: Record<string, Value>[] }
+
 /**
  * Interface defining the basic functionality of a dust system, composed of a number of particles
  * */
@@ -47,6 +50,16 @@ export interface SystemInterface<TData> {
      * all values are returned.
      */
     simulate(times: number[], stateElementIndices: number[]): SystemSimulateResult;
+
+    /**
+     * Runs the system from its current time to a series of times given by the parameter times
+     * and returns state values for all particles at each of these times.
+     * @param times The times to run to and return state for. Must be in increasing order, with no value less than the
+     * current time.
+     * @param stateElementNames String array of names of variables to return from the state elements. If no names are
+     * provided then all state elements are returned.
+     */
+    simulateByStateVariableName(times: number[], stateElementNames: string[]): NamedResult;
 
     /**
      * Compares the state of all particles in the syatem with observed data, and returns an

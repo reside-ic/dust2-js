@@ -3,10 +3,11 @@ import * as dopri from "@reside-ic/dopri";
 import { Random, RngStateBuiltin } from "@reside-ic/random";
 import { ParticleState, SystemState, SystemSubState } from "./SystemState.ts";
 import { Packer } from "./Packer.ts";
-import { SystemInterface } from "./interfaces/System.ts";
+import { NamedResult, SystemInterface } from "./interfaces/System.ts";
 import {
     checkIndicesForMax,
     checkIntegerInRange,
+    checkNamesInPacker,
     checkTimes,
     floatIsDivisibleBy,
     isPositiveFinite,
@@ -270,6 +271,53 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
                 const particle = this._state.getParticle(iParticle);
                 const stateValues = stateIndicesToReturn.map((index) => particle.get(index));
                 result.setValuesForTime(iParticle, iTime, stateValues);
+            });
+        });
+        return result;
+    }
+
+    /**
+     * @copyDoc SystemInterface.simulateByStateVariableName
+     */
+    public simulateByStateVariableName(times: number[], stateElementNames: string[] = []): NamedResult {
+        checkTimes(times, this._time);
+        if (stateElementNames.length) {
+            checkNamesInPacker(stateElementNames, this._statePacker);
+        }
+
+        const stateNamesToReturn = stateElementNames.length
+            ? stateElementNames
+            : [...Object.keys(this._statePacker.idx)];
+
+        const result: NamedResult = {
+            times,
+            values: []
+        };
+        this.iterateParticles(() => {
+          const stateObj = Object.fromEntries(stateNamesToReturn.map(name => [name, []]));
+          result.values.push(stateObj);
+        });
+
+        times.forEach(t => {
+            this.runToTime(t);
+
+            this.iterateParticles((iParticle) => {
+                const particleState = this._state.getParticle(iParticle);
+                const particleFlatState = Array.from({ length: particleState.size })
+                    .map((_, i) => particleState.get(i));
+                const vars = this._statePacker.unpackArray(particleFlatState);
+                
+                stateNamesToReturn.forEach(name => {
+                  let data;
+                  const val = vars.get(name)!;
+                  if (typeof val === "object") {
+                    // is ndarray
+                    data = val.data as number[];
+                  } else {
+                    data = val;
+                  }
+                  result.values[iParticle][name].push(data);
+                });
             });
         });
         return result;
