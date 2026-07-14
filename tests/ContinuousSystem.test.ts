@@ -1,23 +1,23 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { System } from "../src/System.ts";
-import { constantGrad, ConstantGradShared } from "./examples/constantGrad.ts";
-import { constantGradNoUpdate, ConstantGradNoUpdateShared } from "./examples/constantGradNoUpdate.ts";
-import { constantGradDelay, ConstantGradDelayShared } from "./examples/constantGradDelay.ts";
+import { constantGrad, ConstantGradParams } from "./examples/constantGrad.ts";
+import { constantGradNoUpdate, ConstantGradNoUpdateParams } from "./examples/constantGradNoUpdate.ts";
+import { constantGradDelay, ConstantGradDelayParams } from "./examples/constantGradDelay.ts";
 
-const createSystem = (shared: ConstantGradShared, dt = 0.001) =>
-    System.createODE<ConstantGradShared, null>(
+const createSystem = (params: ConstantGradParams, dt = 0.001) =>
+    System.createODE<ConstantGradParams, null>(
         constantGrad,
-        [shared],
+        params,
         5, // time
         dt, // dt
         1, // nParticles
         1 // nRhsVariables
     );
 
-const createSystemNoUpdate = (shared: ConstantGradNoUpdateShared) =>
-    System.createODE<ConstantGradNoUpdateShared, null>(
+const createSystemNoUpdate = (params: ConstantGradNoUpdateParams) =>
+    System.createODE<ConstantGradNoUpdateParams, null>(
         constantGradNoUpdate,
-        [shared],
+        params,
         5, // time
         0.001, // dt
         1, // nParticles
@@ -90,10 +90,10 @@ describe("ContinuousSystem", () => {
     });
 
     test("Can initialise and run to time using constantGradDelay generator", () => {
-        const shared = { m: 1, x: 1, c: 1, y: 1, yDelay1: 1 };
-        const sys = System.createDDE<ConstantGradDelayShared, null>(
+        const params = { m: 1, x: 1, c: 1, y: 1, yDelay1: 1 };
+        const sys = System.createDDE<ConstantGradDelayParams, null>(
             constantGradDelay,
-            [shared],
+            params,
             5, // time
             0.001, // dt
             1, // nParticles

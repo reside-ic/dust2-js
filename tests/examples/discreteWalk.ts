@@ -1,21 +1,21 @@
 import type { Random } from "@reside-ic/random";
 import type { DiscreteGenerator } from "../../src/interfaces/generators/DiscreteGenerator.ts";
 
-export interface WalkShared {
+export interface WalkParams {
     n: number;
     sd: number;
 }
 
-const checkStateRange = (state: number[], shared: WalkShared) => {
-    if (state.length < shared.n) {
-        throw RangeError(`State must have length of at least ${shared.n}`);
+const checkStateRange = (state: number[], params: WalkParams) => {
+    if (state.length < params.n) {
+        throw RangeError(`State must have length of at least ${params.n}`);
     }
 };
 
-export const discreteWalk: DiscreteGenerator<WalkShared, null, null> = {
-    initial(_imports, time: number, shared: WalkShared, internal: null, stateNext: number[]) {
-        checkStateRange(stateNext, shared);
-        for (let i = 0; i < shared.n; i++) {
+export const discreteWalk: DiscreteGenerator<WalkParams, null, null> = {
+    initial(_imports, time: number, params: WalkParams, internal: null, stateNext: number[]) {
+        checkStateRange(stateNext, params);
+        for (let i = 0; i < params.n; i++) {
             stateNext[i] = time;
         }
     },
@@ -25,30 +25,30 @@ export const discreteWalk: DiscreteGenerator<WalkShared, null, null> = {
         time: number,
         dt: number,
         state: number[],
-        shared: WalkShared,
+        params: WalkParams,
         internal: null,
         stateNext: number[],
         random: Random
     ) {
-        checkStateRange(state, shared);
-        checkStateRange(stateNext, shared);
-        for (let i = 0; i < shared.n; i++) {
-            stateNext[i] = random.normal(state[i], shared.sd);
+        checkStateRange(state, params);
+        checkStateRange(stateNext, params);
+        for (let i = 0; i < params.n; i++) {
+            stateNext[i] = random.normal(state[i], params.sd);
         }
     },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    internal(_imports, shared: WalkShared): null {
+    internal(_imports, params: WalkParams): null {
         return null;
     },
 
-    packingState(imports, shared: WalkShared) {
-        const shape = new Map<string, number[]>([["values", [shared.n]]]);
+    packingState(imports, params: WalkParams) {
+        const shape = new Map<string, number[]>([["values", [params.n]]]);
         return new imports.Packer({ shape });
     },
 
-    updateShared(_imports, shared: WalkShared, newShared: WalkShared) {
-        shared.n = newShared.n;
-        shared.sd = newShared.sd;
+    updateParams(_imports, params: WalkParams, newParams: WalkParams) {
+        params.n = newParams.n;
+        params.sd = newParams.sd;
     }
 };

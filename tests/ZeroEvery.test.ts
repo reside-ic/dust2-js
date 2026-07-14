@@ -4,10 +4,10 @@ import { ABState, zeroTwice } from "./examples/zeroTwice";
 
 const generator = zeroTwice;
 
-const createSystem = (shared: ABState) =>
+const createSystem = (params: ABState) =>
     System.createDiscrete(
         generator,
-        [shared],
+        params,
         0, // time
         1, // dt
         1 // nParticles
@@ -15,14 +15,14 @@ const createSystem = (shared: ABState) =>
 
 // TODO: remove when mrc-6246 is added
 // https://mrc-ide.myjetbrains.com/youtrack/agiles/103-79/current?issue=mrc-6246
-const simulateToTime = (shared: ABState, time: number) => {
+const simulateToTime = (params: ABState, time: number) => {
     const ret = { a: [] as number[], b: [] as number[] };
-    const sys = createSystem(shared);
+    const sys = createSystem(params);
     sys.setStateInitial();
     for (let i = 1; i < time + 1; i++) {
         sys.runToTime(i);
-        ret.a.push(sys.state.getParticle(0, 0).get(0));
-        ret.b.push(sys.state.getParticle(0, 0).get(1));
+        ret.a.push(sys.state.getParticle(0).get(0));
+        ret.b.push(sys.state.getParticle(0).get(1));
     }
     return ret;
 };

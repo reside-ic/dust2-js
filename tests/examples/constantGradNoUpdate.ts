@@ -1,14 +1,14 @@
 import type { ContinuousGeneratorODE } from "../../src/interfaces/generators/ContinuousGenerator.ts";
 
-export interface ConstantGradNoUpdateShared {
+export interface ConstantGradNoUpdateParams {
     y: number;
     yAddOne: number;
 }
 
-export const constantGradNoUpdate: ContinuousGeneratorODE<ConstantGradNoUpdateShared, null, null> = {
-    initial(_imports, time: number, shared, internal: null, stateNext: number[]) {
-        stateNext[0] = shared.y;
-        stateNext[1] = shared.yAddOne;
+export const constantGradNoUpdate: ContinuousGeneratorODE<ConstantGradNoUpdateParams, null, null> = {
+    initial(_imports, time: number, params, internal: null, stateNext: number[]) {
+        stateNext[0] = params.y;
+        stateNext[1] = params.yAddOne;
     },
 
     rhs(_imports, t, y, dydt) {
@@ -33,8 +33,8 @@ export const constantGradNoUpdate: ContinuousGeneratorODE<ConstantGradNoUpdateSh
         return new imports.Packer({ shape });
     },
 
-    updateShared(_imports, shared, newShared) {
-        shared.y = newShared.y;
-        shared.yAddOne = newShared.yAddOne;
+    updateParams(_imports, params, newParams) {
+        params.y = newParams.y;
+        params.yAddOne = newParams.yAddOne;
     }
 };
