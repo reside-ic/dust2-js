@@ -22,7 +22,10 @@ const readReal = <TParams extends Record<string, unknown>, ParName extends strin
     const par = params[parName];
     errorIfMissingValueAndDefault(par, parName, defaultValue);
 
-    if (isNullish(par)) return defaultValue!;
+    if (isNullish(par)) {
+        checkScalar(defaultValue, parName);
+        return defaultValue!;
+    }
 
     checkScalar(par, parName);
     return par;
@@ -34,7 +37,10 @@ const readInt = <TParams extends Record<string, unknown>, ParName extends string
     defaultValue?: TParams[ParName]
 ) => {
     const par = readReal(params, parName, defaultValue);
-    return Math.round(par as number);
+    if (!Number.isInteger(par)) {
+        throw new Error(`'${parName}' must be an integer`);
+    }
+    return par;
 };
 
 const readSize = <TParams extends Record<string, unknown>, ParName extends string>(
