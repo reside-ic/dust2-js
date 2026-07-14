@@ -12,7 +12,8 @@ describe("io", () => {
         e: -20.1,
         f: true,
         g: false,
-        h: [1.1, 2.2, 3.3, 4.4, 5.5, 6.6]
+        h: [1.1, 2.2, 3.3, 4.4, 5.5, 6.6],
+        i: 2
     } as const;
     type Par = keyof typeof params;
 
@@ -47,9 +48,23 @@ describe("io", () => {
         expect(io.readReal(params, par, def as any)).toBe(def);
     });
 
-    test("readInt rounds number", () => {
+    test("readReal throws if default is not scalar", () => {
+        const par: Par = "c";
+        expect(() => {
+            io.readReal(params, par, "hello" as any);
+        }).toThrow(`'${par}' must be a scalar`);
+    });
+
+    test("readInt throws if number is not an integer", () => {
         const par: Par = "a";
-        expect(io.readInt(params, par)).toBe(10);
+        expect(() => {
+            io.readInt(params, par);
+        }).toThrow(`'${par}' must be an integer`);
+    });
+
+    test("readInt returns number if integer", () => {
+        const par: Par = "i";
+        expect(io.readInt(params, par)).toBe(2);
     });
 
     test("readSize errors if number is negative", () => {

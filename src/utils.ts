@@ -91,7 +91,7 @@ export const checkNestedArrayLengthsMatch = (
     }
 };
 
-// Convert an arrays into an NdArray
+// Convert an array into an NdArray
 export const ndArrayFrom = (source: number[]): ndarray.NdArray => {
     if (source.length === 0) {
         throw new DustParameterError("Cannot convert from empty source");

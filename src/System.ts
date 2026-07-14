@@ -68,7 +68,7 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
 
         this._time = time;
         this._nParticles = nParticles; // number of particles per parameter set
-        // we deep copy params are we will mutate these in build params
+        // we deep copy params as we will mutate these in build params
         this._params = generator.buildParams(imports, JSON.parse(JSON.stringify(params)));
         this._statePacker = this._params.odin.packing;
         const nState = this._statePacker.length; // number of state elements in the packer, as defined by the generator
