@@ -4,7 +4,11 @@ import { ZeroEvery } from "../../zero.ts";
 import { Imports } from "./Imports.ts";
 import { DimUtils } from "./imports/array.ts";
 
+// this utility is required as some functions such as `buildParams` use just TParams
+// without WithOdinDim type
 export type WithOdinDim<T> = T & {
+    // this is an object with keys as the parameter names and values as
+    // dim information for each of the parameters
     dim: Record<string, DimUtils>;
     odin: { packing: Packer };
 };
