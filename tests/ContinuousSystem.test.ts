@@ -151,4 +151,18 @@ describe("ContinuousSystem", () => {
             expect(val["Y + 1"]).toHaveLength(5); // 5 time points
         });
     });
+
+    test("Simulate by state var name gives all variables if not specified", () => {
+        const sys = createSystem({ y: 1, yAddOne: 2 }, 0.001, 3);
+        sys.setStateInitial();
+        const times = [6, 7, 8, 9, 10];
+        const result = sys.simulateByStateVarName(times);
+        expect(result.times).toStrictEqual(times);
+        expect(result.values).toHaveLength(3); // 3 particles
+        result.values.forEach((val) => {
+            expect(Object.keys(val)).toStrictEqual(["Y", "Y + 1"]);
+            expect(val["Y"]).toHaveLength(5); // 5 time points
+            expect(val["Y + 1"]).toHaveLength(5); // 5 time points
+        });
+    });
 });
