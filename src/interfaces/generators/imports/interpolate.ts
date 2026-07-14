@@ -1,5 +1,6 @@
 import { DimUtils } from "./array";
 
+// this function finds the time index in the times array that is just before the targetTime
 const interpolateSearch = (targetTime: number, times: number[], allowExtrapolateRhs: boolean) => {
     if (targetTime < times[0]) {
         throw new Error(`Tried to interpolate at time t = ${targetTime}, which is before first time (${times[0]})`);
