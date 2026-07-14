@@ -1,6 +1,11 @@
 type Op = (agg: number, x: number) => number;
 type Range = [number, number];
 
+// this file is based on dust2's implementation, for more details see: https://github.com/mrc-ide/dust2/blob/83721f78fda9b4124e1cda3ae24e3f2da82ca2d0/inst/include/dust2/array.hpp#L115
+//
+// it calculates column major flat indicies from subranges along each dimension and applies
+// +, *, ... operations to those values
+
 const reduceAll = (arr: number[], op: Op, init: number) => {
     return arr.reduce(op, init);
 };
@@ -131,6 +136,21 @@ export type DimUtils = {
     mult: number[];
 };
 
+/*
+  Example usage
+  =============
+
+  const dim = getDimObj();
+
+  dim.x = [2, 3, 5]; // setter triggers and will calculate dim, size and mult
+  
+  console.log(dim.x)
+  -> {
+    dim: [2, 3, 5], // same as input
+    size: 30, // 2 * 3 * 5, total size of flat array
+    mult: [1, 2, 6] // stride length, cumulative prod of dim starting at 1
+  }
+*/
 const getDimObj = () => {
     const dim: Record<string, DimUtils> = {};
     return new Proxy(dim, {
