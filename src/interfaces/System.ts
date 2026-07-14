@@ -59,7 +59,7 @@ export interface SystemInterface<TData> {
      * @param stateElementNames String array of names of variables to return from the state elements. If no names are
      * provided then all state elements are returned.
      */
-    simulateByStateVariableName(times: number[], stateElementNames: string[]): NamedResult;
+    simulateByStateVarName(times: number[], stateElementNames: string[]): NamedResult;
 
     /**
      * Compares the state of all particles in the syatem with observed data, and returns an

@@ -277,9 +277,9 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
     }
 
     /**
-     * @copyDoc SystemInterface.simulateByStateVariableName
+     * @copyDoc SystemInterface.simulateByStateVarName
      */
-    public simulateByStateVariableName(times: number[], stateElementNames: string[] = []): NamedResult {
+    public simulateByStateVarName(times: number[], stateElementNames: string[] = []): NamedResult {
         checkTimes(times, this._time);
         if (stateElementNames.length) {
             checkNamesInPacker(stateElementNames, this._statePacker);
@@ -289,10 +289,7 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
             ? stateElementNames
             : [...Object.keys(this._statePacker.idx)];
 
-        const result: NamedResult = {
-            times,
-            values: []
-        };
+        const result: NamedResult = { times, values: [] };
         this.iterateParticles(() => {
           const stateObj = Object.fromEntries(stateNamesToReturn.map(name => [name, []]));
           result.values.push(stateObj);
@@ -308,15 +305,15 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
                 const vars = this._statePacker.unpackArray(particleFlatState);
                 
                 stateNamesToReturn.forEach(name => {
-                  let data;
-                  const val = vars.get(name)!;
-                  if (typeof val === "object") {
-                    // is ndarray
-                    data = val.data as number[];
-                  } else {
-                    data = val;
-                  }
-                  result.values[iParticle][name].push(data);
+                    let data;
+                    const val = vars.get(name)!;
+                    if (typeof val === "object") {
+                        // is ndarray
+                        data = val.data as number[];
+                    } else {
+                        data = val;
+                    }
+                    result.values[iParticle][name].push(data);
                 });
             });
         });

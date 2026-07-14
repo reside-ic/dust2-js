@@ -164,29 +164,6 @@ export class Packer {
     }
 
     /**
-     * Unpacks a one-dimensional array to the shapes defined by this Packer.
-     * @param x A standard number array
-     */
-    public unpackArrayNoCopy(x: Array<number>) {
-        if (x.length !== this._length) {
-            throw Error(`Incorrect length input; expected ${this._length} but given ${x.length}.`);
-        }
-
-        // Return a map of names to values in the format described by shape
-        const result = new Map<string, number | number[]>();
-        for (const [name, _currentShape] of this._shape) {
-            const { start } = this._idx[name];
-            if (this.isScalar(name)) {
-                result.set(name, x[start]);
-            } else {
-                const vals = new Proxy(x, { get: (target: number[], idx: number) => target[start + idx] } as any);
-                result.set(name, vals);
-            }
-        }
-        return result;
-    }
-
-    /**
      * Unpacks an {@link https://github.com/scijs/ndarray | NdArray } to the shapes defined by this Packer.
      * We require the first dimension in the NdArray to equal {@link Packer.length | length}. Any additional
      * dimensions are added to the configured shapes for each unpacked value.
