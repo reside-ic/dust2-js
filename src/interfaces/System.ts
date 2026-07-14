@@ -2,8 +2,8 @@ import { NdArray } from "ndarray";
 import { SystemState, SystemSubState } from "../SystemState.ts";
 import { SystemSimulateResult } from "../SystemSimulateResult.ts";
 
-type Value = (number[] | number)[]
-export type NamedResult = { times: number[], values: Record<string, Value>[] }
+type Value = (number[] | number)[];
+export type NamedResult = { times: number[]; values: Record<string, Value>[] };
 
 /**
  * Interface defining the basic functionality of a dust system, composed of a number of particles

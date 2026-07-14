@@ -36,11 +36,10 @@ export const checkIndicesForMax = (name: string, indices: number[], max: number)
     }
 };
 
-export const checkNamesInPacker = (names: string[], packer: Packer) => {
-    const { idx } = packer;
+export const checkNamesInPacker = (names: string[], packerIdx: Packer["idx"]) => {
     for (let i = 0; i < names.length; i++) {
         const name = names[i];
-        if (!(name in idx)) {
+        if (!(name in packerIdx)) {
             throw new Error(`Name: '${name}' is not a variable of this system`);
         }
     }

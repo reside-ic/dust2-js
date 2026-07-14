@@ -282,7 +282,7 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
     public simulateByStateVarName(times: number[], stateElementNames: string[] = []): NamedResult {
         checkTimes(times, this._time);
         if (stateElementNames.length) {
-            checkNamesInPacker(stateElementNames, this._statePacker);
+            checkNamesInPacker(stateElementNames, this._statePacker.idx);
         }
 
         const stateNamesToReturn = stateElementNames.length
@@ -291,20 +291,21 @@ export class System<TParams, TInternal, TData> implements SystemInterface<TData>
 
         const result: NamedResult = { times, values: [] };
         this.iterateParticles(() => {
-          const stateObj = Object.fromEntries(stateNamesToReturn.map(name => [name, []]));
-          result.values.push(stateObj);
+            const stateObj = Object.fromEntries(stateNamesToReturn.map((name) => [name, []]));
+            result.values.push(stateObj);
         });
 
-        times.forEach(t => {
+        times.forEach((t) => {
             this.runToTime(t);
 
             this.iterateParticles((iParticle) => {
                 const particleState = this._state.getParticle(iParticle);
-                const particleFlatState = Array.from({ length: particleState.size })
-                    .map((_, i) => particleState.get(i));
+                const particleFlatState = Array.from({ length: particleState.size }).map((_, i) =>
+                    particleState.get(i)
+                );
                 const vars = this._statePacker.unpackArray(particleFlatState);
-                
-                stateNamesToReturn.forEach(name => {
+
+                stateNamesToReturn.forEach((name) => {
                     let data;
                     const val = vars.get(name)!;
                     if (typeof val === "object") {

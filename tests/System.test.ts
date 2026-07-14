@@ -7,6 +7,7 @@ import { SIRParams } from "./examples/discreteSIR.ts";
 import { Random, RngStateBuiltin, RngStateObserved } from "@reside-ic/random";
 import { expectedInitial, sirParams } from "./examples/SIRTestHelpers.ts";
 import { imports } from "../src/interfaces/generators/Imports.ts";
+import { constantGrad, ConstantGradParams } from "./examples/constantGrad.ts";
 
 const generator = discreteSIR;
 

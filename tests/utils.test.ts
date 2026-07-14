@@ -7,10 +7,12 @@ import {
     ndArrayFrom,
     arrayStateToArray,
     prod,
-    checkTimes
+    checkTimes,
+    checkNamesInPacker
 } from "../src/utils";
 import ndarray from "ndarray";
 import { ArrayState, SystemSubState } from "../src/SystemState.ts";
+import { Packer } from "@reside-ic/dust2";
 
 describe("prod", () => {
     test("returns product of all elements in array", () => {
@@ -219,6 +221,22 @@ describe("checkNestedArrayLengthsMatch", () => {
 
         test("throws error if there are duplicates", () => {
             expect(() => checkTimes([1, 2, 2, 3], 1)).toThrow("Times must be ordered with no duplicates.");
+        });
+    });
+
+    describe("checkNamesInPacker", () => {
+        const packerIdx: Packer["idx"] = {
+            a: { start: 0, length: 1 },
+            b: { start: 1, length: 2 },
+            c: { start: 3, length: 2 }
+        };
+        test("does not throw error if names are in packer idx", () => {
+            checkNamesInPacker(["a", "b"], packerIdx);
+        });
+        test("throws error if any name is not in packer idx", () => {
+            expect(() => checkNamesInPacker(["a", "d"], packerIdx)).toThrow(
+                "Name: 'd' is not a variable of this system"
+            );
         });
     });
 });
