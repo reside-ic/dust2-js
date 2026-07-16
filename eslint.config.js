@@ -39,5 +39,11 @@ export default [
             "max-classes-per-file": "off",
             "no-useless-constructor": "off"
         }
+    },
+    {
+        files: ["**/examples/**"],
+        rules: {
+            "@typescript-eslint/ban-ts-comment": "off"
+        }
     }
 ];

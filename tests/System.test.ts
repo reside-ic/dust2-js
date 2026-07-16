@@ -44,7 +44,8 @@ describe("DiscreteSystem", () => {
         expect(state["_nParticles"]).toBe(3);
         expect(state["_nStateElements"]).toBe(5);
 
-        expect(sys["_params"]).toBe(sirParams);
+        const { dim: _d, odin: _o, ...sysParams } = sys["_params"];
+        expect(sysParams).toStrictEqual(sirParams);
         expect(sys["_internal"]).toStrictEqual(null);
 
         expect(sys["_random"]).toBe(random);
@@ -235,7 +236,7 @@ describe("DiscreteSystem", () => {
         const sys = createSystem();
         const newParams = { N: 3000000, I0: 10, beta: 40, gamma: 20 };
         sys.updateParams(newParams);
-        const sysParams = sys["_params"];
+        const { dim: _d, odin: _o, ...sysParams } = sys["_params"];
         // Expect all values except N to have been updated
         expect(sysParams).toStrictEqual({ N: 1000000, I0: 10, beta: 40, gamma: 20 });
     });
