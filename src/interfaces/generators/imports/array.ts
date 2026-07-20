@@ -8,7 +8,11 @@ type Range = [number, number];
 // +, *, ... operations to those values
 
 const reduceAll = (arr: number[], op: Op, init: number) => {
-    return arr.reduce(op, init);
+    let ret = init;
+    for (let i = 0; i < arr.length; i++) {
+        ret = op(ret, arr[i]);
+    }
+    return ret;
 };
 
 const reduce1 = (arr: number[], _dim: DimUtils, i: Range, op: Op, init: number) => {

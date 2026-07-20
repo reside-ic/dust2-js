@@ -97,6 +97,13 @@ export class Packer {
         return this._nVariables;
     }
 
+    /**
+     * Returns index information about variables
+     */
+    public get idx() {
+        return this._idx;
+    }
+
     private isScalar(name: string) {
         return this._shape.get(name)?.length === 0;
     }

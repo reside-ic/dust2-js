@@ -7,7 +7,7 @@ export type {
     ContinuousGeneratorODE,
     ContinuousGeneratorDDE
 } from "./interfaces/generators/ContinuousGenerator.ts";
-export type { SystemInterface } from "./interfaces/System.ts";
+export type { SystemInterface, NamedResult } from "./interfaces/System.ts";
 export { System } from "./System.ts";
 export { Packer } from "./Packer";
 export type { PackerOptions, PackerShape, UnpackResult } from "./Packer";

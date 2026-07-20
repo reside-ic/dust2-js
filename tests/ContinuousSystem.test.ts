@@ -4,13 +4,13 @@ import { constantGrad, ConstantGradParams } from "./examples/constantGrad.ts";
 import { constantGradNoUpdate, ConstantGradNoUpdateParams } from "./examples/constantGradNoUpdate.ts";
 import { constantGradDelay, ConstantGradDelayParams } from "./examples/constantGradDelay.ts";
 
-const createSystem = (params: ConstantGradParams, dt = 0.001) =>
+const createSystem = (params: ConstantGradParams, dt = 0.001, nParticles = 1) =>
     System.createODE<ConstantGradParams, null>(
         constantGrad,
         params,
         5, // time
         dt, // dt
-        1, // nParticles
+        nParticles, // nParticles
         1 // nRhsVariables
     );
 
@@ -137,5 +137,32 @@ describe("ContinuousSystem", () => {
         expect(result[17]).toBeCloseTo(3);
         expect(result[18]).toBeCloseTo(5);
         expect(result[19]).toBeCloseTo(450.5);
+    });
+
+    test("Can simulate by state var name", () => {
+        const sys = createSystem({ y: 1, yAddOne: 2 }, 0.001, 3);
+        sys.setStateInitial();
+        const times = [6, 7, 8, 9, 10];
+        const result = sys.simulateByStateVarName(times, ["Y + 1"]);
+        expect(result.times).toStrictEqual(times);
+        expect(result.values).toHaveLength(3); // 3 particles
+        result.values.forEach((val) => {
+            expect(Object.keys(val)).toStrictEqual(["Y + 1"]);
+            expect(val["Y + 1"]).toHaveLength(5); // 5 time points
+        });
+    });
+
+    test("Simulate by state var name gives all variables if not specified", () => {
+        const sys = createSystem({ y: 1, yAddOne: 2 }, 0.001, 3);
+        sys.setStateInitial();
+        const times = [6, 7, 8, 9, 10];
+        const result = sys.simulateByStateVarName(times);
+        expect(result.times).toStrictEqual(times);
+        expect(result.values).toHaveLength(3); // 3 particles
+        result.values.forEach((val) => {
+            expect(Object.keys(val)).toStrictEqual(["Y", "Y + 1"]);
+            expect(val["Y"]).toHaveLength(5); // 5 time points
+            expect(val["Y + 1"]).toHaveLength(5); // 5 time points
+        });
     });
 });
